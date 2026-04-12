@@ -1,0 +1,34 @@
+{
+  "tables": {
+    "profesores": "profesores",
+    "categorias": "categorias",
+    "inventario": "inventario",
+    "prestamos": "prestamos"
+  },
+  "columns": {
+    "profesores": {
+      "id": "id",
+      "codigo": "codigo",
+      "nombre": "nombre"
+    },
+    "categorias": {
+      "id": "id",
+      "nombre": "nombre"
+    },
+    "inventario": {
+      "id": "id",
+      "categoria_id": "categoria_id",
+      "nombre_equipo": "nombre_equipo",
+      "identificador": "identificador",
+      "estado": "estado"
+    },
+    "prestamos": {
+      "id": "id",
+      "equipo_id": "equipo_id",
+      "codigo_profe": "codigo_profe",
+      "nombre_profe": "nombre_profe",
+      "fecha_salida": "fecha_salida",
+      "fecha_retorno": "fecha_retorno"
+    }
+  }
+}

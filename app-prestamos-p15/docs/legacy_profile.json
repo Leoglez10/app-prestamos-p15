@@ -1,0 +1,219 @@
+{
+  "tables": {
+    "aula": {
+      "row_count": 49,
+      "columns": [
+        {
+          "column": "codigo_aula",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    },
+    "aula_de_profesor": {
+      "row_count": 256,
+      "columns": [
+        {
+          "column": "codigo_profesor",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_aula",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    },
+    "control": {
+      "row_count": 36,
+      "columns": [
+        {
+          "column": "codigo_control",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    },
+    "historico_de_prestamo": {
+      "row_count": 22429,
+      "columns": [
+        {
+          "column": "codigo_prestamo",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_profesor",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_aula",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_laptop",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "codigo_control",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "codigo_proyector",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "hdmi",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "extension_electrica",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "bocinas",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "fecha_y_hora_de_prestamo",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "column": "fecha_y_hora_de_devolucion",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "column": "observacion",
+          "type": "text",
+          "nullable": "YES"
+        }
+      ]
+    },
+    "laptop": {
+      "row_count": 34,
+      "columns": [
+        {
+          "column": "codigo_laptop",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "tipo",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "estado",
+          "type": "character varying",
+          "nullable": "YES"
+        }
+      ]
+    },
+    "prestamo_pendiente": {
+      "row_count": 1,
+      "columns": [
+        {
+          "column": "codigo_prestamo",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_profesor",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_aula",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "codigo_laptop",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "codigo_control",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "codigo_proyector",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "hdmi",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "extension_electrica",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "bocinas",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "column": "fecha_y_hora_de_prestamo",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "column": "observacion",
+          "type": "text",
+          "nullable": "YES"
+        }
+      ]
+    },
+    "profesor": {
+      "row_count": 113,
+      "columns": [
+        {
+          "column": "codigo_profesor",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "nombres",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "apellidos",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    },
+    "proyector": {
+      "row_count": 5,
+      "columns": [
+        {
+          "column": "codigo_proyector",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "column": "estado",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    }
+  }
+}

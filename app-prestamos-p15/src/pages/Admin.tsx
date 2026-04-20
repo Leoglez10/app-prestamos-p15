@@ -803,7 +803,7 @@ function InventarioPanel() {
         </div>
 
         {/* Tabla Central */}
-        <div className="panel" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'var(--surface-sunken)', borderBottom: '2px solid var(--border-subtle)' }}>
@@ -1149,7 +1149,7 @@ function ReportesPanel() {
         </div>
       </div>
 
-      <div className="panel" style={{ padding: '0', overflow: 'hidden' }}>
+      <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
         {error && <div className="feedback error" style={{ margin: '1rem' }}>{error}</div>}
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
             <thead>
@@ -1524,7 +1524,7 @@ function CategoriasPanel() {
         </small>
       </div>
 
-      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
         {error && <div className="feedback error" style={{ margin: "1rem" }}>{error}</div>}
 
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -1911,7 +1911,7 @@ function ProfesoresPanel() {
         </small>
       </div>
 
-      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
         {error && <div className="feedback error" style={{ margin: "1rem" }}>{error}</div>}
 
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>

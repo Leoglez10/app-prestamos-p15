@@ -337,3 +337,55 @@ button.ghost {
     width: 100%;
   }
 }
+
+/* -- Responsive Admin Layout Classes -- */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 0.8rem;
+  align-items: end;
+}
+
+.admin-2col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.admin-3col-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.admin-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.admin-3col-basic {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .admin-grid,
+  .admin-form-grid,
+  .admin-2col-grid,
+  .admin-3col-grid,
+  .admin-action-grid,
+  .admin-3col-basic {
+    grid-template-columns: 1fr;
+  }
+  .admin-form-grid { align-items: stretch; }
+}

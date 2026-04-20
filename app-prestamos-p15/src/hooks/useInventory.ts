@@ -409,6 +409,13 @@ export const updateCategoria = async (id: number, nombre: string, esPrestable = 
 
 export const deleteCategoria = async (id: number): Promise<void> => {
   const db = await getDb();
+  const rows = await db.select<{count: number}[]>(
+    "SELECT COUNT(*) as count FROM inventario WHERE categoria_id = ?",
+    [id]
+  );
+  if (rows[0].count > 0) {
+    throw new Error("No se puede eliminar la categoría porque aún tiene equipos asociados. Elimina los equipos primero.");
+  }
   await db.execute("DELETE FROM categorias WHERE id = ?", [id]);
 };
 
@@ -729,6 +736,7 @@ export const createEquipo = async (input: CreateEquipoInput): Promise<void> => {
 
 export const deleteEquipo = async (equipoId: number): Promise<void> => {
   const db = await getDb();
+  await db.execute("DELETE FROM prestamos WHERE equipo_id = ?", [equipoId]);
   await db.execute("DELETE FROM inventario WHERE id = ?", [equipoId]);
 };
 

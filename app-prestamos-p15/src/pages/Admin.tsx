@@ -196,7 +196,7 @@ function PdfDesignerPanel({
               Elementos incluidos en el PDF
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.55rem" }}>
+          <div className="admin-3col-grid">
             {options.map((option) => {
               const checked = values[option.key];
               return (
@@ -614,7 +614,7 @@ function InventarioPanel() {
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '1.25rem', alignItems: 'start' }}>
+      <div className="admin-grid">
 
         {/* Formulario Lateral */}
         <div style={{ alignSelf: 'start' }}>
@@ -659,7 +659,7 @@ function InventarioPanel() {
               <div style={{ fontSize: '0.76rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-primary)' }}>
                 Tipo de registro
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+              <div className="admin-2col-grid">
                 <button
                   type="button"
                   onClick={() => setEsGranel(false)}
@@ -1122,7 +1122,7 @@ function ReportesPanel() {
       />
 
       <div className="panel" style={{ display: 'grid', gap: '0.8rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: '0.8rem', alignItems: 'end' }}>
+        <div className="admin-form-grid">
           <input
             type="text"
             placeholder="Buscar profesor, código, equipo o categoría..."
@@ -1659,7 +1659,7 @@ function CategoriasPanel() {
           {editingEquipoId && (
             <form onSubmit={handleSaveEquipo} style={{ marginTop: "1rem", display: "grid", gap: "0.6rem" }}>
               <h4 style={{ margin: 0 }}>Editar equipo de la categoría</h4>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "0.6rem" }}>
+              <div className="admin-3col-basic">
                 <input
                   type="text"
                   value={equipoNombre}
@@ -1851,7 +1851,7 @@ function ProfesoresPanel() {
       <div className="panel" style={{ marginBottom: "1rem" }}>
         <h3 style={{ marginTop: 0 }}>{editingId ? "Editar Profesor" : "Agregar Profesor"}</h3>
         <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.6rem", alignItems: "center" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: "0.6rem", alignItems: "center" }}>
+          <div className="admin-action-grid">
             <input
               type="text"
               placeholder="Código"

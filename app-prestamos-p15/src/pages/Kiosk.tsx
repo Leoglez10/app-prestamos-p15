@@ -249,13 +249,16 @@ export default function Kiosk() {
 
   const filteredEquipos = equipos.filter((eq) => {
     const term = equipoSearchTerm.trim().toLowerCase();
-    if (!isEquipoDisponible(eq)) return false;
     if (!term) return true;
     return (
       eq.nombre_equipo.toLowerCase().includes(term) ||
       eq.categoria_nombre.toLowerCase().includes(term) ||
       (eq.identificador ?? "").toLowerCase().includes(term)
     );
+  }).sort((a, b) => {
+    const aDisponible = isEquipoDisponible(a) ? 1 : 0;
+    const bDisponible = isEquipoDisponible(b) ? 1 : 0;
+    return bDisponible - aDisponible;
   });
 
   const selectedEquiposSummary = Array.from(
@@ -369,7 +372,16 @@ export default function Kiosk() {
   };
 
   const getEquipoSupportingText = (equipo: Equipo) => {
-    if (!isEquipoDisponible(equipo)) return "No disponible por ahora";
+    if (!isEquipoDisponible(equipo)) {
+      if (equipo.es_granel === 1) {
+        return equipo.prestamo_activo_profe
+          ? `Sin stock ahora. Ultimo registro activo: ${equipo.prestamo_activo_profe}`
+          : "Sin stock disponible por ahora";
+      }
+      return equipo.prestamo_activo_profe
+        ? `Prestado actualmente a ${equipo.prestamo_activo_profe}`
+        : "No disponible por ahora";
+    }
     if (equipo.es_granel === 1) {
       return equipo.stock_disponible <= 2
         ? `Solo quedan ${equipo.stock_disponible} disponibles`
@@ -1272,6 +1284,11 @@ export default function Kiosk() {
                             <span className="eq-tag">
                               {isGranel ? `${eq.stock_disponible}/${eq.stock_total} stock` : eq.estado}
                             </span>
+                            {!isAvail && eq.prestamo_activo_profe ? (
+                              <span className="selection-pill" style={{ background: 'rgba(14, 116, 144, 0.10)', color: '#155e75' }}>
+                                Con: {eq.prestamo_activo_profe}
+                              </span>
+                            ) : null}
                             {selectedCount > 1 ? <span className="selection-pill">x{selectedCount} seleccionados</span> : null}
                           </div>
                         </button>

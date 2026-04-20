@@ -281,15 +281,18 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   }
 
   const seededCheck = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM app_settings WHERE key = 'app_seeded'");
-  // Si no está el flag 'app_seeded' y además existe la key 'kiosk_show_pendientes' significa que es una instalación previa, 
-  // pero la vamos a marcar como seeded igual sin duplicar la info (evitar que vuelvan si ya borró la info).
-  // Solo la consideramos "nueva instalación real" si tampoco tiene settings.
-  const isNewInstall = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM app_settings");
   
   if (seededCheck[0].count === 0) {
-    // Es posible que sea una base ya usada antes del parche. Si isNewInstall[0].count <= 2 (solo las defaults q acabamos de meter)
-    // entonces insertamos datos de prueba. Si es mayor, significa que la base ya estaba en uso.
-    if (isNewInstall[0].count <= 2) {
+    // Para identificar si es realmente una base de datos nueva (y no una base exportada de antes del parche), 
+    // revisamos si las tablas están completamente vacías. Si tiene cualquier categoría, profesor o préstamo,
+    // significa que es una base de datos ya en uso, así que no insertamos los datos de prueba.
+    const catsCount = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM categorias");
+    const profsCount = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM profesores");
+    const prestamosCount = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM prestamos");
+
+    const totalData = catsCount[0].count + profsCount[0].count + prestamosCount[0].count;
+
+    if (totalData === 0) {
       for (const statement of initialDataStatements) {
         await db.execute(statement);
       }

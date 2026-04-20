@@ -166,6 +166,14 @@ fn restore_backup_from_bytes(
     fs::copy(&temp_restore_path, &db_path)
         .map_err(|error| format!("No se pudo restaurar la base de datos seleccionada: {error}"))?;
 
+    // IMPORTANT: SQLite uses Write-Ahead Logging (WAL). When we overwrite the database, 
+    // we MUST delete any existing -wal and -shm files, or else SQLite will apply the 
+    // previous database's pending transactions onto the newly imported one.
+    let wal_path = db_path.with_extension("db-wal");
+    let shm_path = db_path.with_extension("db-shm");
+    let _ = fs::remove_file(&wal_path);
+    let _ = fs::remove_file(&shm_path);
+
     let _ = fs::remove_file(&temp_restore_path);
 
     Ok(RestoreBackupResult {

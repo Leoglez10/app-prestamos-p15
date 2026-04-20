@@ -119,7 +119,7 @@ const schemaStatements = [
   )`,
 ];
 
-const seedStatements = [
+const initialDataStatements = [
   "INSERT OR IGNORE INTO categorias (id, nombre) VALUES (1, 'Laptops')",
   "INSERT OR IGNORE INTO categorias (id, nombre) VALUES (2, 'Adaptadores HDMI')",
   "INSERT OR IGNORE INTO profesores (codigo, nombre) VALUES ('2958101', 'Edgar Ivan Aguilar Duran')",
@@ -127,6 +127,9 @@ const seedStatements = [
    VALUES (1, 1, 'Laptop Dell Latitude', 'LAT-001', 'disponible')`,
   `INSERT OR IGNORE INTO inventario (id, categoria_id, nombre_equipo, identificador, estado)
    VALUES (2, 2, 'Adaptador HDMI USB-C', 'HDMI-008', 'disponible')`,
+];
+
+const defaultSettingsStatements = [
   "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('kiosk_show_pendientes', 'true')",
   "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('kiosk_show_catalogo', 'true')",
 ];
@@ -273,8 +276,25 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   // para que no saturen la vista del Kiosko de los profesores.
   await db.execute("UPDATE prestamos SET estado_prestamo = 'historico' WHERE estado_prestamo = 'activo' AND date(fecha_salida) < '2026-03-21'").catch((e) => console.error("Migracion historicos failed", e));
 
-  for (const statement of seedStatements) {
+  for (const statement of defaultSettingsStatements) {
     await db.execute(statement);
+  }
+
+  const seededCheck = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM app_settings WHERE key = 'app_seeded'");
+  // Si no está el flag 'app_seeded' y además existe la key 'kiosk_show_pendientes' significa que es una instalación previa, 
+  // pero la vamos a marcar como seeded igual sin duplicar la info (evitar que vuelvan si ya borró la info).
+  // Solo la consideramos "nueva instalación real" si tampoco tiene settings.
+  const isNewInstall = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM app_settings");
+  
+  if (seededCheck[0].count === 0) {
+    // Es posible que sea una base ya usada antes del parche. Si isNewInstall[0].count <= 2 (solo las defaults q acabamos de meter)
+    // entonces insertamos datos de prueba. Si es mayor, significa que la base ya estaba en uso.
+    if (isNewInstall[0].count <= 2) {
+      for (const statement of initialDataStatements) {
+        await db.execute(statement);
+      }
+    }
+    await db.execute("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('app_seeded', 'true')");
   }
 
   await verifyDatabaseIntegrity(db);

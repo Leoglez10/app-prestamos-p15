@@ -102,6 +102,12 @@ export default function Kiosk() {
     setAllEquipos(rows.filter((equipo) => equipo.es_prestable === 1 && equipo.categoria_es_prestable === 1));
   };
 
+  // Helper: cambiar categoría y limpiar búsqueda para evitar confusión de filtros activos
+  const setCategoriaAndClearSearch = (id: number | null) => {
+    setSelectedCategoriaId(id);
+    setEquipoSearchTerm("");
+  };
+
   const cargarPrestamos = async (codigo: string) => {
     const activos = await getPrestamosActivosProfesor(codigo);
     setMisPrestamos(activos);
@@ -314,6 +320,8 @@ export default function Kiosk() {
     setSelectedEquipoIds((prev) => [...prev, equipo.id]);
     setCartPulse((value) => value + 1);
     spawnFlyToCart(equipo, sourceElement);
+    // Limpiar búsqueda tras seleccionar un equipo para que el listado muestre contexto completo
+    setEquipoSearchTerm("");
   };
 
   const handleLaptopSelection = (includeHdmi: boolean) => {
@@ -1100,7 +1108,7 @@ export default function Kiosk() {
                 }}>
                   <button
                     type="button"
-                    onClick={() => setSelectedCategoriaId(null)}
+                    onClick={() => setCategoriaAndClearSearch(null)}
                     style={{
                       padding: '1rem 1.05rem',
                       fontSize: '1.1rem',
@@ -1124,7 +1132,7 @@ export default function Kiosk() {
                     <button
                       key={c.id}
                       type="button"
-                      onClick={() => setSelectedCategoriaId(c.id)}
+                      onClick={() => setCategoriaAndClearSearch(c.id)}
                       style={{
                         padding: '1rem 1.05rem',
                         fontSize: '1.1rem',
@@ -1205,24 +1213,50 @@ export default function Kiosk() {
                   </div>
 
                   <form onSubmit={handlePrestamo} style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input
-                      type="text"
-                      value={equipoSearchTerm}
-                      onChange={(e) => setEquipoSearchTerm(e.target.value)}
-                      placeholder="Buscar equipo por nombre, categoría o identificador..."
-                      style={{
-                        flex: 1,
-                        minWidth: '320px',
-                        maxWidth: '620px',
-                        margin: 0,
-                        borderRadius: '16px',
-                        border: '1px solid rgba(148, 163, 184, 0.18)',
-                        background: 'rgba(255,255,255,0.95)',
-                        fontSize: '1rem',
-                        padding: '1rem 1.05rem',
-                        boxShadow: '0 12px 24px rgba(15, 23, 42, 0.05)'
-                      }}
-                    />
+                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flex: 1, minWidth: '320px', maxWidth: '720px' }}>
+                      <input
+                        type="text"
+                        value={equipoSearchTerm}
+                        onChange={(e) => setEquipoSearchTerm(e.target.value)}
+                        placeholder="🔍 Buscar equipo por nombre, categoría o identificador..."
+                        aria-label="Buscar equipo"
+                        style={{
+                          flex: 1,
+                          minWidth: '240px',
+                          margin: 0,
+                          borderRadius: '16px',
+                          border: '2px solid rgba(148, 163, 184, 0.18)',
+                          background: 'rgba(255,255,255,0.95)',
+                          fontSize: '1rem',
+                          padding: '0.9rem 1rem',
+                          boxShadow: '0 12px 24px rgba(15, 23, 42, 0.05)',
+                          transition: 'box-shadow 180ms ease, border-color 180ms ease'
+                        }}
+                        onFocus={(e) => {
+                          (e.target as HTMLInputElement).style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.14)';
+                          (e.target as HTMLInputElement).style.borderColor = 'rgba(37, 99, 235, 0.6)';
+                        }}
+                        onBlur={(e) => {
+                          (e.target as HTMLInputElement).style.boxShadow = '0 12px 24px rgba(15, 23, 42, 0.05)';
+                          (e.target as HTMLInputElement).style.borderColor = 'rgba(148, 163, 184, 0.18)';
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEquipoSearchTerm("")}
+                        title="Limpiar búsqueda"
+                        style={{
+                          padding: '0.65rem 0.9rem',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(148,163,184,0.12)',
+                          background: 'white',
+                          cursor: 'pointer',
+                          boxShadow: '0 8px 20px rgba(15,23,42,0.06)'
+                        }}
+                      >
+                        Limpiar
+                      </button>
+                    </div>
                     <button
                       type="submit"
                       className="kiosk-btn-primary"
@@ -1273,9 +1307,10 @@ export default function Kiosk() {
                             <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
                               {eq.categoria_nombre}
                             </span>
-                            <strong style={{ fontSize: '1.18rem', color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', marginTop: '0.35rem', lineHeight: 1.25 }}>
-                              {eq.nombre_equipo}
-                            </strong>
+                                <strong style={{ fontSize: '1.18rem', color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', marginTop: '0.35rem', lineHeight: 1.25 }}>
+                                  {eq.nombre_equipo}
+                                </strong>
+                                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.28rem' }}>Haz clic para agregar</div>
                           </div>
                           <div className="eq-support">
                             {getEquipoSupportingText(eq)}

@@ -656,6 +656,17 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
   }
 };
 
+export const getCurrentLocalDateTime = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 export const createPrestamoRapido = async ({
   equipoIds,
   profesorCodigo,
@@ -719,11 +730,12 @@ export const createPrestamoRapido = async ({
   }
 
   // Create loans for each equipment
+  const fechaSalida = getCurrentLocalDateTime();
   for (const equipoId of equipoIds) {
     await db.execute(
       `INSERT INTO prestamos (equipo_id, codigo_profe, nombre_profe, fecha_salida, estado_prestamo, observaciones_entrega)
-       VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'activo', ?)`,
-      [equipoId, profesorCodigo.trim(), (profesorNombre ?? "").trim(), (observacionesEntrega ?? "").trim()],
+       VALUES (?, ?, ?, ?, 'activo', ?)`,
+      [equipoId, profesorCodigo.trim(), (profesorNombre ?? "").trim(), fechaSalida, (observacionesEntrega ?? "").trim()],
     );
 
     // Solo actualizamos de inmediato a prestado si no es a granel
@@ -828,15 +840,16 @@ export const devolverEquipo = async (
   }
 
   const esGranel = equipoData[0].es_granel === 1;
+  const fechaRetorno = getCurrentLocalDateTime();
   
   await db.execute(
     `UPDATE prestamos 
      SET estado_prestamo = 'devuelto', 
-         fecha_retorno = CURRENT_TIMESTAMP, 
+         fecha_retorno = ?, 
          condicion_regreso = $1, 
          notas_regreso = $2 
      WHERE id = $3`,
-    [condicion.trim(), notas.trim(), prestamoId]
+    [fechaRetorno, condicion.trim(), notas.trim(), prestamoId]
   );
 
   // Si es a granel, NO actualizar estado (permanece siempre 'disponible')
@@ -866,15 +879,16 @@ export const marcarEquipoPerdido = async (
   }
 
   const esGranel = equipoData[0].es_granel === 1;
+  const fechaRetorno = getCurrentLocalDateTime();
 
   await db.execute(
     `UPDATE prestamos 
      SET estado_prestamo = 'devuelto', 
-         fecha_retorno = CURRENT_TIMESTAMP, 
+         fecha_retorno = ?, 
          condicion_regreso = 'No devuelto / Perdido', 
          notas_regreso = 'Marcado manualmente como perdido por administración' 
      WHERE id = $1`,
-    [prestamoId]
+    [fechaRetorno, prestamoId]
   );
 
   // Si es a granel, NO cambiar el estado (el stock se refleja en los préstamos activos)

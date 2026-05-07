@@ -119,7 +119,7 @@ const schemaStatements = [
   )`,
 ];
 
-const initialDataStatements = [
+const seedStatements = [
   "INSERT OR IGNORE INTO categorias (id, nombre) VALUES (1, 'Laptops')",
   "INSERT OR IGNORE INTO categorias (id, nombre) VALUES (2, 'Adaptadores HDMI')",
   "INSERT OR IGNORE INTO profesores (codigo, nombre) VALUES ('2958101', 'Edgar Ivan Aguilar Duran')",
@@ -127,9 +127,6 @@ const initialDataStatements = [
    VALUES (1, 1, 'Laptop Dell Latitude', 'LAT-001', 'disponible')`,
   `INSERT OR IGNORE INTO inventario (id, categoria_id, nombre_equipo, identificador, estado)
    VALUES (2, 2, 'Adaptador HDMI USB-C', 'HDMI-008', 'disponible')`,
-];
-
-const defaultSettingsStatements = [
   "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('kiosk_show_pendientes', 'true')",
   "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('kiosk_show_catalogo', 'true')",
 ];
@@ -276,28 +273,8 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   // para que no saturen la vista del Kiosko de los profesores.
   await db.execute("UPDATE prestamos SET estado_prestamo = 'historico' WHERE estado_prestamo = 'activo' AND date(fecha_salida) < '2026-03-21'").catch((e) => console.error("Migracion historicos failed", e));
 
-  for (const statement of defaultSettingsStatements) {
+  for (const statement of seedStatements) {
     await db.execute(statement);
-  }
-
-  const seededCheck = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM app_settings WHERE key = 'app_seeded'");
-  
-  if (seededCheck[0].count === 0) {
-    // Para identificar si es realmente una base de datos nueva (y no una base exportada de antes del parche), 
-    // revisamos si las tablas están completamente vacías. Si tiene cualquier categoría, profesor o préstamo,
-    // significa que es una base de datos ya en uso, así que no insertamos los datos de prueba.
-    const catsCount = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM categorias");
-    const profsCount = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM profesores");
-    const prestamosCount = await db.select<{count: number}[]>("SELECT COUNT(*) as count FROM prestamos");
-
-    const totalData = catsCount[0].count + profsCount[0].count + prestamosCount[0].count;
-
-    if (totalData === 0) {
-      for (const statement of initialDataStatements) {
-        await db.execute(statement);
-      }
-    }
-    await db.execute("INSERT OR IGNORE INTO app_settings (key, value) VALUES ('app_seeded', 'true')");
   }
 
   await verifyDatabaseIntegrity(db);
@@ -432,13 +409,6 @@ export const updateCategoria = async (id: number, nombre: string, esPrestable = 
 
 export const deleteCategoria = async (id: number): Promise<void> => {
   const db = await getDb();
-  const rows = await db.select<{count: number}[]>(
-    "SELECT COUNT(*) as count FROM inventario WHERE categoria_id = ?",
-    [id]
-  );
-  if (rows[0].count > 0) {
-    throw new Error("No se puede eliminar la categoría porque aún tiene equipos asociados. Elimina los equipos primero.");
-  }
   await db.execute("DELETE FROM categorias WHERE id = ?", [id]);
 };
 
@@ -729,7 +699,7 @@ export const createPrestamoRapido = async ({
     }
   }
 
-  // Create loans for each equipment
+// Create loans for each equipment
   const fechaSalida = getCurrentLocalDateTime();
   for (const equipoId of equipoIds) {
     await db.execute(
@@ -771,7 +741,6 @@ export const createEquipo = async (input: CreateEquipoInput): Promise<void> => {
 
 export const deleteEquipo = async (equipoId: number): Promise<void> => {
   const db = await getDb();
-  await db.execute("DELETE FROM prestamos WHERE equipo_id = ?", [equipoId]);
   await db.execute("DELETE FROM inventario WHERE id = ?", [equipoId]);
 };
 

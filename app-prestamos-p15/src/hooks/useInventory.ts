@@ -914,6 +914,7 @@ export type ReportePrestamo = {
   condicion_regreso: string | null;
   admin_condicion_entrega: string | null;
   admin_notas_retorno: string | null;
+  cantidad_prestada: number;
 };
 
 export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}): Promise<ReportePrestamo[]> => {
@@ -950,23 +951,25 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   const limit = Math.max(50, Math.min(filters.limit ?? 500, 2000));
   const rows = await db.select<ReportePrestamo[]>(
-    `SELECT p.id,
+    `SELECT MIN(p.id) AS id,
             p.codigo_profe,
             p.nombre_profe,
             i.nombre_equipo,
             COALESCE(c.nombre, 'Sin categoría') AS categoria_nombre,
             p.estado_prestamo,
-            p.fecha_salida,
-            p.fecha_retorno,
-            p.observaciones_entrega,
-            p.condicion_regreso,
-            p.admin_condicion_entrega,
-            p.admin_notas_retorno
+            MIN(p.fecha_salida) AS fecha_salida,
+            MAX(p.fecha_retorno) AS fecha_retorno,
+            MIN(p.observaciones_entrega) AS observaciones_entrega,
+            MIN(p.condicion_regreso) AS condicion_regreso,
+            MIN(p.admin_condicion_entrega) AS admin_condicion_entrega,
+            MIN(p.admin_notas_retorno) AS admin_notas_retorno,
+            COUNT(*) AS cantidad_prestada
      FROM prestamos p
      LEFT JOIN inventario i ON i.id = p.equipo_id
      LEFT JOIN categorias c ON c.id = i.categoria_id
      ${whereClause}
-     ORDER BY p.fecha_salida DESC
+     GROUP BY p.equipo_id, p.codigo_profe, p.nombre_profe, p.estado_prestamo
+     ORDER BY MIN(p.fecha_salida) DESC
      LIMIT ${limit}`,
     params
   );
@@ -975,7 +978,8 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
     nombre_equipo: r.nombre_equipo || 'Equipo Eliminado',
     categoria_nombre: r.categoria_nombre || 'Sin categoría',
     nombre_profe: r.nombre_profe || 'Desconocido',
-    estado_prestamo: r.estado_prestamo || 'activo' // Safe fallback
+    estado_prestamo: r.estado_prestamo || 'activo',
+    cantidad_prestada: r.cantidad_prestada || 1
   }));
 };
 

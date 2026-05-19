@@ -35,6 +35,7 @@ export default function Kiosk() {
   const [allEquipos, setAllEquipos] = useState<Equipo[]>([]);
   const [equipoSearchTerm, setEquipoSearchTerm] = useState("");
   const [selectedEquipoIds, setSelectedEquipoIds] = useState<number[]>([]);
+  const [itemCantidades, setItemCantidades] = useState<Record<number, number>>({});
   const [autoAddedEquipoIds, setAutoAddedEquipoIds] = useState<number[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [observacionesEntrega, setObservacionesEntrega] = useState("");
@@ -137,16 +138,17 @@ export default function Kiosk() {
     setLoggedInProfesor(null);
     setLoginCodigo("");
     setMisPrestamos([]);
-    setSelectedEquipoIds([]);
-    setAutoAddedEquipoIds([]);
-    setObservacionesEntrega("");
-    setConfirmModalOpen(false);
-    setSuccessModalOpen(false);
-    setHdmiPromptEquipo(null);
-    setReturnAllModalOpen(false);
-    setCartPulse(0);
-    setStatusMessage("");
-    setErrorMessage("");
+setSelectedEquipoIds([]);
+      setItemCantidades({});
+      setAutoAddedEquipoIds([]);
+      setObservacionesEntrega("");
+      setConfirmModalOpen(false);
+      setSuccessModalOpen(false);
+      setHdmiPromptEquipo(null);
+      setReturnAllModalOpen(false);
+      setCartPulse(0);
+      setStatusMessage("");
+      setErrorMessage("");
   };
 
   const handlePrestamo = async (event: FormEvent) => {
@@ -166,9 +168,16 @@ export default function Kiosk() {
   const handleConfirmPrestamo = async () => {
     if (!loggedInProfesor) return;
 
+    const expandedIds: number[] = [];
+    for (const [id, cantidad] of Object.entries(itemCantidades)) {
+      for (let i = 0; i < cantidad; i++) {
+        expandedIds.push(Number(id));
+      }
+    }
+
     try {
       await createPrestamoRapido({
-        equipoIds: selectedEquipoIds,
+        equipoIds: expandedIds,
         profesorCodigo: loggedInProfesor.codigo,
         profesorNombre: loggedInProfesor.nombre,
         observacionesEntrega,
@@ -177,8 +186,10 @@ export default function Kiosk() {
       await loadEquipos(selectedCategoriaId);
       await loadAllEquipos();
       await cargarPrestamos(loggedInProfesor.codigo);
-      setStatusMessage(`Prestamo registrado exitosamente. (${selectedEquipoIds.length} equipos).`);
+      const totalItems = expandedIds.length;
+      setStatusMessage(`Prestamo registrado exitosamente. (${totalItems} equipos).`);
       setSelectedEquipoIds([]);
+      setItemCantidades({});
       setAutoAddedEquipoIds([]);
       setObservacionesEntrega("");
       setConfirmModalOpen(false);
@@ -307,6 +318,11 @@ export default function Kiosk() {
 
     if (selectedEquipoIds.includes(equipo.id)) {
       setSelectedEquipoIds((prev) => prev.filter((id) => id !== equipo.id));
+      setItemCantidades((prev) => {
+        const updated = { ...prev };
+        delete updated[equipo.id];
+        return updated;
+      });
       setAutoAddedEquipoIds((prev) => prev.filter((id) => id !== equipo.id));
       setCartPulse((value) => value + 1);
       return;
@@ -318,9 +334,9 @@ export default function Kiosk() {
     }
 
     setSelectedEquipoIds((prev) => [...prev, equipo.id]);
+    setItemCantidades((prev) => ({ ...prev, [equipo.id]: 1 }));
     setCartPulse((value) => value + 1);
     spawnFlyToCart(equipo, sourceElement);
-    // Limpiar búsqueda tras seleccionar un equipo para que el listado muestre contexto completo
     setEquipoSearchTerm("");
   };
 
@@ -346,6 +362,13 @@ export default function Kiosk() {
       const updated = [...prev, ...nextIds];
       return updated;
     });
+    setItemCantidades((prev) => {
+      const updated = { ...prev };
+      for (const id of nextIds) {
+        updated[id] = (updated[id] ?? 0) + 1;
+      }
+      return updated;
+    });
     setAutoAddedEquipoIds(includeHdmi && flyEquipos.length > 1 ? [flyEquipos[1].id] : []);
     setCartPulse((value) => value + 1);
     if (nextStatusMessage) {
@@ -363,6 +386,11 @@ export default function Kiosk() {
       if (index === -1) return prev;
       const updated = [...prev];
       updated.splice(index, 1);
+      return updated;
+    });
+    setItemCantidades((prev) => {
+      const updated = { ...prev };
+      delete updated[equipoId];
       return updated;
     });
     setAutoAddedEquipoIds((prev) => prev.filter((id) => id !== equipoId));
@@ -1190,23 +1218,66 @@ export default function Kiosk() {
                         </div>
                       ) : (
                         <div className="cart-items">
-                          {selectedEquiposSummary.map(({ equipo, count }) => (
-                            <div key={`cart-${equipo.id}-${count}`} className="cart-item">
-                              <div>
-                                <div style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{equipo.nombre_equipo}</div>
-                                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
-                                  <span>{equipo.categoria_nombre}</span>
-                                  {autoAddedEquipoIds.includes(equipo.id) ? (
-                                    <span style={{ color: '#15803d', fontWeight: 800 }}>Agregado automaticamente</span>
-                                  ) : null}
+                          {selectedEquiposSummary.map(({ equipo }) => {
+                              const cantidad = itemCantidades[equipo.id] ?? 1;
+                              const isGranel = equipo.es_granel === 1;
+                              const maxStock = equipo.stock_disponible ?? 1;
+                              return (
+                                <div key={`cart-${equipo.id}`} className="cart-item">
+                                  <div>
+                                    <div style={{ fontWeight: 800, color: 'var(--text-primary)' }}>{equipo.nombre_equipo}</div>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                                      <span>{equipo.categoria_nombre}</span>
+                                      {autoAddedEquipoIds.includes(equipo.id) ? (
+                                        <span style={{ color: '#15803d', fontWeight: 800 }}>Agregado automaticamente</span>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                  {isGranel ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (cantidad <= 1) {
+                                            handleRemoveSelectedEquipo(equipo.id);
+                                          } else {
+                                            setItemCantidades((prev) => ({ ...prev, [equipo.id]: cantidad - 1 }));
+                                            setSelectedEquipoIds((prev) => {
+                                              const updated = [...prev];
+                                              const idx = updated.indexOf(equipo.id);
+                                              if (idx !== -1) updated.splice(idx, 1);
+                                              return updated;
+                                            });
+                                          }
+                                        }}
+                                        style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1.5px solid #d1d5db', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#374151' }}
+                                      >
+                                        −
+                                      </button>
+                                      <span style={{ fontWeight: 800, fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{cantidad}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (cantidad < maxStock) {
+                                            setItemCantidades((prev) => ({ ...prev, [equipo.id]: cantidad + 1 }));
+                                            setSelectedEquipoIds((prev) => [...prev, equipo.id]);
+                                          }
+                                        }}
+                                        disabled={cantidad >= maxStock}
+                                        style={{ width: '28px', height: '28px', borderRadius: '8px', border: cantidad >= maxStock ? '1.5px solid #e5e7eb' : '1.5px solid #d1d5db', background: cantidad >= maxStock ? '#f3f4f6' : 'white', cursor: cantidad >= maxStock ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: cantidad >= maxStock ? '#9ca3af' : '#374151' }}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span className="selection-pill">1</span>
+                                  )}
+                                  <button type="button" className="cart-item-remove" onClick={() => handleRemoveSelectedEquipo(equipo.id)}>
+                                    Quitar
+                                  </button>
                                 </div>
-                              </div>
-                              <span className="selection-pill">{count > 1 ? `x${count}` : '1'}</span>
-                              <button type="button" className="cart-item-remove" onClick={() => handleRemoveSelectedEquipo(equipo.id)}>
-                                Quitar
-                              </button>
-                            </div>
-                          ))}
+                              );
+                            })}
                         </div>
                       )}
                     </div>

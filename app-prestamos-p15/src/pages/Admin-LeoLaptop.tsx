@@ -196,7 +196,7 @@ function PdfDesignerPanel({
               Elementos incluidos en el PDF
             </div>
           </div>
-          <div className="admin-3col-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.55rem" }}>
             {options.map((option) => {
               const checked = values[option.key];
               return (
@@ -614,7 +614,7 @@ function InventarioPanel() {
         </select>
       </div>
 
-      <div className="admin-grid">
+      <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '1.25rem', alignItems: 'start' }}>
 
         {/* Formulario Lateral */}
         <div style={{ alignSelf: 'start' }}>
@@ -659,7 +659,7 @@ function InventarioPanel() {
               <div style={{ fontSize: '0.76rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-primary)' }}>
                 Tipo de registro
               </div>
-              <div className="admin-2col-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
                 <button
                   type="button"
                   onClick={() => setEsGranel(false)}
@@ -803,7 +803,7 @@ function InventarioPanel() {
         </div>
 
         {/* Tabla Central */}
-        <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
+        <div className="panel" style={{ padding: '0', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'var(--surface-sunken)', borderBottom: '2px solid var(--border-subtle)' }}>
@@ -992,13 +992,12 @@ function ReportesPanel() {
 
   const handlePrintReportes = () => {
     const summaryCards = reportePdf.includeSummary ? `
-      <div class="summary cols-5">
+      <div class="summary cols-4">
         ${[
           ["Activos", reportesSummary.activos],
           ["Devueltos", reportesSummary.devueltos],
           ["Históricos", reportesSummary.historicos],
           ["Con obs. admin", reportesSummary.conObsAdmin],
-          ["Total items", reportesSummary.totalItems],
         ]
           .map(
             ([label, value]) => `
@@ -1038,7 +1037,7 @@ function ReportesPanel() {
       .map((reporte) => {
         const columns = [
           `<td>${html(reporte.nombre_profe)}${reportePdf.includeProfessorCode ? `<br /><span class="muted">${html(reporte.codigo_profe)}</span>` : ""}</td>`,
-          `<td>${html(reporte.nombre_equipo)}${reporte.cantidad_prestada > 1 ? `<span style="color:#16a34a;font-weight:700;"> ×${reporte.cantidad_prestada}</span>` : ""}${reportePdf.includeCategory ? `<br /><span class="muted">${html(reporte.categoria_nombre)}</span>` : ""}</td>`,
+          `<td>${html(reporte.nombre_equipo)}${reportePdf.includeCategory ? `<br /><span class="muted">${html(reporte.categoria_nombre)}</span>` : ""}</td>`,
           `<td>${html(formatSqliteDateTime(reporte.fecha_salida))}</td>`,
           `<td>${html(formatSqliteDateTime(reporte.fecha_retorno))}</td>`,
           `<td>${html(reporte.estado_prestamo)}</td>`,
@@ -1087,7 +1086,6 @@ function ReportesPanel() {
     devueltos: reportes.filter((reporte) => reporte.estado_prestamo === "devuelto").length,
     historicos: reportes.filter((reporte) => reporte.estado_prestamo === "historico").length,
     conObsAdmin: reportes.filter((reporte) => Boolean(reporte.admin_condicion_entrega || reporte.admin_notas_retorno)).length,
-    totalItems: reportes.reduce((sum, r) => sum + (r.cantidad_prestada || 1), 0),
   };
 
   if (loading) return <div>Cargando reportes...</div>;
@@ -1124,7 +1122,7 @@ function ReportesPanel() {
       />
 
       <div className="panel" style={{ display: 'grid', gap: '0.8rem' }}>
-        <div className="admin-form-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: '0.8rem', alignItems: 'end' }}>
           <input
             type="text"
             placeholder="Buscar profesor, código, equipo o categoría..."
@@ -1151,7 +1149,7 @@ function ReportesPanel() {
         </div>
       </div>
 
-      <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
+      <div className="panel" style={{ padding: '0', overflow: 'hidden' }}>
         {error && <div className="feedback error" style={{ margin: '1rem' }}>{error}</div>}
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
             <thead>
@@ -1526,7 +1524,7 @@ function CategoriasPanel() {
         </small>
       </div>
 
-      <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
+      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
         {error && <div className="feedback error" style={{ margin: "1rem" }}>{error}</div>}
 
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
@@ -1661,7 +1659,7 @@ function CategoriasPanel() {
           {editingEquipoId && (
             <form onSubmit={handleSaveEquipo} style={{ marginTop: "1rem", display: "grid", gap: "0.6rem" }}>
               <h4 style={{ margin: 0 }}>Editar equipo de la categoría</h4>
-              <div className="admin-3col-basic">
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "0.6rem" }}>
                 <input
                   type="text"
                   value={equipoNombre}
@@ -1853,7 +1851,7 @@ function ProfesoresPanel() {
       <div className="panel" style={{ marginBottom: "1rem" }}>
         <h3 style={{ marginTop: 0 }}>{editingId ? "Editar Profesor" : "Agregar Profesor"}</h3>
         <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.6rem", alignItems: "center" }}>
-          <div className="admin-action-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr auto", gap: "0.6rem", alignItems: "center" }}>
             <input
               type="text"
               placeholder="Código"
@@ -1913,7 +1911,7 @@ function ProfesoresPanel() {
         </small>
       </div>
 
-      <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
+      <div className="panel" style={{ padding: 0, overflow: "hidden" }}>
         {error && <div className="feedback error" style={{ margin: "1rem" }}>{error}</div>}
 
         <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>

@@ -917,6 +917,10 @@ setSelectedEquipoIds([]);
           color: #1d4ed8;
           box-shadow: 0 10px 24px rgba(37, 99, 235, 0.08);
         }
+        .quick-chip:focus-visible {
+          outline: 2px solid var(--brand-primary);
+          outline-offset: 2px;
+        }
         .inventory-toolbar {
           display: flex;
           justify-content: space-between;
@@ -928,7 +932,7 @@ setSelectedEquipoIds([]);
         .section-kicker {
           color: var(--brand-primary);
           font-size: 0.82rem;
-          font-weight: 800;
+          fontWeight: 800;
           letter-spacing: 0.08em;
           text-transform: uppercase;
         }
@@ -981,6 +985,29 @@ setSelectedEquipoIds([]);
             opacity: 0;
             transform: translate(calc(var(--end-x) * 1px), calc(var(--end-y) * 1px)) scale(0.42);
           }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .fly-token {
+            animation: none;
+            opacity: 0;
+          }
+          .eq-item,
+          .cart-panel,
+          .loan-card,
+          .nav-btn {
+            transition: none;
+          }
+        }
+        .a11y-sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
         `}
       </style>
@@ -1153,6 +1180,8 @@ setSelectedEquipoIds([]);
                       alignItems: 'center',
                       gap: '0.5rem'
                     }}
+                    aria-pressed={selectedCategoriaId === null}
+                    aria-label="Ver todos los equipos"
                     >
                       <span>Todas</span>
                     </button>
@@ -1358,13 +1387,15 @@ setSelectedEquipoIds([]);
                       const selectedCount = selectedEquipoIds.filter((id) => id === eq.id).length;
                       const tone = getEquipoTone(eq);
                       return (
-                        <button
+<button
                           key={eq.id}
                           type="button"
                           className={`eq-item ${isAvail ? 'available' : 'unavailable'} ${isSelected ? 'selected' : ''}`}
                           onClick={(event) => handleToggleEquipo(eq, event.currentTarget)}
                           disabled={!isAvail}
                           style={{ borderColor: isSelected ? tone.border : undefined }}
+                          aria-pressed={isAvail ? isSelected : undefined}
+                          aria-label={`${eq.nombre_equipo} de ${eq.categoria_nombre}. ${isAvail ? getEquipoSupportingText(eq) : 'No disponible'}${isSelected ? '. Ya seleccionado' : ''}`}
                         >
                           <div className="eq-card-top">
                             <span
@@ -1411,13 +1442,13 @@ setSelectedEquipoIds([]);
       )}
 
       {hdmiPromptEquipo ? (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="hdmi-modal-title">
           <div className="modal-card" style={{ width: 'min(620px, 100%)', textAlign: 'center' }}>
             <div>
               <div style={{ color: 'var(--brand-primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>
                 Accesorio sugerido
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.8rem' }}>¿Tambien necesita HDMI?</h3>
+              <h3 id="hdmi-modal-title" style={{ margin: 0, fontSize: '1.8rem' }}>¿Tambien necesita HDMI?</h3>
             </div>
             <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '480px', margin: '0 auto' }}>
               Se selecciono <strong style={{ color: 'var(--text-primary)' }}>{hdmiPromptEquipo.nombre_equipo}</strong>. Si tambien necesita HDMI, se agrega al prestamo ahora mismo.
@@ -1437,30 +1468,33 @@ setSelectedEquipoIds([]);
         </div>
       ) : null}
 
-      {confirmModalOpen ? (
-        <div className="modal-overlay">
+{confirmModalOpen ? (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
           <div className="modal-card">
             <div>
               <div style={{ color: 'var(--brand-primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>
                 Confirmar prestamo
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.9rem' }}>Revisa lo que se va a registrar</h3>
+              <h3 id="confirm-modal-title" style={{ margin: 0, fontSize: '1.9rem' }}>Revisa lo que se va a registrar</h3>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }} role="list" aria-label="Equipos seleccionados">
               {selectedEquiposSummary.map(({ equipo, count }) => (
-                <span key={`${equipo.id}-${count}`} className="selection-pill">
+                <span key={`${equipo.id}-${count}`} className="selection-pill" role="listitem">
                   {equipo.nombre_equipo}{count > 1 ? ` x${count}` : ""}
                 </span>
               ))}
             </div>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 700 }}>Observaciones del profesor</label>
+              <label htmlFor="observaciones-modal" style={{ fontWeight: 700 }}>Observaciones del profesor</label>
               <textarea
+                id="observaciones-modal"
                 className="kiosk-textarea"
                 value={observacionesEntrega}
                 onChange={(e) => setObservacionesEntrega(e.target.value)}
-                placeholder="Ej. No estaba este control, me lleve otro en su lugar."
+                placeholder="Ej. No estaba este control, me llevo otro en su lugar."
+                aria-describedby="observaciones-help"
               />
+              <span id="observaciones-help" className="a11y-sr-only">Ingrese cualquier observación adicional sobre el préstamo.</span>
             </div>
             <div className="modal-actions">
               <button type="button" className="modal-secondary-btn" onClick={() => setConfirmModalOpen(false)}>
@@ -1475,18 +1509,18 @@ setSelectedEquipoIds([]);
       ) : null}
 
       {successModalOpen ? (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="success-modal-title" aria-live="polite">
           <div className="modal-card success-modal-card">
             <div className="success-hero">
-              <div className="success-badge">✓</div>
+              <div className="success-badge" aria-hidden="true">✓</div>
               <div style={{ color: '#15803d', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', fontSize: '0.9rem' }}>
                 Prestamo creado con exito
               </div>
-              <h3 style={{ margin: 0, fontSize: '2.3rem', color: '#14532d', lineHeight: 1.05 }}>
+              <h3 id="success-modal-title" style={{ margin: 0, fontSize: '2.3rem', color: '#14532d', lineHeight: 1.05 }}>
                 Registro confirmado
               </h3>
             </div>
-            <div className="success-panel">
+            <div className="success-panel" role="status">
               El prestamo quedo guardado correctamente. Puedes registrar algo mas o cerrar la sesion del profesor actual.
               <br />
               <strong>Cuida bien tus equipos.</strong>
@@ -1510,7 +1544,7 @@ setSelectedEquipoIds([]);
                 Cerrar sesion
               </button>
             </div>
-            <div className="success-footer-note">
+            <div className="success-footer-note" role="status">
               La sesion sigue activa hasta que elijas una de estas opciones.
             </div>
           </div>
@@ -1518,21 +1552,22 @@ setSelectedEquipoIds([]);
       ) : null}
 
       {returnAllModalOpen ? (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="return-all-modal-title">
           <div className="modal-card" style={{ width: 'min(680px, 100%)' }}>
             <div>
               <div style={{ color: 'var(--brand-primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>
                 Devolucion masiva
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.9rem' }}>¿Seguro que tienes todas estas cosas?</h3>
+              <h3 id="return-all-modal-title" style={{ margin: 0, fontSize: '1.9rem' }}>¿Seguro que tienes todas estas cosas?</h3>
             </div>
             <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
               Este proceso devolvera todos los prestamos activos del profesor actual para agilizar la entrega.
             </div>
-            <div style={{ display: 'grid', gap: '0.75rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+            <div style={{ display: 'grid', gap: '0.75rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '0.25rem' }} role="list" aria-label="Equipos a devolver">
               {misPrestamos.map((prestamo) => (
                 <div
                   key={`return-all-${prestamo.id}`}
+                  role="listitem"
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',

@@ -66,6 +66,18 @@ export type RestoreBackupResult = {
   restored_at_epoch: number;
 };
 
+export type PrestamoRapidoAlumno = {
+  id: number;
+  nombre_alumno: string;
+  codigo_alumno: string;
+  nombre_equipo: string;
+  persona_prestamo: string;
+  fecha_salida: string;
+  fecha_retorno: string | null;
+  estado: string;
+  observaciones: string | null;
+};
+
 let dbPromise: Promise<Database> | null = null;
 let dbUrlPromise: Promise<string> | null = null;
 let runtimeStorageMode: "tauri-sqlite" | "blocked" = "blocked";
@@ -116,6 +128,17 @@ const schemaStatements = [
   `CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS prestamos_rapidos_alumnos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre_alumno TEXT NOT NULL,
+    codigo_alumno TEXT NOT NULL,
+    nombre_equipo TEXT NOT NULL,
+    persona_prestamo TEXT NOT NULL,
+    fecha_salida DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_retorno DATETIME,
+    estado TEXT DEFAULT 'activo',
+    observaciones TEXT
   )`,
 ];
 
@@ -1046,4 +1069,70 @@ export const restoreBackupFromFile = async (file: File): Promise<RestoreBackupRe
     dbPromise = null;
     throw error;
   }
+};
+
+export const getPrestamosRapidosAlumnos = async (filters?: {
+  busqueda?: string;
+  estado?: string;
+}): Promise<PrestamoRapidoAlumno[]> => {
+  const db = await getDb();
+  const conditions: string[] = [];
+  const params: Array<string | number> = [];
+
+  if (filters?.busqueda?.trim()) {
+    const term = `%${filters.busqueda.trim()}%`;
+    conditions.push("(nombre_alumno LIKE ? OR codigo_alumno LIKE ? OR nombre_equipo LIKE ? OR persona_prestamo LIKE ?)");
+    params.push(term, term, term, term);
+  }
+
+  if (filters?.estado?.trim()) {
+    conditions.push("estado = ?");
+    params.push(filters.estado.trim());
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+  return db.select<PrestamoRapidoAlumno[]>(
+    `SELECT * FROM prestamos_rapidos_alumnos ${whereClause} ORDER BY fecha_salida DESC LIMIT 500`,
+    params
+  );
+};
+
+export const createPrestamoRapidoAlumno = async (input: {
+  nombre_alumno: string;
+  codigo_alumno: string;
+  nombre_equipo: string;
+  persona_prestamo: string;
+  observaciones?: string;
+}): Promise<void> => {
+  if (!input.nombre_alumno.trim() || !input.codigo_alumno.trim() || !input.nombre_equipo.trim() || !input.persona_prestamo.trim()) {
+    throw new Error("Todos los campos son obligatorios.");
+  }
+
+  const db = await getDb();
+  await db.execute(
+    `INSERT INTO prestamos_rapidos_alumnos (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      input.nombre_alumno.trim(),
+      input.codigo_alumno.trim(),
+      input.nombre_equipo.trim(),
+      input.persona_prestamo.trim(),
+      (input.observaciones ?? "").trim(),
+    ]
+  );
+};
+
+export const marcarPrestamoRapidoDevuelto = async (id: number): Promise<void> => {
+  const db = await getDb();
+  const fechaRetorno = getCurrentLocalDateTime();
+  await db.execute(
+    "UPDATE prestamos_rapidos_alumnos SET estado = 'devuelto', fecha_retorno = ? WHERE id = ?",
+    [fechaRetorno, id]
+  );
+};
+
+export const deletePrestamoRapidoAlumno = async (id: number): Promise<void> => {
+  const db = await getDb();
+  await db.execute("DELETE FROM prestamos_rapidos_alumnos WHERE id = ?", [id]);
 };

@@ -914,6 +914,8 @@ function ReportesPanel() {
   const [editingObservacionId, setEditingObservacionId] = useState<number | null>(null);
   const [adminCondicion, setAdminCondicion] = useState("");
   const [adminNotas, setAdminNotas] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [reportePdf, setReportePdf] = useState({
     title: "Reporte de préstamos P15",
     subtitle: "Historial detallado de préstamos, devoluciones y observaciones administrativas.",
@@ -933,7 +935,7 @@ function ReportesPanel() {
       setLoading(true);
       const [data, categoriasRows] = await Promise.all([
         getReportePrestamos({
-          busqueda: searchTerm,
+          busqueda: debouncedSearch,
           estado: estadoFiltro,
           categoriaId: categoriaFiltro ? Number(categoriaFiltro) : null,
           fechaDesde,
@@ -987,8 +989,22 @@ function ReportesPanel() {
   };
 
   useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 350);
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
     void loadReportes();
-  }, [searchTerm, estadoFiltro, categoriaFiltro, fechaDesde, fechaHasta]);
+  }, [debouncedSearch, estadoFiltro, categoriaFiltro, fechaDesde, fechaHasta]);
 
   const handlePrintReportes = () => {
     const summaryCards = reportePdf.includeSummary ? `

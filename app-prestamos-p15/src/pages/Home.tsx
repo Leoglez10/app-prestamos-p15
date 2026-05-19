@@ -82,7 +82,27 @@ export default function Home() {
           <span style={{ fontSize: 'clamp(0.95rem, 2.05vh, 1.08rem)', opacity: 0.85, marginTop: '0.55rem', textAlign: 'center' }}> Préstamo y devolución rápida con tu código UDG</span>
         </Link>
 
-        <Link to="/admin" className="hero-button secondary home-card" style={{
+        <Link to="/prestamo-rapido" className="hero-button secondary home-card" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 'clamp(1.15rem, 2.35vh, 2.2rem)',
+          background: 'var(--brand-secondary, #10b981)',
+          color: '#ffffff',
+          textDecoration: 'none',
+          borderRadius: '24px',
+          width: 'clamp(260px, 31vw, 360px)',
+          minHeight: 'clamp(220px, 27vh, 300px)',
+          transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+          boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
+        }}>
+          <span className="home-card-emoji" style={{ fontSize: 'clamp(1.8rem, 3.2vh, 2.6rem)', marginBottom: '0.55rem' }}>📦</span>
+          <span style={{ fontSize: 'clamp(1.32rem, 2.8vh, 1.75rem)', fontWeight: 'bold' }}>Préstamo Rápido</span>
+          <span style={{ fontSize: 'clamp(0.95rem, 2.05vh, 1.08rem)', opacity: 0.85, marginTop: '0.55rem', textAlign: 'center' }}> Préstamos a alumnos sin autenticación</span>
+        </Link>
+
+        <Link to="/admin" className="hero-button tertiary home-card" style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -112,9 +132,13 @@ export default function Home() {
           boxShadow: 0 20px 40px rgba(37, 99, 235, 0.4) !important;
           filter: brightness(0.9);
         }
-        .hero-button.secondary:hover {
+.hero-button.secondary:hover {
           border-color: var(--brand-primary) !important;
-          boxShadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+        }
+        .hero-button.tertiary:hover {
+          border-color: var(--brand-primary) !important;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
         }
         @media (min-width: 1280px) and (min-height: 800px) {
           .home-main {
@@ -138,16 +162,11 @@ export default function Home() {
             margin: 0 auto !important;
           }
           .home-actions {
-            flex-wrap: nowrap !important;
+            flex-wrap: wrap !important;
             gap: 1.5rem !important;
             margin-top: 0.8rem !important;
             justify-content: center !important;
-            max-width: 1100px !important;
-          }
-          .home-card {
-            width: 400px !important;
-            min-height: 310px;
-            padding: 1.9rem !important;
+            max-width: 1200px !important;
           }
           .home-card-emoji {
             font-size: 2.7rem !important;

@@ -34,6 +34,9 @@ jobs:
         working-directory: ./app-prestamos-p15
         run: npm ci
 
+      - name: Install Bun
+        run: npm install -g bun
+
       - name: build tauri app
         uses: tauri-apps/tauri-action@v0
         env:

@@ -16,16 +16,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install Rust
         uses: dtolnay/rust-action@stable
@@ -33,7 +28,7 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Install frontend dependencies
-        run: pnpm install
+        run: npm install
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0

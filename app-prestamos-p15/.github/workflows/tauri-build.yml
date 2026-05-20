@@ -23,20 +23,23 @@ jobs:
           cache: "npm"
 
       - name: Install Rust
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
 
       - name: Install frontend dependencies
-        run: npm install
+        working-directory: ./app-prestamos-p15
+        run: npm ci
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          projectPath: ./app-prestamos-p15
           tagName: ""
           releaseName: ""
           releaseBody: ""
           releaseDraft: false
           prerelease: false
+          args: --target x86_64-pc-windows-msvc

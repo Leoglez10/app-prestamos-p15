@@ -28,7 +28,7 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Install Bun
-        run: npm install -g bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install frontend dependencies
         working-directory: ./app-prestamos-p15

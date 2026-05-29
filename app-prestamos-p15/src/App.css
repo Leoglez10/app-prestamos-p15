@@ -413,3 +413,7 @@ button.ghost {
   }
   .admin-form-grid { align-items: stretch; }
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

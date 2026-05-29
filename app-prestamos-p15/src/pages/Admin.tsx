@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, FormEvent, ChangeEvent, useRef } from "react";
 import { Link } from "react-router-dom";
 import logoP15 from "../../img/logo-p15.png";
 import {
@@ -905,6 +905,7 @@ function ReportesPanel() {
   const [reportes, setReportes] = useState<ReportePrestamo[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
@@ -930,29 +931,31 @@ function ReportesPanel() {
     includeAdminObservations: true,
   });
 
-  const loadReportes = async () => {
+  const loadReportes = useCallback(async () => {
+    const isFirstLoad = reportes.length === 0;
     try {
-      setLoading(true);
-      const [data, categoriasRows] = await Promise.all([
-        getReportePrestamos({
-          busqueda: debouncedSearch,
-          estado: estadoFiltro,
-          categoriaId: categoriaFiltro ? Number(categoriaFiltro) : null,
-          fechaDesde,
-          fechaHasta,
-          limit: 1000,
-        }),
-        getCategorias(),
-      ]);
+      if (isFirstLoad) {
+        setLoading(true);
+      } else {
+        setIsSearching(true);
+      }
+      const data = await getReportePrestamos({
+        busqueda: debouncedSearch,
+        estado: estadoFiltro,
+        categoriaId: categoriaFiltro ? Number(categoriaFiltro) : null,
+        fechaDesde,
+        fechaHasta,
+        limit: 1000,
+      });
       setReportes(data);
-      setCategorias(categoriasRows);
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al cargar reportes");
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
-  };
+  }, [debouncedSearch, estadoFiltro, categoriaFiltro, fechaDesde, fechaHasta, reportes.length]);
 
   const resetObservaciones = () => {
     setEditingObservacionId(null);
@@ -1003,8 +1006,12 @@ function ReportesPanel() {
   }, [searchTerm]);
 
   useEffect(() => {
+    getCategorias().then(setCategorias).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     void loadReportes();
-  }, [debouncedSearch, estadoFiltro, categoriaFiltro, fechaDesde, fechaHasta]);
+  }, [loadReportes]);
 
   const handlePrintReportes = () => {
     const summaryCards = reportePdf.includeSummary ? `
@@ -1098,13 +1105,13 @@ function ReportesPanel() {
     );
   };
 
-  const reportesSummary = {
+  const reportesSummary = useMemo(() => ({
     activos: reportes.filter((reporte) => reporte.estado_prestamo === "activo").length,
     devueltos: reportes.filter((reporte) => reporte.estado_prestamo === "devuelto").length,
     historicos: reportes.filter((reporte) => reporte.estado_prestamo === "historico").length,
     conObsAdmin: reportes.filter((reporte) => Boolean(reporte.admin_condicion_entrega || reporte.admin_notas_retorno)).length,
     totalItems: reportes.reduce((sum, r) => sum + (r.cantidad_prestada || 1), 0),
-  };
+  }), [reportes]);
 
   if (loading) return <div>Cargando reportes...</div>;
 
@@ -1167,7 +1174,28 @@ function ReportesPanel() {
         </div>
       </div>
 
-      <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
+      <div className="panel" style={{ padding: '0', overflowX: 'auto', position: 'relative' }}>
+        {isSearching && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(255,255,255,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            borderRadius: 'inherit',
+          }}>
+            <div style={{
+              width: 28,
+              height: 28,
+              border: '3px solid var(--border-subtle)',
+              borderTopColor: '#0f766e',
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }} />
+          </div>
+        )}
         {error && <div className="feedback error" style={{ margin: '1rem' }}>{error}</div>}
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
             <thead>

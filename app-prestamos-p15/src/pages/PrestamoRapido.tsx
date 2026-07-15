@@ -10,6 +10,9 @@ import {
   getRuntimeStorageReason,
   initializeInventoryDb,
 } from "../hooks/useInventory";
+import { useAuth } from "../auth/AuthContext";
+import { LoginForm } from "../auth/LoginForm";
+import { SessionBadge } from "../auth/SessionBadge";
 
 type FilterEstado = "todos" | "activo" | "devuelto";
 
@@ -19,6 +22,7 @@ interface FieldError {
 }
 
 export default function PrestamoRapido() {
+  const { state, login, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -27,7 +31,6 @@ export default function PrestamoRapido() {
   const [nombreAlumno, setNombreAlumno] = useState("");
   const [codigoAlumno, setCodigoAlumno] = useState("");
   const [nombreEquipo, setNombreEquipo] = useState("");
-  const [personaPrestamo, setPersonaPrestamo] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
   const [historial, setHistorial] = useState<PrestamoRapidoAlumno[]>([]);
@@ -39,7 +42,6 @@ export default function PrestamoRapido() {
   const nombreAlumnoRef = useRef<HTMLInputElement>(null);
   const codigoAlumnoRef = useRef<HTMLInputElement>(null);
   const nombreEquipoRef = useRef<HTMLInputElement>(null);
-  const personaPrestamoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -83,9 +85,6 @@ export default function PrestamoRapido() {
     if (!nombreEquipo.trim()) {
       errors.push({ field: "nombreEquipo", message: "El objeto prestado es obligatorio." });
     }
-    if (!personaPrestamo.trim()) {
-      errors.push({ field: "personaPrestamo", message: "La persona que presta es obligatoria." });
-    }
     setFieldErrors(errors);
     if (errors.length > 0 && firstErrorRef.current) {
       firstErrorRef.current.focus();
@@ -97,12 +96,26 @@ export default function PrestamoRapido() {
     return fieldErrors.find((e) => e.field === field)?.message;
   };
 
+  const handleLogin = async (codigo: string, _pin: string): Promise<void> => {
+    try {
+      await initializeInventoryDb();
+      await login(codigo, _pin);
+    } catch (error) {
+      // The LoginForm owns its own error display, so we just re-throw.
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
     if (!validateFields()) return;
+    if (state.status !== "authenticated") {
+      setErrorMessage("Tu sesión expiró. Vuelve a iniciar sesión.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -110,13 +123,12 @@ export default function PrestamoRapido() {
         nombre_alumno: nombreAlumno,
         codigo_alumno: codigoAlumno,
         nombre_equipo: nombreEquipo,
-        persona_prestamo: personaPrestamo,
         observaciones: observaciones,
+        admin: state.session.admin,
       });
       setNombreAlumno("");
       setCodigoAlumno("");
       setNombreEquipo("");
-      setPersonaPrestamo("");
       setObservaciones("");
       setFieldErrors([]);
       setSuccessMessage("Préstamo registrado correctamente.");
@@ -132,7 +144,6 @@ export default function PrestamoRapido() {
     setNombreAlumno("");
     setCodigoAlumno("");
     setNombreEquipo("");
-    setPersonaPrestamo("");
     setObservaciones("");
     setFieldErrors([]);
     setErrorMessage("");
@@ -182,6 +193,35 @@ export default function PrestamoRapido() {
     );
   }
 
+  if (state.status !== "authenticated") {
+    return (
+      <div className="prestamo-auth-page">
+        <header className="prestamo-auth-header">
+          <Link to="/" className="prestamo-auth-back" aria-label="Volver a la página principal">
+            <span aria-hidden="true">←</span>
+            <span>Volver</span>
+          </Link>
+          <img src={logoP15} alt="Preparatoria Quince" className="prestamo-auth-header-logo" />
+        </header>
+        <main className="prestamo-auth-gate">
+          <section className="prestamo-auth-card" aria-labelledby="prestamo-auth-title">
+            <div className="prestamo-auth-intro">
+              <div className="prestamo-auth-logo-wrap" aria-hidden="true">
+                <img src={logoP15} alt="" />
+              </div>
+              <div>
+                <p className="prestamo-auth-eyebrow">Préstamos P15</p>
+                <h1 id="prestamo-auth-title">Acceso requerido</h1>
+                <p>Identifícate para registrar un préstamo rápido.</p>
+              </div>
+            </div>
+            <LoginForm onSubmit={handleLogin} />
+          </section>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="prestamo-rapido-page">
       <header className="page-header">
@@ -193,6 +233,8 @@ export default function PrestamoRapido() {
       </header>
 
       <div className="content-wrapper">
+        <SessionBadge session={state.session} onLogout={logout} />
+
         <section className="form-card" aria-labelledby="form-title">
           <div className="form-card-header">
             <h1 id="form-title" className="form-title">
@@ -220,8 +262,8 @@ export default function PrestamoRapido() {
           <form onSubmit={handleSubmit} noValidate aria-describedby="form-description">
             <p id="form-description" className="visually-hidden">
               Formulario para registrar un préstamo rápido a un alumno.
-              Complete todos los campos obligatorios: nombre del alumno, código UDG,
-              objeto prestado y persona que realiza el préstamo.
+              Complete todos los campos obligatorios: nombre del alumno, código UDG y
+              objeto prestado. La identidad del administrador se registra automáticamente.
             </p>
 
             <div className="form-grid">
@@ -310,35 +352,6 @@ export default function PrestamoRapido() {
                 {getFieldError("nombreEquipo") && (
                   <span id="nombreEquipo-error" className="field-error" role="alert">
                     {getFieldError("nombreEquipo")}
-                  </span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="personaPrestamo" className="form-label">
-                  Persona que Prestó
-                  <span className="required-indicator" aria-hidden="true">*</span>
-                </label>
-                <input
-                  ref={personaPrestamoRef}
-                  id="personaPrestamo"
-                  type="text"
-                  value={personaPrestamo}
-                  onChange={(e) => {
-                    setPersonaPrestamo(e.target.value);
-                    setFieldErrors((prev) => prev.filter((err) => err.field !== "personaPrestamo"));
-                  }}
-                  placeholder="Ej. Prof. Edgar Aguilar"
-                  className={`form-input ${getFieldError("personaPrestamo") ? "input-error" : ""}`}
-                  disabled={isSubmitting}
-                  autoComplete="off"
-                  aria-required="true"
-                  aria-invalid={getFieldError("personaPrestamo") ? "true" : "false"}
-                  aria-describedby={getFieldError("personaPrestamo") ? "personaPrestamo-error" : undefined}
-                />
-                {getFieldError("personaPrestamo") && (
-                  <span id="personaPrestamo-error" className="field-error" role="alert">
-                    {getFieldError("personaPrestamo")}
                   </span>
                 )}
               </div>
@@ -444,7 +457,7 @@ export default function PrestamoRapido() {
                     <th scope="col">Alumno</th>
                     <th scope="col">Código</th>
                     <th scope="col">Objeto</th>
-                    <th scope="col">Prestó</th>
+                    <th scope="col">Autorizado por</th>
                     <th scope="col">Fecha Salida</th>
                     <th scope="col">Estado</th>
                     <th scope="col">Acciones</th>
@@ -456,7 +469,9 @@ export default function PrestamoRapido() {
                       <td data-label="Alumno" className="cell-primary">{item.nombre_alumno}</td>
                       <td data-label="Código" className="cell-secondary">{item.codigo_alumno}</td>
                       <td data-label="Objeto">{item.nombre_equipo}</td>
-                      <td data-label="Prestó" className="cell-secondary">{item.persona_prestamo}</td>
+                      <td data-label="Autorizado por" className="cell-secondary">
+                        {item.autorizante_nombre || item.persona_prestamo || "—"}
+                      </td>
                       <td data-label="Fecha" className="cell-secondary">{formatDate(item.fecha_salida)}</td>
                       <td data-label="Estado">
                         <span className={`status-badge status-${item.estado}`} aria-label={`Estado: ${item.estado === "activo" ? "Activo" : "Devuelto"}`}>

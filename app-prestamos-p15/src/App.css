@@ -417,3 +417,173 @@ button.ghost {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ===========================================================
+ * Admin auth gate (admin-auth-prestamo-rapido)
+ * Shared across Admin and PrestamoRapido pages.
+ * =========================================================== */
+
+.login-form { display: grid; gap: 1rem; }
+.login-form-header { display: grid; gap: 0.2rem; margin-bottom: 0.35rem; }
+.login-form-title { margin: 0; font-size: 1.4rem; color: var(--text-primary); }
+.login-form-subtitle { margin: 0; color: var(--text-secondary); font-size: 0.92rem; line-height: 1.45; }
+
+.login-form-field { display: grid; gap: 0.35rem; font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+.login-form-field input {
+  font-family: inherit; font-size: 1rem; padding: 0.7rem 0.9rem; border-radius: 12px;
+  border: 1.5px solid var(--border-subtle); background: var(--surface-sunken); color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.login-form-field input:focus {
+  outline: none; border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); background: var(--surface-default);
+}
+
+.login-form-submit {
+  background: var(--brand-primary); color: #fff; border: none; font-weight: 700;
+  font-size: 0.98rem; border-radius: 12px; padding: 0.7rem 1rem; cursor: pointer; min-height: 44px;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.login-form-submit:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+.login-form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* /prestamo-rapido renders its access gate before the page-local styles below
+   that route. Keep the unauthenticated layout here so it is always available. */
+.prestamo-auth-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: clamp(1rem, 3vw, 2rem);
+  background:
+    radial-gradient(circle at 14% 12%, rgba(37, 99, 235, 0.14), transparent 30rem),
+    linear-gradient(145deg, #eef4fb 0%, #e2e8f0 100%);
+}
+
+.prestamo-auth-header {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prestamo-auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.prestamo-auth-back:hover { background: rgba(255, 255, 255, 0.72); transform: translateX(-2px); }
+.prestamo-auth-back:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.prestamo-auth-header-logo { width: 54px; height: 54px; object-fit: contain; }
+
+.prestamo-auth-gate {
+  display: grid;
+  place-items: center;
+  padding: clamp(2rem, 7vh, 5rem) 0;
+}
+
+.prestamo-auth-card {
+  width: min(460px, 100%);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 65px rgba(15, 23, 42, 0.14);
+}
+
+.prestamo-auth-intro {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.prestamo-auth-logo-wrap {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: 18px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+}
+.prestamo-auth-logo-wrap img { width: 44px; height: 44px; object-fit: contain; }
+.prestamo-auth-eyebrow {
+  margin: 0 0 0.25rem;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.prestamo-auth-intro h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 1.9rem); line-height: 1.15; }
+.prestamo-auth-intro > div > p:last-child { margin: 0.45rem 0 0; color: var(--text-secondary); line-height: 1.45; }
+
+@media (max-width: 520px) {
+  .prestamo-auth-page { padding: 0.85rem; }
+  .prestamo-auth-header-logo { width: 44px; height: 44px; }
+  .prestamo-auth-gate { align-items: start; padding-top: 2rem; }
+  .prestamo-auth-card { border-radius: 20px; }
+  .prestamo-auth-intro { align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prestamo-auth-back,
+  .login-form-submit { transition: none; }
+}
+
+.session-badge {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.85rem; flex-wrap: wrap; padding: 0.65rem 0.95rem; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 23, 42, 0.04));
+  border: 1px solid rgba(37, 99, 235, 0.18); color: var(--text-primary);
+  font-size: 0.95rem; line-height: 1.4;
+}
+.session-badge-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: rgba(15, 23, 42, 0.08); padding: 0.05rem 0.4rem; border-radius: 6px; font-size: 0.9em;
+}
+.session-badge-time { font-weight: 700; color: var(--brand-primary); }
+.session-badge-logout {
+  border-radius: 10px; padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 700;
+  background: #7f1d1d; color: #fff; border: 1px solid #7f1d1d; cursor: pointer;
+}
+.session-badge-logout:hover { filter: brightness(1.05); }
+
+.idle-lock-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.62);
+  display: grid; place-items: center; z-index: 9999; padding: 1.5rem;
+}
+.idle-lock-card {
+  background: var(--surface-default); border-radius: 18px; padding: 1.75rem;
+  width: min(420px, 100%); box-shadow: 0 20px 60px rgba(15, 23, 42, 0.4);
+  display: grid; gap: 0.85rem;
+}
+.idle-lock-title { margin: 0; font-size: 1.3rem; color: var(--text-primary); }
+.idle-lock-subtitle { margin: 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.45; }
+.idle-lock-form { display: grid; gap: 0.65rem; }
+.idle-lock-field input {
+  font-family: inherit; font-size: 1.05rem; padding: 0.7rem 0.9rem; border-radius: 12px;
+  border: 1.5px solid var(--border-subtle); background: var(--surface-sunken);
+  color: var(--text-primary); width: 100%; box-sizing: border-box;
+}
+.idle-lock-field input:focus {
+  outline: none; border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); background: var(--surface-default);
+}
+.idle-lock-submit {
+  background: var(--brand-primary); color: #fff; border: none; font-weight: 700;
+  font-size: 0.98rem; border-radius: 12px; padding: 0.7rem 1rem; cursor: pointer; min-height: 44px;
+}
+.idle-lock-submit:disabled { opacity: 0.6; cursor: not-allowed; }

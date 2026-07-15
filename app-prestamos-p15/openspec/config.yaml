@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Tauri v2 + React 19 + Vite 7 + react-router-dom 7 + TypeScript 5.8
+  Backend: Rust (src-tauri/src/lib.rs) with 4 Tauri commands
+  Persistence: SQLite local via @tauri-apps/plugin-sql (no remote)
+  Architecture: Single-window desktop app (com.p15.prestamos)
+  Testing: No test framework installed; no CI configured
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Note security implications for auth-related changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Explicitly mention unauthenticated attack surface when relevant
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+    - Prefer hexagonal / clean boundaries for new auth layer
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing code patterns in useInventory.ts and Admin.tsx
+      - Do not touch -LeoLaptop duplicate files
+      - Preserve existing sessionStorage pattern or migrate deliberately
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+testing:
+  strict_tdd: false
+  runner: none
+  test_command: ""
+  layers:
+    unit: false
+    integration: false
+    e2e: false
+  coverage: false
+  quality:
+    linter: false
+    type_checker: "npx tsc --noEmit"
+    formatter: false
+
+persistence: openspec
+delivery_strategy: auto-forecast
+review_budget_lines: 800

@@ -76,6 +76,10 @@ export type PrestamoRapidoAlumno = {
   fecha_retorno: string | null;
   estado: string;
   observaciones: string | null;
+  // Authorizing admin identity (added by admin-auth-prestamo-rapido).
+  id_admin: number | null;
+  autorizante_codigo: string | null;
+  autorizante_nombre: string | null;
 };
 
 let dbPromise: Promise<Database> | null = null;
@@ -118,12 +122,6 @@ const schemaStatements = [
     fecha_retorno DATETIME,
     observaciones_entrega TEXT,
     FOREIGN KEY (equipo_id) REFERENCES inventario(id)
-  )`,
-  `CREATE TABLE IF NOT EXISTS admin_users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY,
@@ -269,6 +267,17 @@ const prepareDatabase = async (db: Database): Promise<void> => {
     await db.execute("ALTER TABLE categorias ADD COLUMN es_prestable INTEGER DEFAULT 1");
   }
 
+  const prestamosRapidosAlumnosColumns = await getTableColumns(db, "prestamos_rapidos_alumnos");
+  if (!prestamosRapidosAlumnosColumns.includes("id_admin")) {
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN id_admin INTEGER REFERENCES profesores(id) ON DELETE SET NULL");
+  }
+  if (!prestamosRapidosAlumnosColumns.includes("autorizante_codigo")) {
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN autorizante_codigo TEXT");
+  }
+  if (!prestamosRapidosAlumnosColumns.includes("autorizante_nombre")) {
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN autorizante_nombre TEXT");
+  }
+
   const profesoresColumns = await getTableColumns(db, "profesores");
   if (!profesoresColumns.includes("es_admin")) {
     await db.execute("ALTER TABLE profesores ADD COLUMN es_admin INTEGER DEFAULT 0");
@@ -288,10 +297,7 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   await db.execute(
     `INSERT INTO profesores (codigo, nombre, es_admin, admin_pin)
      VALUES ('223992647', 'Administrador P15', 1, ?)
-     ON CONFLICT(codigo) DO UPDATE SET
-       nombre = COALESCE(NULLIF(profesores.nombre, ''), 'Administrador P15'),
-       es_admin = 1,
-       admin_pin = COALESCE(NULLIF(profesores.admin_pin, ''), excluded.admin_pin)`,
+     ON CONFLICT(codigo) DO NOTHING`,
     [DEFAULT_ADMIN_PIN]
   );
 
@@ -544,6 +550,33 @@ export const loginAdmin = async (codigo: string, pin: string): Promise<Profesor 
     [codigo.trim(), DEFAULT_ADMIN_PIN, pin.trim(), codigo.trim(), pin.trim(), DEFAULT_ADMIN_PIN]
   );
   return rows.length > 0 ? rows[0] : null;
+};
+
+// Code-only admin lookup for the simplified /prestamo-rapido flow. No PIN check,
+// no backdoor clause. Returns the admin row if it exists with es_admin=1, else null.
+export const loginAdminByCode = async (codigo: string): Promise<Profesor | null> => {
+  const db = await getDb();
+  const rows = await db.select<Profesor[]>(
+    `SELECT id, codigo, nombre, COALESCE(es_admin, 0) AS es_admin, admin_pin
+     FROM profesores
+     WHERE codigo = ?
+       AND COALESCE(es_admin, 0) = 1
+     LIMIT 1`,
+    [codigo.trim()]
+  );
+  return rows.length > 0 ? rows[0] : null;
+};
+
+// Re-validates a stored admin session against the DB. Used by the AuthContext on
+// restore (and unlock) to defeat session forgery via hand-crafted localStorage
+// blobs. Returns true only if the profesor row still exists with es_admin=1.
+export const verifyAdminStoredSession = async (adminId: number, codigo: string): Promise<boolean> => {
+  const db = await getDb();
+  const rows = await db.select<{ id: number }[]>(
+    `SELECT id FROM profesores WHERE id = ? AND codigo = ? AND COALESCE(es_admin, 0) = 1 LIMIT 1`,
+    [adminId, codigo]
+  );
+  return rows.length > 0;
 };
 
 export const deleteProfesor = async (id: number): Promise<void> => {
@@ -1093,32 +1126,38 @@ export const getPrestamosRapidosAlumnos = async (filters?: {
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   return db.select<PrestamoRapidoAlumno[]>(
-    `SELECT * FROM prestamos_rapidos_alumnos ${whereClause} ORDER BY fecha_salida DESC LIMIT 500`,
+    `SELECT id, nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo,
+            fecha_salida, fecha_retorno, estado, observaciones,
+            id_admin, autorizante_codigo, autorizante_nombre
+     FROM prestamos_rapidos_alumnos ${whereClause} ORDER BY fecha_salida DESC LIMIT 500`,
     params
   );
 };
 
-export const createPrestamoRapidoAlumno = async (input: {
-  nombre_alumno: string;
-  codigo_alumno: string;
-  nombre_equipo: string;
-  persona_prestamo: string;
-  observaciones?: string;
-}): Promise<void> => {
-  if (!input.nombre_alumno.trim() || !input.codigo_alumno.trim() || !input.nombre_equipo.trim() || !input.persona_prestamo.trim()) {
+export const createPrestamoRapidoAlumno = async (input: import("../auth/types").PrestamoRapidoAlumnoCreate): Promise<void> => {
+  if (!input.admin) {
+    throw new Error("createPrestamoRapidoAlumno requires an authenticated admin");
+  }
+  if (!input.nombre_alumno.trim() || !input.codigo_alumno.trim() || !input.nombre_equipo.trim()) {
     throw new Error("Todos los campos son obligatorios.");
   }
 
   const db = await getDb();
+  const adminNombre = input.admin.nombre.trim();
   await db.execute(
-    `INSERT INTO prestamos_rapidos_alumnos (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO prestamos_rapidos_alumnos
+       (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones,
+        id_admin, autorizante_codigo, autorizante_nombre)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.nombre_alumno.trim(),
       input.codigo_alumno.trim(),
       input.nombre_equipo.trim(),
-      input.persona_prestamo.trim(),
+      adminNombre,
       (input.observaciones ?? "").trim(),
+      input.admin.id,
+      input.admin.codigo.trim(),
+      adminNombre,
     ]
   );
 };

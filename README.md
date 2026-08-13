@@ -5,7 +5,7 @@
 ### Control de inventario y préstamos de equipo audiovisual para la Preparatoria 15 (UDG)
 
 <p align="center">
-  <img src="img/logo-p15.png" alt="Logo Preparatoria 15" width="180"/>
+  <img src="app-prestamos-p15/img/logo-p15.png" alt="Logo Preparatoria 15" width="180"/>
 </p>
 
 [![Estado](https://img.shields.io/badge/estado-activo-success)]()
@@ -79,9 +79,9 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 | Modo | Captura |
 |---|---|
-| **🏠 Inicio** — pantalla central con 3 tarjetas | ![Inicio](docs/img/inicio.png) |
-| **🛠 Admin** — acceso admin (código + PIN) | ![Admin](docs/img/admin.png) |
-| **⚡ Préstamo Rápido** — acceso admin (solo código) | ![Préstamo Rápido](docs/img/prestamo-rapido.png) |
+| **🏠 Inicio** — pantalla central con 3 tarjetas | ![Inicio](app-prestamos-p15/docs/img/inicio.png) |
+| **🛠 Admin** — acceso admin (código + PIN) | ![Admin](app-prestamos-p15/docs/img/admin.png) |
+| **⚡ Préstamo Rápido** — acceso admin (solo código) | ![Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido.png) |
 | **📱 Kiosko** — _(requiere Tauri + SQLite; ver nota)_ | _(pendiente)_ |
 
 </div>
@@ -610,10 +610,10 @@ Usamos versionado simple `MAYOR.MENOR.PARCHE` en `package.json` y `tauri.conf.js
 
 | Doc | Para qué sirve |
 |---|---|
-| [docs/ENGINEERING_HANDBOOK.md](docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
-| [docs/REPO_CLEANUP.md](docs/REPO_CLEANUP.md) | Qué carpetas borrar/archivar |
-| [docs/sqlite-backup-restore-guide.md](docs/sqlite-backup-restore-guide.md) | Backup/restore con scripts Python |
-| [docs/postgres-restore-guide.md](docs/postgres-restore-guide.md) | Migrar desde un Postgres legacy |
+| [docs/ENGINEERING_HANDBOOK.md](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
+| [docs/REPO_CLEANUP.md](app-prestamos-p15/docs/REPO_CLEANUP.md) | Qué carpetas borrar/archivar |
+| [docs/sqlite-backup-restore-guide.md](app-prestamos-p15/docs/sqlite-backup-restore-guide.md) | Backup/restore con scripts Python |
+| [docs/postgres-restore-guide.md](app-prestamos-p15/docs/postgres-restore-guide.md) | Migrar desde un Postgres legacy |
 | [README_INSTALACION.md](README_INSTALACION.md) | Instalación y actualización manual |
 
 ---
@@ -644,6 +644,6 @@ Proyecto de **uso interno educativo** para la Preparatoria 15 (UDG). No está pe
 
 <div align="center">
 
-**¿Dudas?** Revisa la sección [Dudas frecuentes](#-dudas-frecuentes) o el [Handbook de ingeniería](docs/ENGINEERING_HANDBOOK.md) antes de preguntar. Salves un bolígrafo, salven un dato 💾
+**¿Dudas?** Revisa la sección [Dudas frecuentes](#-dudas-frecuentes) o el [Handbook de ingeniería](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) antes de preguntar. Salves un bolígrafo, salven un dato 💾
 
 </div>

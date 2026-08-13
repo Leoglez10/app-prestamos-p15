@@ -425,19 +425,22 @@ button.ghost {
 
 .login-form { display: grid; gap: 1rem; }
 .login-form-header { display: grid; gap: 0.2rem; margin-bottom: 0.35rem; }
-.login-form-title { margin: 0; font-size: 1.4rem; color: var(--text-primary); }
+.login-form-title { margin: 0; font-size: 1.25rem; color: var(--text-primary); }
 .login-form-subtitle { margin: 0; color: var(--text-secondary); font-size: 0.92rem; line-height: 1.45; }
 
-.login-form-field { display: grid; gap: 0.35rem; font-weight: 600; color: var(--text-primary); font-size: 0.92rem; }
+.login-form-field { display: grid; gap: 0.45rem; color: var(--text-primary); font-size: 0.92rem; }
+.login-form-field label { font-weight: 700; }
 .login-form-field input {
-  font-family: inherit; font-size: 1rem; padding: 0.7rem 0.9rem; border-radius: 12px;
+  width: 100%; min-height: 50px; font-family: inherit; font-size: 1rem; padding: 0.75rem 0.95rem; border-radius: 12px;
   border: 1.5px solid var(--border-subtle); background: var(--surface-sunken); color: var(--text-primary);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
+.login-form-field input::placeholder { color: #64748b; }
 .login-form-field input:focus {
   outline: none; border-color: var(--brand-primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); background: var(--surface-default);
 }
+.login-form-field input[aria-invalid="true"] { border-color: #b91c1c; }
 
 .login-form-submit {
   background: var(--brand-primary); color: #fff; border: none; font-weight: 700;
@@ -456,8 +459,8 @@ button.ghost {
   grid-template-rows: auto 1fr;
   padding: clamp(1rem, 3vw, 2rem);
   background:
-    radial-gradient(circle at 14% 12%, rgba(37, 99, 235, 0.14), transparent 30rem),
-    linear-gradient(145deg, #eef4fb 0%, #e2e8f0 100%);
+    linear-gradient(rgba(241, 245, 249, 0.88), rgba(226, 232, 240, 0.94)),
+    repeating-linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0 1px, transparent 1px 18px);
 }
 
 .prestamo-auth-header {
@@ -491,12 +494,21 @@ button.ghost {
 }
 
 .prestamo-auth-card {
-  width: min(460px, 100%);
+  position: relative;
+  width: min(480px, 100%);
+  overflow: hidden;
   padding: clamp(1.5rem, 4vw, 2.25rem);
   border: 1px solid rgba(148, 163, 184, 0.42);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 24px 65px rgba(15, 23, 42, 0.14);
+}
+.prestamo-auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: linear-gradient(90deg, #1d4ed8, #0f766e);
 }
 
 .prestamo-auth-intro {
@@ -530,12 +542,41 @@ button.ghost {
 .prestamo-auth-intro h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 1.9rem); line-height: 1.15; }
 .prestamo-auth-intro > div > p:last-child { margin: 0.45rem 0 0; color: var(--text-secondary); line-height: 1.45; }
 
+.prestamo-auth-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0 0 1.35rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  background: #eff6ff;
+  color: #172554;
+}
+.prestamo-auth-notice-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+.prestamo-auth-notice div { display: grid; gap: 0.15rem; }
+.prestamo-auth-notice strong { font-size: 0.9rem; }
+.prestamo-auth-notice div span { color: #334155; font-size: 0.82rem; line-height: 1.4; }
+
 @media (max-width: 520px) {
   .prestamo-auth-page { padding: 0.85rem; }
   .prestamo-auth-header-logo { width: 44px; height: 44px; }
   .prestamo-auth-gate { align-items: start; padding-top: 2rem; }
   .prestamo-auth-card { border-radius: 20px; }
   .prestamo-auth-intro { align-items: flex-start; }
+  .prestamo-auth-logo-wrap { width: 54px; height: 54px; border-radius: 15px; }
+  .prestamo-auth-logo-wrap img { width: 38px; height: 38px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

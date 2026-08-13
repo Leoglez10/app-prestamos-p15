@@ -15,14 +15,18 @@ export type LoginFormProps = {
 };
 
 export function LoginForm({ onSubmit }: LoginFormProps) {
-  const [codigo, setCodigo] = useState("223992647");
+  const [codigo, setCodigo] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedCodigo = codigo.trim();
-    if (!trimmedCodigo || submitting) return;
+    if (submitting) return;
+    if (!trimmedCodigo) {
+      setError("Ingresa tu código administrativo.");
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
@@ -40,32 +44,41 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
   return (
     <form className="login-form" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
       <div className="login-form-header">
-        <h2 className="login-form-title">Código de profesor</h2>
-        <p className="login-form-subtitle" id="codigo-hint">Usa el código asignado a tu cuenta.</p>
+        <h2 className="login-form-title">Código administrativo</h2>
+        <p className="login-form-subtitle" id="codigo-hint">
+          Ingresa el código asignado a tu cuenta de administrador.
+        </p>
       </div>
-      <label className="login-form-field">
-        <span>Código</span>
+      <div className="login-form-field">
+        <label htmlFor="admin-code">Código de acceso</label>
         <input
+          id="admin-code"
           type="text"
           name="codigo"
           value={codigo}
-          onChange={(event) => setCodigo(event.target.value)}
+          onChange={(event) => {
+            setCodigo(event.target.value);
+            if (error) setError(null);
+          }}
           autoComplete="username"
+          autoCapitalize="none"
           autoFocus
           required
           disabled={submitting}
           inputMode="numeric"
+          placeholder="Ingresa tu código administrativo"
+          spellCheck={false}
           aria-describedby={`codigo-hint${error ? " login-error" : ""}`}
           aria-invalid={error ? true : undefined}
         />
-      </label>
+      </div>
       {error ? (
         <div className="feedback error" id="login-error" role="alert">
           {error}
         </div>
       ) : null}
       <button type="submit" disabled={submitting} className="login-form-submit">
-        {submitting ? "Verificando..." : "Entrar"}
+        {submitting ? "Verificando acceso..." : "Acceder a préstamos"}
       </button>
     </form>
   );

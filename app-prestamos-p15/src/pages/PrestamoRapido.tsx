@@ -210,9 +210,16 @@ export default function PrestamoRapido() {
                 <img src={logoP15} alt="" />
               </div>
               <div>
-                <p className="prestamo-auth-eyebrow">Préstamos P15</p>
-                <h1 id="prestamo-auth-title">Acceso requerido</h1>
-                <p>Identifícate para registrar un préstamo rápido.</p>
+                <p className="prestamo-auth-eyebrow">Préstamos rápidos · P15</p>
+                <h1 id="prestamo-auth-title">Acceso administrativo</h1>
+                <p>Identifícate para registrar y administrar préstamos.</p>
+              </div>
+            </div>
+            <div className="prestamo-auth-notice" role="note">
+              <span className="prestamo-auth-notice-icon" aria-hidden="true">✓</span>
+              <div>
+                <strong>Solo personal autorizado</strong>
+                <span>Administradores y responsables del área de cómputo con permisos vigentes.</span>
               </div>
             </div>
             <LoginForm onSubmit={handleLogin} />

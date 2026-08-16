@@ -2,9 +2,8 @@ name: Build Windows Installer
 
 on:
   push:
-    branches:
-      - main
-      - master
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:

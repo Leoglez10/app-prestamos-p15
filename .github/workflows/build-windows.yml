@@ -46,6 +46,6 @@ jobs:
           tagName: v__VERSION__
           releaseName: "App Prestamos P15 v__VERSION__"
           releaseBody: "Automated build of the application."
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: --target x86_64-pc-windows-msvc

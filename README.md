@@ -111,8 +111,10 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 ### Pasos
 
-1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.1.1_x64-setup.exe`).
-2. **Cópialo a la computadora** destino (puede ser vía USB, carpeta compartida, etc.).
+1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.1.1_x64-setup.exe`). Hay dos formas:
+   - **A) Desde GitHub (recomendado).** Entra a <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más reciente, y en la sección **Assets** descarga el archivo `.exe` (_x64-setup.exe_) o `.msi`.
+   - **B) Copia manual** (USB, carpeta compartida, etc.) — alguien que ya tenga el instalador te lo pasa.
+2. **Cópialo a la computadora** destino si lo descargaste en otra máquina.
 3. **Doble clic** sobre el instalador.
 4. **Windows quizá mostrará una advertencia azul** ("Windows protegió su PC") porque no tenemos certificado de firma. No te preocupes:
    - Haz clic en **"Más información"** → **"Ejecutar de todas formas"**.
@@ -369,7 +371,7 @@ git pull
 
 ### 6) CI automático
 
-El repo tiene un workflow en `.github/workflows/tauri-build.yml` que, cuando haces un push o PR a `main`, **compila la app en un Windows virtual de GitHub** para verificar que no se rompa nada. Si falla, GitHub te avisa en rojo.
+El repo tiene un workflow en `.github/workflows/build-windows.yml` que, cuando haces un push a `main` (o `master`), **compila la app en un Windows virtual de GitHub** y publica el instalador como **Release público** en la pestaña *Releases* del repo. Si la compilación falla, GitHub te avisa en rojo.
 
 ---
 

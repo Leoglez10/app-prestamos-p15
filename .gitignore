@@ -40,3 +40,9 @@ src-tauri/target-codex-*
 .env
 .env.*
 !.env.example
+
+# Agent tooling artifacts (caches, snapshots, MCP sessions)
+.atl/
+.admin-snap.yml
+.playwright-mcp/
+*.cache.json

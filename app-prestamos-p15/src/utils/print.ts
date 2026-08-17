@@ -8,27 +8,14 @@ const escapeHtml = (value: string): string =>
 
 export const html = (value: string | null | undefined): string => escapeHtml(value ?? "");
 
-export const printHtmlDocument = (title: string, bodyContent: string): void => {
+/**
+ * Builds the complete printable document. Both the print flow and the on-screen
+ * preview render this exact string, so the preview can never drift from the PDF.
+ */
+export const buildPrintDocument = (title: string, bodyContent: string): string => {
   const documentTitle = html(title);
-  const iframe = document.createElement("iframe");
-  iframe.setAttribute("sandbox", "allow-modals allow-same-origin allow-scripts");
-  iframe.style.position = "fixed";
-  iframe.style.right = "0";
-  iframe.style.bottom = "0";
-  iframe.style.width = "1px";
-  iframe.style.height = "1px";
-  iframe.style.border = "0";
-  iframe.style.opacity = "0";
-  document.body.appendChild(iframe);
 
-  const printDocument = iframe.contentWindow?.document;
-  if (!printDocument || !iframe.contentWindow) {
-    iframe.remove();
-    throw new Error("No se pudo preparar la vista de impresión.");
-  }
-
-  printDocument.open();
-  printDocument.write(`<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -144,7 +131,29 @@ export const printHtmlDocument = (title: string, bodyContent: string): void => {
   <body>
     ${bodyContent}
   </body>
-</html>`);
+</html>`;
+};
+
+export const printHtmlDocument = (title: string, bodyContent: string): void => {
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("sandbox", "allow-modals allow-same-origin allow-scripts");
+  iframe.style.position = "fixed";
+  iframe.style.right = "0";
+  iframe.style.bottom = "0";
+  iframe.style.width = "1px";
+  iframe.style.height = "1px";
+  iframe.style.border = "0";
+  iframe.style.opacity = "0";
+  document.body.appendChild(iframe);
+
+  const printDocument = iframe.contentWindow?.document;
+  if (!printDocument || !iframe.contentWindow) {
+    iframe.remove();
+    throw new Error("No se pudo preparar la vista de impresión.");
+  }
+
+  printDocument.open();
+  printDocument.write(buildPrintDocument(title, bodyContent));
   printDocument.close();
 
   const cleanup = () => {

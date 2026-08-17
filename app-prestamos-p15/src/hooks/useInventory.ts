@@ -32,6 +32,7 @@ export type Equipo = {
   stock_disponible: number;
   prestamo_activo_id?: number | null;
   prestamo_activo_profe?: string | null;
+  prestamo_activo_fecha?: string | null;
 };
 
 type PrestamoRapidoInput = {
@@ -614,6 +615,15 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       )
     END
   `;
+  // fecha_salida se guarda en hora local con formato 'YYYY-MM-DD HH:MM:SS',
+  // asi que MAX() ordena bien como texto y sirve igual para granel y equipo unico.
+  const prestamoActivoFechaSql = `
+    (
+      SELECT MAX(p2.fecha_salida)
+      FROM prestamos p2
+      WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
+    )
+  `;
 
   if (!categoriaId) {
     try {
@@ -626,7 +636,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
                     SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
                 )) AS stock_disponible,
                 ${prestamoActivoIdSql} AS prestamo_activo_id,
-                ${responsableActivoSql} AS prestamo_activo_profe
+                ${responsableActivoSql} AS prestamo_activo_profe,
+                ${prestamoActivoFechaSql} AS prestamo_activo_fecha
          FROM inventario i
          JOIN categorias c ON c.id = i.categoria_id
          ORDER BY c.nombre, i.nombre_equipo`
@@ -645,7 +656,12 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
                   WHERE p2.equipo_id = i.id
                   ORDER BY p2.fecha_salida DESC, p2.id DESC
                   LIMIT 1
-                ) AS prestamo_activo_profe
+                ) AS prestamo_activo_profe,
+                (
+                  SELECT MAX(p2.fecha_salida)
+                  FROM prestamos p2
+                  WHERE p2.equipo_id = i.id
+                ) AS prestamo_activo_fecha
          FROM inventario i
          JOIN categorias c ON c.id = i.categoria_id
          ORDER BY c.nombre, i.nombre_equipo`
@@ -672,7 +688,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
                   SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
               )) AS stock_disponible,
               ${prestamoActivoIdSql} AS prestamo_activo_id,
-              ${responsableActivoSql} AS prestamo_activo_profe
+              ${responsableActivoSql} AS prestamo_activo_profe,
+              ${prestamoActivoFechaSql} AS prestamo_activo_fecha
        FROM inventario i
        JOIN categorias c ON c.id = i.categoria_id
        WHERE i.categoria_id = ?
@@ -693,7 +710,12 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
                 WHERE p2.equipo_id = i.id
                 ORDER BY p2.fecha_salida DESC, p2.id DESC
                 LIMIT 1
-              ) AS prestamo_activo_profe
+              ) AS prestamo_activo_profe,
+              (
+                SELECT MAX(p2.fecha_salida)
+                FROM prestamos p2
+                WHERE p2.equipo_id = i.id
+              ) AS prestamo_activo_fecha
        FROM inventario i
        JOIN categorias c ON c.id = i.categoria_id
        WHERE i.categoria_id = ?
@@ -1145,10 +1167,13 @@ export const createPrestamoRapidoAlumno = async (input: import("../auth/types").
   const db = await getDb();
   const adminNombre = input.admin.nombre.trim();
   await db.execute(
+    // fecha_salida se escribe explicita en hora local: el DEFAULT CURRENT_TIMESTAMP
+    // de SQLite guarda UTC y quedaba desfasado contra fecha_retorno, que ya usa
+    // getCurrentLocalDateTime(). Sin esto el tiempo transcurrido de la UI miente.
     `INSERT INTO prestamos_rapidos_alumnos
        (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones,
-        id_admin, autorizante_codigo, autorizante_nombre)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        id_admin, autorizante_codigo, autorizante_nombre, fecha_salida)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.nombre_alumno.trim(),
       input.codigo_alumno.trim(),
@@ -1158,6 +1183,7 @@ export const createPrestamoRapidoAlumno = async (input: import("../auth/types").
       input.admin.id,
       input.admin.codigo.trim(),
       adminNombre,
+      getCurrentLocalDateTime(),
     ]
   );
 };

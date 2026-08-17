@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, FormEvent, ChangeEvent, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useDeferredValue, FormEvent, ChangeEvent, useRef } from "react";
 import { Link } from "react-router-dom";
 import logoP15 from "../../img/logo-p15.png";
 import {
@@ -36,7 +36,8 @@ import {
 } from "../hooks/useInventory";
 import "../App.css";
 import { formatSqliteDateTime } from "../utils/datetime";
-import { html, printHtmlDocument } from "../utils/print";
+import { html, buildPrintDocument, printHtmlDocument } from "../utils/print";
+import { Icon } from "../components/Icon";
 
 type PdfOptionItem = {
   key: string;
@@ -60,6 +61,7 @@ function PdfDesignerPanel({
   previewLabel,
   previewValue,
   previewMeta,
+  previewDocument,
   onAction,
 }: {
   heading: string;
@@ -78,6 +80,8 @@ function PdfDesignerPanel({
   previewLabel: string;
   previewValue: string;
   previewMeta: string;
+  /** Full printable HTML. When provided, the panel shows a live render instead of the text summary. */
+  previewDocument?: string;
   onAction: () => void;
 }) {
   return (
@@ -235,7 +239,7 @@ function PdfDesignerPanel({
                       flexShrink: 0,
                     }}
                   >
-                    {checked ? "✓" : ""}
+                    {checked ? <Icon name="check" size="0.62rem" strokeWidth={4} /> : null}
                   </span>
                   {option.label}
                 </button>
@@ -247,7 +251,8 @@ function PdfDesignerPanel({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            // The live preview needs the full width to render a page-shaped document.
+            gridTemplateColumns: previewDocument ? "1fr" : "1fr 1fr",
             gap: "0.75rem",
             borderRadius: "16px",
             padding: "0.8rem",
@@ -292,16 +297,35 @@ function PdfDesignerPanel({
           >
             <div>
               <div style={{ fontSize: "0.78rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--brand-primary)" }}>
-                Vista previa textual
-              </div>
-              <div style={{ fontSize: "1rem", fontWeight: 800, marginTop: "0.22rem" }}>{title || "Sin título"}</div>
-              <div style={{ color: "var(--text-secondary)", lineHeight: 1.45, marginTop: "0.2rem", fontSize: "0.9rem" }}>
-                {subtitle || "Agrega un subtítulo para describir mejor el documento."}
+                {previewDocument ? "Vista previa del documento" : "Vista previa textual"}
               </div>
             </div>
-            <div style={{ borderTop: "1px solid rgba(148, 163, 184, 0.14)", paddingTop: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5, fontSize: "0.9rem" }}>
-              {notes.trim() || "Las notas aparecerán aquí como cierre o contexto adicional del PDF."}
-            </div>
+            {previewDocument ? (
+              <iframe
+                title="Vista previa del PDF"
+                srcDoc={previewDocument}
+                sandbox=""
+                style={{
+                  width: "100%",
+                  height: "320px",
+                  border: "1px solid rgba(148, 163, 184, 0.22)",
+                  borderRadius: "10px",
+                  background: "white",
+                }}
+              />
+            ) : (
+              <>
+                <div>
+                  <div style={{ fontSize: "1rem", fontWeight: 800, marginTop: "0.22rem" }}>{title || "Sin título"}</div>
+                  <div style={{ color: "var(--text-secondary)", lineHeight: 1.45, marginTop: "0.2rem", fontSize: "0.9rem" }}>
+                    {subtitle || "Agrega un subtítulo para describir mejor el documento."}
+                  </div>
+                </div>
+                <div style={{ borderTop: "1px solid rgba(148, 163, 184, 0.14)", paddingTop: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5, fontSize: "0.9rem" }}>
+                  {notes.trim() || "Las notas aparecerán aquí como cierre o contexto adicional del PDF."}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -594,13 +618,20 @@ function InventarioPanel() {
 
       {/* Buscador y Filtros */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          placeholder="🔍 Buscar por nombre o ID..."
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          style={{ flex: 1, minWidth: '250px', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
-        />
+        <div style={{ position: 'relative', flex: 1, minWidth: '250px', display: 'flex' }}>
+          <Icon
+            name="search"
+            size="1.05rem"
+            style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }}
+          />
+          <input
+            type="text"
+            placeholder="Buscar por nombre o ID..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ flex: 1, minWidth: 0, padding: '0.8rem 1rem 0.8rem 2.6rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
+          />
+        </div>
         <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
           <option value="">Todas las categorías</option>
           {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
@@ -804,14 +835,14 @@ function InventarioPanel() {
 
         {/* Tabla Central */}
         <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table className="admin-table">
             <thead>
               <tr style={{ background: 'var(--surface-sunken)', borderBottom: '2px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem' }}>ID / Nombre</th>
-                <th style={{ padding: '1rem' }}>Categoría</th>
-                <th style={{ padding: '1rem' }}>Préstamo</th>
-                <th style={{ padding: '1rem' }}>Estado</th>
-                <th style={{ padding: '1rem', textAlign: 'right' }}>Acciones</th>
+                <th style={{ padding: '1rem', width: '26%' }}>ID / Nombre</th>
+                <th className="col-optional" style={{ padding: '1rem', width: '15%' }}>Categoría</th>
+                <th style={{ padding: '1rem', width: '18%' }}>Préstamo</th>
+                <th style={{ padding: '1rem', width: '21%' }}>Estado</th>
+                <th style={{ padding: '1rem', width: '20%', textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -838,7 +869,7 @@ function InventarioPanel() {
                       </>
                     )}
                   </td>
-                  <td style={{ padding: '1rem' }}>{eq.categoria_nombre}</td>
+                  <td className="col-optional" style={{ padding: '1rem' }}>{eq.categoria_nombre}</td>
                   <td style={{ padding: '1rem' }}>
                     <span className={`state ${eq.es_prestable === 1 ? 'activo' : 'historico'}`} style={{ width: 'fit-content' }}>
                       {eq.es_prestable === 1 ? 'Prestable' : 'Solo inventario'}
@@ -856,7 +887,10 @@ function InventarioPanel() {
                           </small>
                         )}
                         {eq.stock_disponible === 0 && (
-                          <small style={{ color: 'var(--danger-base)', fontWeight: 'bold' }}>⚠️ Agotado</small>
+                          <small style={{ color: 'var(--danger-base)', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <Icon name="alert" />
+                            Agotado
+                          </small>
                         )}
                       </div>
                     ) : (
@@ -870,7 +904,8 @@ function InventarioPanel() {
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: '1rem', textAlign: 'right', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                  <td style={{ padding: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                     {eq.es_granel === 0 && eq.estado === 'prestado' && eq.prestamo_activo_id && (
                       <>
                         <button
@@ -889,6 +924,7 @@ function InventarioPanel() {
                     )}
                     <button type="button" onClick={() => handleEditInit(eq)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--brand-primary)' }}>Editar</button>
                     <button type="button" onClick={() => handleDelete(eq.id)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--danger-base)' }}>Eliminar</button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1013,7 +1049,9 @@ function ReportesPanel() {
     void loadReportes();
   }, [loadReportes]);
 
-  const handlePrintReportes = () => {
+  // Builds the PDF body. `rowLimit` trims the table for the on-screen preview so
+  // typing in the designer stays responsive on large histories; printing passes none.
+  const buildReportesBody = (rowLimit?: number): string => {
     const summaryCards = reportePdf.includeSummary ? `
       <div class="summary cols-5">
         ${[
@@ -1057,7 +1095,13 @@ function ReportesPanel() {
       .filter(Boolean)
       .join("");
 
-    const rows = reportes
+    const visibleReportes = rowLimit ? reportes.slice(0, rowLimit) : reportes;
+    const truncatedNotice =
+      rowLimit && reportes.length > rowLimit
+        ? `<tr><td colspan="${headerColumns.split("<th>").length - 1}" class="muted">Vista previa: mostrando ${rowLimit} de ${reportes.length} registros. El PDF incluye todos.</td></tr>`
+        : "";
+
+    const rows = visibleReportes
       .map((reporte) => {
         const columns = [
           `<td>${html(reporte.nombre_profe)}${reportePdf.includeProfessorCode ? `<br /><span class="muted">${html(reporte.codigo_profe)}</span>` : ""}</td>`,
@@ -1078,9 +1122,7 @@ function ReportesPanel() {
       })
       .join("");
 
-    printHtmlDocument(
-      reportePdf.title || "Reporte de préstamos P15",
-      `
+    return `
         <div class="header">
           <div class="brand">
             ${reportePdf.includeLogo ? `<img src="${logoP15}" alt="P15" />` : ""}
@@ -1099,10 +1141,13 @@ function ReportesPanel() {
         ${notesBlock}
         <table>
           <thead><tr>${headerColumns}</tr></thead>
-          <tbody>${rows}</tbody>
+          <tbody>${rows}${truncatedNotice}</tbody>
         </table>
-      `,
-    );
+      `;
+  };
+
+  const handlePrintReportes = () => {
+    printHtmlDocument(reportePdf.title || "Reporte de préstamos P15", buildReportesBody());
   };
 
   const reportesSummary = useMemo(() => ({
@@ -1112,6 +1157,11 @@ function ReportesPanel() {
     conObsAdmin: reportes.filter((reporte) => Boolean(reporte.admin_condicion_entrega || reporte.admin_notas_retorno)).length,
     totalItems: reportes.reduce((sum, r) => sum + (r.cantidad_prestada || 1), 0),
   }), [reportes]);
+
+  // useDeferredValue keeps the designer inputs snappy: the iframe catches up a tick later.
+  const reportesPreviewDocument = useDeferredValue(
+    buildPrintDocument(reportePdf.title || "Reporte de préstamos P15", buildReportesBody(25)),
+  );
 
   if (loading) return <div>Cargando reportes...</div>;
 
@@ -1143,6 +1193,7 @@ function ReportesPanel() {
         previewLabel="Panorama del historial"
         previewValue={`${reportes.length} registros listos`}
         previewMeta={`${reportesSummary.activos} activos · ${reportesSummary.devueltos} devueltos · ${reportesSummary.conObsAdmin} con observaciones admin`}
+        previewDocument={reportesPreviewDocument}
         onAction={handlePrintReportes}
       />
 
@@ -1197,10 +1248,10 @@ function ReportesPanel() {
           </div>
         )}
         {error && <div className="feedback error" style={{ margin: '1rem' }}>{error}</div>}
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', tableLayout: 'fixed' }}>
+          <table className="admin-table">
             <thead>
               <tr style={{ background: 'var(--surface-sunken)', borderBottom: '2px solid var(--border-subtle)' }}>
-                <th style={{ padding: '0.75rem 0.65rem', width: '7%' }}>ID</th>
+                <th className="col-optional" style={{ padding: '0.75rem 0.65rem', width: '7%' }}>ID</th>
                 <th style={{ padding: '0.75rem 0.65rem', width: '16%' }}>Profesor</th>
                 <th style={{ padding: '0.75rem 0.65rem', width: '16%' }}>Equipo</th>
                 <th style={{ padding: '0.75rem 0.65rem', width: '19%' }}>Movimiento</th>
@@ -1216,7 +1267,7 @@ function ReportesPanel() {
               ) : null}
               {reportes.map(r => (
                 <tr key={r.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: r.estado_prestamo === 'historico' ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
-                  <td style={{ padding: '0.75rem 0.65rem', verticalAlign: 'top' }}>
+                  <td className="col-optional" style={{ padding: '0.75rem 0.65rem', verticalAlign: 'top' }}>
                     <strong style={{ fontSize: '0.88rem' }}>#{r.id}</strong>
                   </td>
                   <td style={{ padding: '0.75rem 0.65rem', verticalAlign: 'top' }}>
@@ -1573,14 +1624,14 @@ function CategoriasPanel() {
       <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
         {error && <div className="feedback error" style={{ margin: "1rem" }}>{error}</div>}
 
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+        <table className="admin-table">
           <thead>
             <tr style={{ background: "var(--surface-sunken)", borderBottom: "2px solid var(--border-subtle)" }}>
-              <th style={{ padding: "1rem" }}>ID</th>
-              <th style={{ padding: "1rem" }}>Nombre</th>
-              <th style={{ padding: "1rem" }}>Artículos</th>
-              <th style={{ padding: "1rem" }}>Préstamo</th>
-              <th style={{ padding: "1rem", textAlign: "right" }}>Acciones</th>
+              <th className="col-optional" style={{ padding: "1rem", width: "8%" }}>ID</th>
+              <th style={{ padding: "1rem", width: "34%" }}>Nombre</th>
+              <th style={{ padding: "1rem", width: "14%" }}>Artículos</th>
+              <th style={{ padding: "1rem", width: "20%" }}>Préstamo</th>
+              <th style={{ padding: "1rem", width: "24%", textAlign: "right" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -1593,7 +1644,7 @@ function CategoriasPanel() {
             ) : null}
             {filteredCategorias.map((c) => (
               <tr key={c.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                <td style={{ padding: "1rem", fontWeight: 700 }}>{c.id}</td>
+                <td className="col-optional" style={{ padding: "1rem", fontWeight: 700 }}>{c.id}</td>
                 <td style={{ padding: "1rem" }}>{c.nombre}</td>
                 <td style={{ padding: "1rem" }}>{c.total_articulos}</td>
                 <td style={{ padding: "1rem" }}>
@@ -1656,26 +1707,26 @@ function CategoriasPanel() {
 
           {!loadingEquiposCategoria && equiposCategoria.length > 0 && (
             <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+              <table className="admin-table">
                 <thead>
                   <tr style={{ background: "var(--surface-sunken)", borderBottom: "2px solid var(--border-subtle)" }}>
-                    <th style={{ padding: "0.8rem" }}>Equipo</th>
-                    <th style={{ padding: "0.8rem" }}>Identificador</th>
-                    <th style={{ padding: "0.8rem" }}>Estado</th>
-                    <th style={{ padding: "0.8rem" }}>Préstamo</th>
-                    <th style={{ padding: "0.8rem" }}>Tipo</th>
-                    <th style={{ padding: "0.8rem" }}>Stock</th>
-                    <th style={{ padding: "0.8rem", textAlign: "right" }}>Acción</th>
+                    <th style={{ padding: "0.8rem", width: "24%" }}>Equipo</th>
+                    <th className="col-optional" style={{ padding: "0.8rem", width: "16%" }}>Identificador</th>
+                    <th style={{ padding: "0.8rem", width: "13%" }}>Estado</th>
+                    <th style={{ padding: "0.8rem", width: "15%" }}>Préstamo</th>
+                    <th className="col-optional" style={{ padding: "0.8rem", width: "10%" }}>Tipo</th>
+                    <th style={{ padding: "0.8rem", width: "10%" }}>Stock</th>
+                    <th style={{ padding: "0.8rem", width: "12%", textAlign: "right" }}>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {equiposCategoria.map((eq) => (
                     <tr key={eq.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                       <td style={{ padding: "0.8rem" }}>{eq.nombre_equipo}</td>
-                      <td style={{ padding: "0.8rem", color: "var(--text-secondary)" }}>{eq.identificador || "S/N"}</td>
+                      <td className="col-optional" style={{ padding: "0.8rem", color: "var(--text-secondary)" }}>{eq.identificador || "S/N"}</td>
                       <td style={{ padding: "0.8rem" }}>{eq.estado}</td>
                       <td style={{ padding: "0.8rem" }}>{eq.es_prestable === 1 ? "Prestable" : "Solo inventario"}</td>
-                      <td style={{ padding: "0.8rem" }}>{eq.es_granel === 1 ? "Granel" : "Único"}</td>
+                      <td className="col-optional" style={{ padding: "0.8rem" }}>{eq.es_granel === 1 ? "Granel" : "Único"}</td>
                       <td style={{ padding: "0.8rem" }}>{eq.es_granel === 1 ? `${eq.stock_disponible}/${eq.stock_total}` : "1"}</td>
                       <td style={{ padding: "0.8rem", textAlign: "right" }}>
                         <button
@@ -1960,13 +2011,13 @@ function ProfesoresPanel() {
       <div className="panel" style={{ padding: 0, overflowX: "auto" }}>
         {error && <div className="feedback error" style={{ margin: "1rem" }}>{error}</div>}
 
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+        <table className="admin-table">
           <thead>
             <tr style={{ background: "var(--surface-sunken)", borderBottom: "2px solid var(--border-subtle)" }}>
-              <th style={{ padding: "1rem" }}>Código</th>
-              <th style={{ padding: "1rem" }}>Nombre</th>
-              <th style={{ padding: "1rem" }}>Rol</th>
-              <th style={{ padding: "1rem", textAlign: "right" }}>Acciones</th>
+              <th style={{ padding: "1rem", width: "16%" }}>Código</th>
+              <th style={{ padding: "1rem", width: "38%" }}>Nombre</th>
+              <th style={{ padding: "1rem", width: "20%" }}>Rol</th>
+              <th style={{ padding: "1rem", width: "26%", textAlign: "right" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -2215,12 +2266,12 @@ function ConfiguracionPanel() {
         {backupMessage ? <div className="feedback success">{backupMessage}</div> : null}
         {error ? <div className="feedback error">{error}</div> : null}
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+          <table className="admin-table">
             <thead>
               <tr style={{ background: "var(--surface-sunken)", borderBottom: "2px solid var(--border-subtle)" }}>
-                <th style={{ padding: "0.9rem" }}>Archivo</th>
-                <th style={{ padding: "0.9rem" }}>Fecha</th>
-                <th style={{ padding: "0.9rem" }}>Ruta</th>
+                <th style={{ padding: "0.9rem", width: "32%" }}>Archivo</th>
+                <th style={{ padding: "0.9rem", width: "22%" }}>Fecha</th>
+                <th className="col-optional" style={{ padding: "0.9rem", width: "46%" }}>Ruta</th>
               </tr>
             </thead>
             <tbody>
@@ -2235,7 +2286,7 @@ function ConfiguracionPanel() {
                 <tr key={backup.backup_path} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                   <td style={{ padding: "0.9rem", fontWeight: 600 }}>{backup.file_name}</td>
                   <td style={{ padding: "0.9rem" }}>{formatSqliteDateTime(new Date(backup.created_epoch * 1000).toISOString())}</td>
-                  <td style={{ padding: "0.9rem", color: "var(--text-secondary)" }}>{backup.backup_path}</td>
+                  <td className="col-optional" style={{ padding: "0.9rem", color: "var(--text-secondary)" }}>{backup.backup_path}</td>
                 </tr>
               ))}
             </tbody>
@@ -2393,8 +2444,7 @@ export default function Admin() {
   return (
     <div style={{ display: "flex", height: "100vh", background: "var(--background-default)", color: "var(--text-primary)" }}>
       {/* Sidebar */}
-      <aside style={{
-        width: "300px",
+      <aside className="admin-sidebar" style={{
         background: "var(--surface-sunken)",
         borderRight: "1px solid var(--border-subtle)",
         display: "flex",
@@ -2416,19 +2466,24 @@ export default function Admin() {
 
         <nav style={{ display: "flex", flexDirection: "column", gap: "0.5rem", padding: "0 1rem" }}>
           <button style={tabStyle(activeTab === "inventario")} onClick={() => setActiveTab("inventario")}>
-            📦 Inventario
+            <Icon name="package" size="1.25rem" />
+            Inventario
           </button>
           <button style={tabStyle(activeTab === "categorias")} onClick={() => setActiveTab("categorias")}>
-            📁 Categorías
+            <Icon name="folder" size="1.25rem" />
+            Categorías
           </button>
           <button style={tabStyle(activeTab === "profesores")} onClick={() => setActiveTab("profesores")}>
-            🧑‍🏫 Profesores
+            <Icon name="users" size="1.25rem" />
+            Profesores
           </button>
           <button style={tabStyle(activeTab === "reportes")} onClick={() => setActiveTab("reportes")}>
-            📋 Reportes
+            <Icon name="clipboard" size="1.25rem" />
+            Reportes
           </button>
           <button style={tabStyle(activeTab === "configuracion")} onClick={() => setActiveTab("configuracion")}>
-            ⚙️ Configuración
+            <Icon name="settings" size="1.25rem" />
+            Configuración
           </button>
         </nav>
 
@@ -2445,24 +2500,27 @@ export default function Admin() {
             Cerrar sesión admin
           </button>
           <Link to="/" style={{
-            display: "block",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
             padding: "1rem",
             background: "var(--surface-default)",
             color: "var(--text-primary)",
             textDecoration: "none",
-            textAlign: "center",
             borderRadius: "8px",
             border: "1px solid var(--border-subtle)",
             fontWeight: "bold",
             transition: "all 0.2s"
           }}>
-            🏠 Volver a Inicio
+            <Icon name="home" />
+            Volver a Inicio
           </Link>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: "3rem", overflowY: "auto" }}>
+      <main className="admin-main">
 
         {activeTab === "inventario" && <InventarioPanel />}
 

@@ -18,6 +18,7 @@ import {
   getSettings,
 } from "../hooks/useInventory";
 import { formatSqliteLoanDate } from "../utils/datetime";
+import { Icon, type IconName } from "../components/Icon";
 
 export default function Kiosk() {
   const location = useLocation();
@@ -39,7 +40,7 @@ export default function Kiosk() {
   const [autoAddedEquipoIds, setAutoAddedEquipoIds] = useState<number[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [observacionesEntrega, setObservacionesEntrega] = useState("");
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [hdmiPromptEquipo, setHdmiPromptEquipo] = useState<Equipo | null>(null);
   const [cartPulse, setCartPulse] = useState(0);
@@ -142,7 +143,7 @@ setSelectedEquipoIds([]);
       setItemCantidades({});
       setAutoAddedEquipoIds([]);
       setObservacionesEntrega("");
-      setConfirmModalOpen(false);
+      setSubmitting(false);
       setSuccessModalOpen(false);
       setHdmiPromptEquipo(null);
       setReturnAllModalOpen(false);
@@ -151,8 +152,7 @@ setSelectedEquipoIds([]);
       setErrorMessage("");
   };
 
-  const handlePrestamo = async (event: FormEvent) => {
-    event.preventDefault();
+  const handlePrestamo = async () => {
     setErrorMessage("");
     setStatusMessage("");
 
@@ -161,12 +161,9 @@ setSelectedEquipoIds([]);
       setErrorMessage("Por favor selecciona al menos un equipo disponible.");
       return;
     }
-
-    setConfirmModalOpen(true);
-  };
-
-  const handleConfirmPrestamo = async () => {
-    if (!loggedInProfesor) return;
+    // Evita registrar dos veces el mismo prestamo si el boton recibe doble clic.
+    if (submitting) return;
+    setSubmitting(true);
 
     const expandedIds: number[] = [];
     for (const [id, cantidad] of Object.entries(itemCantidades)) {
@@ -192,11 +189,12 @@ setSelectedEquipoIds([]);
       setItemCantidades({});
       setAutoAddedEquipoIds([]);
       setObservacionesEntrega("");
-      setConfirmModalOpen(false);
       setSuccessModalOpen(true);
     } catch (error) {
       const msg = typeof error === 'string' ? error : (error instanceof Error ? error.message : "Error desconocido");
       setErrorMessage(`No se pudo procesar: ${msg}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -206,7 +204,7 @@ setSelectedEquipoIds([]);
       await loadEquipos(selectedCategoriaId);
       await loadAllEquipos();
       await cargarPrestamos(loggedInProfesor!.codigo);
-      setStatusMessage("✅ ¡Devolución exitosa! Muchas gracias.");
+      setStatusMessage("¡Devolución exitosa! Muchas gracias.");
     } catch (err) {
       setErrorMessage("Hubo un error al registrar tu devolución.");
     }
@@ -264,8 +262,13 @@ setSelectedEquipoIds([]);
   const isEquipoDisponible = (equipo: Equipo) =>
     equipo.es_granel === 1 ? equipo.stock_disponible > 0 : equipo.estado === "disponible";
 
-  const filteredEquipos = equipos.filter((eq) => {
-    const term = equipoSearchTerm.trim().toLowerCase();
+  const equipoSearchTermNormalized = equipoSearchTerm.trim().toLowerCase();
+  // While searching, ignore the selected category and look across every area:
+  // teachers were missing items because the search only covered the active category.
+  const equipoSearchSource = equipoSearchTermNormalized ? allEquipos : equipos;
+
+  const filteredEquipos = equipoSearchSource.filter((eq) => {
+    const term = equipoSearchTermNormalized;
     if (!term) return true;
     return (
       eq.nombre_equipo.toLowerCase().includes(term) ||
@@ -399,12 +402,15 @@ setSelectedEquipoIds([]);
 
   const cartProgress = Math.min(100, selectedEquipoIds.length === 0 ? 18 : 30 + selectedEquipoIds.length * 20);
 
-  const getEquipoTone = (equipo: Equipo) => {
-    if (!isEquipoDisponible(equipo)) return { border: "#ef4444", surface: "rgba(239, 68, 68, 0.10)", text: "#b91c1c", label: "Agotado" };
-    if (equipo.es_granel === 1 && equipo.stock_disponible <= 2) {
-      return { border: "#f59e0b", surface: "rgba(245, 158, 11, 0.12)", text: "#b45309", label: "Ultimas unidades" };
+  // Solid, high-contrast chips: a tinted pastel badge was too easy to overlook.
+  const getEquipoTone = (equipo: Equipo): { border: string; surface: string; text: string; label: string; icon: IconName } => {
+    if (!isEquipoDisponible(equipo)) {
+      return { border: "#ef4444", surface: "#dc2626", text: "#ffffff", label: "Agotado", icon: "x" };
     }
-    return { border: "#22c55e", surface: "rgba(34, 197, 94, 0.10)", text: "#166534", label: "Listo para llevar" };
+    if (equipo.es_granel === 1 && equipo.stock_disponible <= 2) {
+      return { border: "#f59e0b", surface: "#d97706", text: "#ffffff", label: "Ultimas unidades", icon: "alert" };
+    }
+    return { border: "#22c55e", surface: "#16a34a", text: "#ffffff", label: "Listo para llevar", icon: "check" };
   };
 
   const getEquipoSupportingText = (equipo: Equipo) => {
@@ -430,9 +436,13 @@ setSelectedEquipoIds([]);
     <main className="kiosk-main">
       <style>
         {`
+        /* Fixed-viewport shell: the page itself never scrolls. Only .eq-grid,
+           the pending-loans column and the cart list scroll internally. */
         .kiosk-main {
-          min-height: 100vh;
-          padding: 2rem 4rem;
+          height: 100vh;
+          height: 100dvh;
+          overflow: hidden;
+          padding: 1rem 2rem;
           background:
             radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 20%),
             radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 22%),
@@ -447,16 +457,17 @@ setSelectedEquipoIds([]);
           justify-content: space-between;
           align-items: center;
           gap: 1.5rem;
-          margin-bottom: 2rem;
+          margin-bottom: 1rem;
+          flex: 0 0 auto;
         }
         .kiosk-brand {
           display: flex;
           align-items: center;
-          gap: 1rem;
+          gap: 0.75rem;
         }
         .kiosk-brand img {
-          width: 72px;
-          height: 72px;
+          width: 44px;
+          height: 44px;
           object-fit: contain;
           filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.2));
         }
@@ -464,11 +475,70 @@ setSelectedEquipoIds([]);
           font-weight: 800;
           letter-spacing: 0.02em;
           color: var(--text-primary);
-          font-size: 1.55rem;
+          font-size: 1.15rem;
           line-height: 1;
         }
+        /* Exit actions: bottom-left, deliberately quiet. They sit off the
+           hot path (search → grid → confirm) so nobody hits them in a rush. */
+        /* One segmented control instead of two floating pills: it reads as a
+           single utility cluster and stays anchored to the column edge. */
+        .kiosk-exit-bar {
+          flex: 0 0 auto;
+          margin-top: auto;
+          align-self: start;
+          display: inline-flex;
+          align-items: stretch;
+          border: 1px solid var(--border-subtle);
+          border-radius: 12px;
+          background: var(--surface-default);
+          overflow: hidden;
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        .exit-btn {
+          width: auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.42rem;
+          padding: 0.5rem 0.8rem;
+          border: 0;
+          border-radius: 0;
+          background: transparent;
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          font-weight: 600;
+          text-decoration: none;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: background 0.18s ease, color 0.18s ease;
+        }
+        .exit-btn svg {
+          width: 15px;
+          height: 15px;
+          flex: 0 0 auto;
+        }
+        .exit-btn:hover {
+          background: var(--surface-sunken);
+          color: var(--text-primary);
+        }
+        .exit-btn-danger:hover {
+          background: rgba(220, 38, 38, 0.08);
+          color: var(--danger-base);
+        }
+        .exit-btn:focus-visible {
+          outline: 2px solid var(--brand-primary);
+          outline-offset: -2px;
+        }
+        .exit-divider {
+          flex: 0 0 auto;
+          width: 1px;
+          background: var(--border-subtle);
+        }
         .nav-btn {
-          padding: 0.8rem 1.5rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          white-space: nowrap;
+          padding: 0.55rem 1.1rem;
           background: var(--surface-sunken);
           border: 1px solid var(--border-subtle);
           border-radius: 12px;
@@ -489,7 +559,7 @@ setSelectedEquipoIds([]);
           border-radius: 24px;
           box-shadow: 0 20px 40px rgba(0,0,0,0.08);
           border: 1px solid var(--border-subtle);
-          padding: 3rem;
+          padding: 1.25rem;
           position: relative;
           overflow: hidden;
         }
@@ -548,11 +618,15 @@ setSelectedEquipoIds([]);
         }
         .eq-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 1.5rem;
-          margin-top: 1rem;
+          grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+          gap: 0.9rem;
+          margin-top: 0.5rem;
           margin-left: -0.5rem;
-          max-height: 480px;
+          align-content: start;
+          /* The one scrolling region of the catalog. It absorbs whatever
+             height is left instead of forcing a fixed 480px block. */
+          flex: 1;
+          min-height: 0;
           overflow-y: auto;
           /* Safe padding to prevent hover scale/translate clipping */
           padding: 8px 1rem 12px 0.5rem;
@@ -562,8 +636,8 @@ setSelectedEquipoIds([]);
         .eq-grid::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
 
         .eq-item {
-          padding: 1.5rem;
-          border-radius: 22px;
+          padding: 0.95rem;
+          border-radius: 16px;
           background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.94));
           border: 1px solid rgba(148, 163, 184, 0.18);
           cursor: pointer;
@@ -601,11 +675,24 @@ setSelectedEquipoIds([]);
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          padding: 0.35rem 0.7rem;
+          padding: 0.42rem 0.85rem;
           border-radius: 999px;
+          font-size: 0.86rem;
+          font-weight: 900;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
+        }
+        .eq-state-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 1.15rem;
+          height: 1.15rem;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.28);
           font-size: 0.78rem;
-          font-weight: 800;
-          letter-spacing: 0.02em;
+          line-height: 1;
         }
         .eq-support {
           font-size: 0.92rem;
@@ -618,6 +705,33 @@ setSelectedEquipoIds([]);
           justify-content: space-between;
           gap: 0.8rem;
           margin-top: auto;
+        }
+        .eq-cta {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+          text-align: center;
+          padding: 0.7rem 0.8rem;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 800;
+          letter-spacing: 0.01em;
+          background: var(--brand-primary);
+          color: #fff;
+          box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+        }
+        .eq-item.available:hover .eq-cta {
+          filter: brightness(1.08);
+        }
+        .eq-cta.added {
+          background: #16a34a;
+          box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
+        }
+        .eq-cta.off {
+          background: rgba(148, 163, 184, 0.25);
+          color: var(--text-secondary);
+          box-shadow: none;
         }
         .eq-tag {
           display: inline-flex;
@@ -685,6 +799,9 @@ setSelectedEquipoIds([]);
         }
         .modal-card {
           width: min(720px, 100%);
+          /* Keeps the confirm button reachable on short laptop screens. */
+          max-height: 90vh;
+          overflow-y: auto;
           background: linear-gradient(180deg, var(--surface-default), #f6f8fb);
           border: 1px solid var(--border-subtle);
           border-radius: 24px;
@@ -812,19 +929,62 @@ setSelectedEquipoIds([]);
           font-size: 1rem;
           font-family: inherit;
         }
+        .cart-notes {
+          border-top: 1px dashed rgba(37, 99, 235, 0.24);
+          padding-top: 0.5rem;
+        }
+        .cart-notes-summary {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          cursor: pointer;
+          font-weight: 700;
+          font-size: 0.9rem;
+          color: var(--brand-primary);
+          min-height: 32px;
+          list-style: none;
+        }
+        .cart-notes-summary::-webkit-details-marker { display: none; }
+        .cart-notes-summary::before {
+          content: '+';
+          font-size: 1rem;
+          line-height: 1;
+          width: 18px;
+          height: 18px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+          background: rgba(37, 99, 235, 0.12);
+        }
+        .cart-notes[open] .cart-notes-summary::before { content: '-'; }
+        .cart-notes-summary:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+        .cart-notes-flag {
+          background: rgba(5, 150, 105, 0.14);
+          color: #047857;
+          border-radius: 999px;
+          padding: 0.1rem 0.5rem;
+          font-size: 0.75rem;
+        }
+        .cart-notes .kiosk-textarea {
+          min-height: 72px;
+          margin-top: 0.45rem;
+          padding: 0.6rem 0.7rem;
+          font-size: 0.92rem;
+          border-radius: 12px;
+        }
         .cart-shell {
-          position: sticky;
-          top: 1rem;
+          flex: 0 0 auto;
           z-index: 5;
-          margin-bottom: 1rem;
+          margin-bottom: 0.6rem;
         }
         .cart-panel {
-          border-radius: 20px;
+          border-radius: 16px;
           border: 1px solid rgba(37, 99, 235, 0.16);
           background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0.96), rgba(16, 185, 129, 0.08));
-          padding: 1.1rem;
+          padding: 0.75rem 0.9rem;
           display: grid;
-          gap: 0.9rem;
+          gap: 0.55rem;
           transition: transform 220ms ease, box-shadow 220ms ease;
           box-shadow: 0 18px 40px rgba(37, 99, 235, 0.08);
         }
@@ -853,7 +1013,10 @@ setSelectedEquipoIds([]);
         }
         .cart-items {
           display: grid;
-          gap: 0.65rem;
+          gap: 0.5rem;
+          /* Capped so a long cart cannot push the catalog off screen. */
+          max-height: 22vh;
+          overflow-y: auto;
         }
         .cart-item {
           display: grid;
@@ -932,7 +1095,7 @@ setSelectedEquipoIds([]);
         .section-kicker {
           color: var(--brand-primary);
           font-size: 0.82rem;
-          fontWeight: 800;
+          font-weight: 800;
           letter-spacing: 0.08em;
           text-transform: uppercase;
         }
@@ -940,13 +1103,83 @@ setSelectedEquipoIds([]);
           color: var(--text-secondary);
           font-size: 0.95rem;
         }
+        .search-row {
+          flex: 0 0 auto;
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+          margin-bottom: 0.6rem;
+        }
+        .eq-search-field {
+          position: relative;
+          flex: 1;
+          min-width: 0;
+          display: flex;
+        }
+        .eq-search-icon {
+          position: absolute;
+          left: 0.85rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-secondary);
+          pointer-events: none;
+        }
+        .eq-search-input {
+          flex: 1;
+          min-width: 0;
+          margin: 0;
+          border-radius: 12px;
+          border: 2px solid rgba(148, 163, 184, 0.25);
+          background: #fff;
+          font-size: 1rem;
+          padding: 0.7rem 0.9rem 0.7rem 2.6rem;
+          transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+        .eq-search-input:focus {
+          outline: none;
+          border-color: rgba(37, 99, 235, 0.6);
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+        }
+        .eq-search-clear {
+          flex: 0 0 auto;
+          width: auto;
+          padding: 0.6rem 0.9rem;
+          border-radius: 12px;
+          border: 1px solid var(--border-subtle);
+          background: #fff;
+          color: var(--text-secondary);
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .catalog-actionbar {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.8rem;
+          flex-wrap: wrap;
+          margin-top: 0.7rem;
+          padding-top: 0.7rem;
+          border-top: 1px solid var(--border-subtle);
+        }
         @media (max-width: 1100px) {
           .kiosk-main {
-            padding: 1.2rem;
+            padding: 0.8rem;
           }
           .success-actions {
             grid-template-columns: 1fr;
           }
+        }
+        /* Short laptop screens: trade decoration for rows of equipment. */
+        @media (max-height: 800px) {
+          .kiosk-main { padding: 0.6rem 1.1rem; }
+          .kiosk-nav { margin-bottom: 0.6rem; }
+          .kiosk-brand img { width: 34px; height: 34px; }
+          .kiosk-brand span { font-size: 1rem; }
+          .glass-card { padding: 0.85rem; border-radius: 16px; }
+          .eq-item { padding: 0.7rem; }
+          .eq-grid { gap: 0.65rem; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+          .cart-items { max-height: 16vh; }
         }
         .fly-token {
           position: fixed;
@@ -1017,40 +1250,43 @@ setSelectedEquipoIds([]);
           <img src={logoP15} alt="Logo Preparatoria Quince" />
           <span>Preparatoria 15</span>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          {loggedInProfesor && (
-            <button className="nav-btn" onClick={handleLogout} style={{ border: 'none', background: 'rgba(239, 68, 68, 0.15)', color: 'var(--danger-base)' }}>
-              Cerrar Sesión
-            </button>
-          )}
+        {/* Exit actions live at the bottom-left once logged in (see .kiosk-exit-bar);
+            the login screen still needs its escape hatch up here. */}
+        {!loggedInProfesor && (
           <Link to="/" className="nav-btn">
-            🏠 Volver a Inicio
+            <Icon name="home" />
+            Volver a Inicio
           </Link>
-        </div>
+        )}
       </nav>
 
       {(statusMessage || errorMessage) && (
         <div style={{
-          padding: '1.5rem',
-          borderRadius: '16px',
-          marginBottom: '2rem',
+          flex: '0 0 auto',
+          padding: '0.6rem 1rem',
+          borderRadius: '12px',
+          marginBottom: '0.7rem',
           background: errorMessage ? '#feeceb' : '#e6f4ea',
           color: errorMessage ? '#d32f2f' : '#1e8e3e',
           border: `1px solid ${errorMessage ? '#f4c3c2' : '#c3e6cb'}`,
-          fontSize: '1.2rem',
+          fontSize: '1rem',
           fontWeight: 600,
-          textAlign: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '0.5rem',
           animation: 'fadeIn 0.3s ease'
         }}>
-          {errorMessage || statusMessage}
+          <Icon name={errorMessage ? "alertCircle" : "checkCircle"} size="1.15em" />
+          <span>{errorMessage || statusMessage}</span>
         </div>
       )}
 
       {!loggedInProfesor ? (
         <section style={{ margin: 'auto', maxWidth: '600px', width: '100%', textAlign: 'center' }}>
-          <div className="glass-card">
-            <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Ingresa tu Código</h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '3rem' }}>
+          <div className="glass-card" style={{ padding: 'clamp(1.5rem, 4vh, 2.75rem)' }}>
+            <h1 style={{ fontSize: 'clamp(2rem, 5vh, 3.5rem)', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Ingresa tu Código</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: 'clamp(1.25rem, 3vh, 2.5rem)' }}>
               Por favor ingresa tu código de profesor.
             </p>
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -1070,44 +1306,26 @@ setSelectedEquipoIds([]);
         </section>
       ) : (
         <>
-        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(350px, 1fr) 2fr', gap: '2rem', flex: 1 }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '1rem', flex: 1, minHeight: 0 }}>
 
           {/* Left Column: Profile & Active Loans */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div className="glass-card" style={{ padding: '2rem' }}>
-              <div className="section-kicker" style={{ marginBottom: '0.55rem' }}>
-                Colaborador Activo
-              </div>
-              <h1 style={{ fontSize: '2rem', margin: 0, lineHeight: 1.1 }}>{loggedInProfesor.nombre}</h1>
-              <div style={{ color: 'var(--text-secondary)', marginTop: '0.45rem', fontSize: '1.02rem' }}>ID: {loggedInProfesor.codigo}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.75rem', marginTop: '1.2rem' }}>
-                <div style={{ padding: '0.85rem', borderRadius: '18px', background: 'rgba(37, 99, 235, 0.08)' }}>
-                  <div className="muted-metric">En carrito</div>
-                  <strong style={{ fontSize: '1.45rem' }}>{selectedEquipoIds.length}</strong>
-                </div>
-                <div style={{ padding: '0.85rem', borderRadius: '18px', background: 'rgba(34, 197, 94, 0.08)' }}>
-                  <div className="muted-metric">Pendientes</div>
-                  <strong style={{ fontSize: '1.45rem' }}>{misPrestamos.length}</strong>
-                </div>
-                <div style={{ padding: '0.85rem', borderRadius: '18px', background: 'rgba(245, 158, 11, 0.10)' }}>
-                  <div className="muted-metric">Sesion</div>
-                  <strong style={{ fontSize: '1.05rem' }}>Activa</strong>
-                </div>
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: 0 }}>
+            <div className="glass-card" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'baseline', gap: '0.7rem', flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: '1.35rem', margin: 0, lineHeight: 1.15 }}>{loggedInProfesor.nombre}</h1>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>ID: {loggedInProfesor.codigo}</span>
             </div>
 
             {settings.kiosk_show_pendientes !== 'false' && (
-              <div className="glass-card" style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-                  <div>
-                    <div className="section-kicker">Devoluciones</div>
-                    <h2 style={{ fontSize: '1.55rem', margin: '0.25rem 0 0', color: 'var(--text-primary)' }}>Tus pendientes activos</h2>
-                  </div>
+              <div className="glass-card" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem', flexWrap: 'wrap', flex: '0 0 auto' }}>
+                  <h2 style={{ fontSize: '1.15rem', margin: 0, color: 'var(--text-primary)' }}>
+                    Por devolver {misPrestamos.length > 0 ? `(${misPrestamos.length})` : ''}
+                  </h2>
                   {misPrestamos.length > 1 ? (
                     <button
                       type="button"
                       className="modal-secondary-btn"
-                      style={{ minWidth: '160px' }}
+                      style={{ minWidth: '140px' }}
                       onClick={() => setReturnAllModalOpen(true)}
                     >
                       Devolver todo
@@ -1115,12 +1333,12 @@ setSelectedEquipoIds([]);
                   ) : null}
                 </div>
                 {misPrestamos.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem 1rem', background: 'var(--surface-sunken)', borderRadius: '16px' }}>
-                    <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🙌</span>
-                    No tienes equipos por devolver. Todo esta en orden.
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-secondary)', padding: '1.25rem 1rem', background: 'var(--surface-sunken)', borderRadius: '14px' }}>
+                    <Icon name="smile" size="1.2em" />
+                    <span>No tienes equipos por devolver.</span>
                   </div>
                 ) : (
-                  <div>
+                  <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                     {misPrestamos.map(p => (
                       <div key={p.id} className="loan-card">
                         <div>
@@ -1139,25 +1357,43 @@ setSelectedEquipoIds([]);
                 )}
               </div>
             )}
+
+            {/* marginTop:auto keeps this pinned to the bottom even when the
+                pendientes panel is hidden by settings. */}
+            <div className="kiosk-exit-bar">
+              <button type="button" className="exit-btn exit-btn-danger" onClick={handleLogout}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Cerrar sesión
+              </button>
+              <span className="exit-divider" aria-hidden="true" />
+              <Link to="/" className="exit-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 9.5 12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20z" />
+                  <polyline points="9.5 21.5 9.5 13.5 14.5 13.5 14.5 21.5" />
+                </svg>
+                Inicio
+              </Link>
+            </div>
           </div>
 
           {/* Right Column: New Loan */}
           {settings.kiosk_show_catalogo !== 'false' && (
-            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
-              <div className="inventory-toolbar">
-                <div>
-                  <div className="section-kicker">Catalogo de prestamo</div>
-                  <h2 style={{ fontSize: '1.9rem', margin: '0.25rem 0 0.2rem' }}>Tomar equipo nuevo</h2>
-                  <div className="muted-metric">Explora por categoria, filtra rapido y agrega al carrito con un solo toque.</div>
-                </div>
+            <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <div className="inventory-toolbar" style={{ flex: '0 0 auto' }}>
+                <h2 style={{ fontSize: '1.15rem', margin: '0 0 0.6rem' }}>Tomar equipo nuevo</h2>
               </div>
-              <div style={{ display: 'flex', gap: '1.5rem', flex: 1, minHeight: '500px' }}>
+              <div style={{ display: 'flex', gap: '1rem', flex: 1, minHeight: 0 }}>
                 {/* Categories Sidebar */}
                 <div style={{
-                  flex: '0 0 240px',
+                  flex: '0 0 190px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.8rem',
+                  gap: '0.4rem',
+                  minHeight: 0,
                   overflowY: 'auto',
                   paddingRight: '0.5rem'
                 }}>
@@ -1165,9 +1401,9 @@ setSelectedEquipoIds([]);
                     type="button"
                     onClick={() => setCategoriaAndClearSearch(null)}
                     style={{
-                      padding: '1rem 1.05rem',
-                      fontSize: '1.1rem',
-                      borderRadius: '18px',
+                      padding: '0.6rem 0.8rem',
+                      fontSize: '0.95rem',
+                      borderRadius: '12px',
                       border: selectedCategoriaId === null ? '1px solid rgba(37, 99, 235, 0.28)' : '1px solid rgba(148, 163, 184, 0.14)',
                       background: selectedCategoriaId === null ? 'rgba(37, 99, 235, 0.09)' : 'rgba(248, 250, 252, 0.95)',
                       color: selectedCategoriaId === null ? 'var(--brand-primary)' : 'var(--text-secondary)',
@@ -1191,9 +1427,9 @@ setSelectedEquipoIds([]);
                       type="button"
                       onClick={() => setCategoriaAndClearSearch(c.id)}
                       style={{
-                        padding: '1rem 1.05rem',
-                        fontSize: '1.1rem',
-                        borderRadius: '18px',
+                        padding: '0.6rem 0.8rem',
+                        fontSize: '0.95rem',
+                        borderRadius: '12px',
                         border: selectedCategoriaId === c.id ? '1px solid rgba(37, 99, 235, 0.28)' : '1px solid rgba(148, 163, 184, 0.14)',
                         background: selectedCategoriaId === c.id ? 'rgba(37, 99, 235, 0.09)' : 'rgba(248, 250, 252, 0.95)',
                         color: selectedCategoriaId === c.id ? 'var(--brand-primary)' : 'var(--text-secondary)',
@@ -1216,7 +1452,57 @@ setSelectedEquipoIds([]);
                 </div>
 
                 {/* Equipment Area */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                  {/* Search sits first: it is the fastest path to an item and must
+                      never be pushed off screen by a growing cart. */}
+                  <div className="search-row">
+                    <div className="eq-search-field">
+                      <Icon name="search" className="eq-search-icon" size="1.15rem" />
+                      <input
+                        type="text"
+                        className="eq-search-input"
+                        value={equipoSearchTerm}
+                        onChange={(e) => setEquipoSearchTerm(e.target.value)}
+                        placeholder="Buscar en todas las áreas por nombre, categoría o identificador… (Enter agrega el primero)"
+                        aria-label="Buscar equipo"
+                        onKeyDown={(e) => {
+                          if (e.key !== "Enter") return;
+                          e.preventDefault();
+                          const firstAvailable = filteredEquipos.find(isEquipoDisponible);
+                          if (!firstAvailable) {
+                            setErrorMessage("No hay equipos disponibles con ese criterio.");
+                            return;
+                          }
+                          handleToggleEquipo(firstAvailable);
+                          setEquipoSearchTerm("");
+                        }}
+                      />
+                    </div>
+                    {equipoSearchTerm ? (
+                      <button
+                        type="button"
+                        className="eq-search-clear"
+                        onClick={() => setEquipoSearchTerm("")}
+                        title="Limpiar búsqueda"
+                      >
+                        Limpiar
+                      </button>
+                    ) : null}
+                  </div>
+                  {equipoSearchTermNormalized && selectedCategoriaId !== null ? (
+                    <div
+                      role="status"
+                      style={{
+                        margin: '-0.25rem 0 0.5rem',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      Mostrando resultados de todas las áreas
+                    </div>
+                  ) : null}
+
                   <div className="cart-shell" ref={cartRef}>
                     <div className={`cart-panel ${cartPulse > 0 ? 'pulse' : ''}`} key={cartPulse}>
                       <div className="cart-header">
@@ -1279,9 +1565,10 @@ setSelectedEquipoIds([]);
                                             });
                                           }
                                         }}
+                                        aria-label={`Quitar una unidad de `}
                                         style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1.5px solid #d1d5db', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#374151' }}
                                       >
-                                        −
+                                        <Icon name="minus" size="1rem" strokeWidth={3} />
                                       </button>
                                       <span style={{ fontWeight: 800, fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{cantidad}</span>
                                       <button
@@ -1293,9 +1580,10 @@ setSelectedEquipoIds([]);
                                           }
                                         }}
                                         disabled={cantidad >= maxStock}
+                                        aria-label={`Agregar una unidad de `}
                                         style={{ width: '28px', height: '28px', borderRadius: '8px', border: cantidad >= maxStock ? '1.5px solid #e5e7eb' : '1.5px solid #d1d5db', background: cantidad >= maxStock ? '#f3f4f6' : 'white', cursor: cantidad >= maxStock ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: cantidad >= maxStock ? '#9ca3af' : '#374151' }}
                                       >
-                                        +
+                                        <Icon name="plus" size="1rem" strokeWidth={3} />
                                       </button>
                                     </div>
                                   ) : (
@@ -1309,63 +1597,23 @@ setSelectedEquipoIds([]);
                             })}
                         </div>
                       )}
+
+                      <details className="cart-notes" open={observacionesEntrega.trim().length > 0}>
+                        <summary className="cart-notes-summary">
+                          Agregar observacion
+                          {observacionesEntrega.trim() ? <span className="cart-notes-flag">Con nota</span> : null}
+                        </summary>
+                        <textarea
+                          id="observaciones-cart"
+                          className="kiosk-textarea"
+                          value={observacionesEntrega}
+                          onChange={(e) => setObservacionesEntrega(e.target.value)}
+                          placeholder="Ej. No estaba este control, me llevo otro en su lugar."
+                          aria-label="Observaciones del profesor"
+                        />
+                      </details>
                     </div>
                   </div>
-
-                  <form onSubmit={handlePrestamo} style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flex: 1, minWidth: '320px', maxWidth: '720px' }}>
-                      <input
-                        type="text"
-                        value={equipoSearchTerm}
-                        onChange={(e) => setEquipoSearchTerm(e.target.value)}
-                        placeholder="🔍 Buscar equipo por nombre, categoría o identificador..."
-                        aria-label="Buscar equipo"
-                        style={{
-                          flex: 1,
-                          minWidth: '240px',
-                          margin: 0,
-                          borderRadius: '16px',
-                          border: '2px solid rgba(148, 163, 184, 0.18)',
-                          background: 'rgba(255,255,255,0.95)',
-                          fontSize: '1rem',
-                          padding: '0.9rem 1rem',
-                          boxShadow: '0 12px 24px rgba(15, 23, 42, 0.05)',
-                          transition: 'box-shadow 180ms ease, border-color 180ms ease'
-                        }}
-                        onFocus={(e) => {
-                          (e.target as HTMLInputElement).style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.14)';
-                          (e.target as HTMLInputElement).style.borderColor = 'rgba(37, 99, 235, 0.6)';
-                        }}
-                        onBlur={(e) => {
-                          (e.target as HTMLInputElement).style.boxShadow = '0 12px 24px rgba(15, 23, 42, 0.05)';
-                          (e.target as HTMLInputElement).style.borderColor = 'rgba(148, 163, 184, 0.18)';
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setEquipoSearchTerm("")}
-                        title="Limpiar búsqueda"
-                        style={{
-                          padding: '0.65rem 0.9rem',
-                          borderRadius: '12px',
-                          border: '1px solid rgba(148,163,184,0.12)',
-                          background: 'white',
-                          cursor: 'pointer',
-                          boxShadow: '0 8px 20px rgba(15,23,42,0.06)'
-                        }}
-                      >
-                        Limpiar
-                      </button>
-                    </div>
-                    <button
-                      type="submit"
-                      className="kiosk-btn-primary"
-                      disabled={selectedEquipoIds.length === 0}
-                      style={{ padding: '1rem 2rem', fontSize: '1.05rem', margin: 0, width: 'auto', minWidth: '240px' }}
-                    >
-                      Confirmar y Llevar {selectedEquipoIds.length > 0 ? `(${selectedEquipoIds.length})` : ''}
-                    </button>
-                  </form>
 
                   <div className="eq-grid">
                     {filteredEquipos.length === 0 ? (
@@ -1402,6 +1650,9 @@ setSelectedEquipoIds([]);
                               className="eq-state-chip"
                               style={{ background: tone.surface, color: tone.text }}
                             >
+                              <span className="eq-state-icon" aria-hidden="true">
+                                <Icon name={tone.icon} size="0.72rem" strokeWidth={3} />
+                              </span>
                               {tone.label}
                             </span>
                           </div>
@@ -1412,7 +1663,6 @@ setSelectedEquipoIds([]);
                                 <strong style={{ fontSize: '1.18rem', color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', marginTop: '0.35rem', lineHeight: 1.25 }}>
                                   {eq.nombre_equipo}
                                 </strong>
-                                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.28rem' }}>Haz clic para agregar</div>
                           </div>
                           <div className="eq-support">
                             {getEquipoSupportingText(eq)}
@@ -1428,9 +1678,49 @@ setSelectedEquipoIds([]);
                             ) : null}
                             {selectedCount > 1 ? <span className="selection-pill">x{selectedCount} seleccionados</span> : null}
                           </div>
+                          {/* Fake button: the whole card is the real button, but teachers
+                              need an obvious "tap here" target, not a gray hint line. */}
+                          <span
+                            className={`eq-cta ${isSelected ? 'added' : ''} ${!isAvail ? 'off' : ''}`}
+                            aria-hidden="true"
+                          >
+                            {!isAvail ? (
+                              'No disponible'
+                            ) : isSelected ? (
+                              <>
+                                <Icon name="check" strokeWidth={3} />
+                                {`Agregado${selectedCount > 1 ? ` (${selectedCount})` : ''}`}
+                              </>
+                            ) : (
+                              <>
+                                <Icon name="plus" strokeWidth={3} />
+                                Agregar
+                              </>
+                            )}
+                          </span>
                         </button>
                       );
                     })}
+                  </div>
+
+                  {/* Bottom action bar: the primary action is always on screen. */}
+                  <div className="catalog-actionbar">
+                    <span className="muted-metric">
+                      {selectedEquipoIds.length === 0
+                        ? 'Selecciona equipos para continuar.'
+                        : `${selectedEquipoIds.length} articulo(s) listos`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => void handlePrestamo()}
+                      className="kiosk-btn-primary"
+                      disabled={selectedEquipoIds.length === 0 || submitting}
+                      style={{ padding: '0.8rem 1.6rem', fontSize: '1rem', margin: 0, width: 'auto', minWidth: '220px' }}
+                    >
+                      {submitting
+                        ? 'Registrando...'
+                        : `Confirmar y Llevar ${selectedEquipoIds.length > 0 ? `(${selectedEquipoIds.length})` : ''}`}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1468,51 +1758,13 @@ setSelectedEquipoIds([]);
         </div>
       ) : null}
 
-{confirmModalOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
-          <div className="modal-card">
-            <div>
-              <div style={{ color: 'var(--brand-primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>
-                Confirmar prestamo
-              </div>
-              <h3 id="confirm-modal-title" style={{ margin: 0, fontSize: '1.9rem' }}>Revisa lo que se va a registrar</h3>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }} role="list" aria-label="Equipos seleccionados">
-              {selectedEquiposSummary.map(({ equipo, count }) => (
-                <span key={`${equipo.id}-${count}`} className="selection-pill" role="listitem">
-                  {equipo.nombre_equipo}{count > 1 ? ` x${count}` : ""}
-                </span>
-              ))}
-            </div>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              <label htmlFor="observaciones-modal" style={{ fontWeight: 700 }}>Observaciones del profesor</label>
-              <textarea
-                id="observaciones-modal"
-                className="kiosk-textarea"
-                value={observacionesEntrega}
-                onChange={(e) => setObservacionesEntrega(e.target.value)}
-                placeholder="Ej. No estaba este control, me llevo otro en su lugar."
-                aria-describedby="observaciones-help"
-              />
-              <span id="observaciones-help" className="a11y-sr-only">Ingrese cualquier observación adicional sobre el préstamo.</span>
-            </div>
-            <div className="modal-actions">
-              <button type="button" className="modal-secondary-btn" onClick={() => setConfirmModalOpen(false)}>
-                Seguir editando
-              </button>
-              <button type="button" className="kiosk-btn-primary" style={{ width: 'auto', padding: '0.95rem 1.6rem', fontSize: '1rem' }} onClick={() => void handleConfirmPrestamo()}>
-                Registrar prestamo
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {successModalOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="success-modal-title" aria-live="polite">
           <div className="modal-card success-modal-card">
             <div className="success-hero">
-              <div className="success-badge" aria-hidden="true">✓</div>
+              <div className="success-badge" aria-hidden="true">
+                <Icon name="check" size="2.6rem" strokeWidth={3} />
+              </div>
               <div style={{ color: '#15803d', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', fontSize: '0.9rem' }}>
                 Prestamo creado con exito
               </div>

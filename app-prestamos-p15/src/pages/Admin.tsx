@@ -629,11 +629,19 @@ function InventarioPanel() {
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+        <select
+          className={filterCategory ? "is-active" : undefined}
+          value={filterCategory}
+          onChange={e => setFilterCategory(e.target.value)}
+        >
           <option value="">Todas las categorías</option>
           {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+        <select
+          className={filterStatus ? "is-active" : undefined}
+          value={filterStatus}
+          onChange={e => setFilterStatus(e.target.value)}
+        >
           <option value="">Todos los estados</option>
           <option value="disponible">Disponible</option>
           <option value="prestado">Prestado</option>

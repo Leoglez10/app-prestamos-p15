@@ -418,8 +418,36 @@ button.ghost {
   background: var(--surface-default);
 }
 
+/* appearance:none drops the platform chevron (a double arrow on macOS) so the
+   two selects read as one control set with the search field. */
 .admin-filters select {
   min-width: 0;
+  appearance: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-right: 2.2rem;
+  background-color: var(--surface-default);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.85rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-filters select:hover {
+  border-color: var(--brand-primary);
+  color: var(--text-primary);
+}
+
+/* The applied filter has to be visible at a glance, otherwise a stale filter
+   silently hides half the inventory. */
+.admin-filters select.is-active {
+  color: var(--text-primary);
+  font-weight: 700;
+  border-color: var(--brand-primary);
+  background-color: rgba(37, 99, 235, 0.08);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
 .admin-filters-search {

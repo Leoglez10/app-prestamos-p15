@@ -36,19 +36,47 @@ current_version() {
   jq -r '.version' "$CONF"
 }
 
+# Escribe la version en un JSON preservando la indentacion y el modo del archivo.
+# `cat` (en vez de `mv`) mantiene los permisos originales.
+write_json_version() {
+  local file="$1" v="$2"
+  local jq_flags=()
+  # jq siempre reindenta; --tab cuando el archivo original usa tabs.
+  if grep -q '^	' "$file"; then
+    jq_flags+=(--tab)
+  fi
+  # jq tambien normaliza los saltos de linea a LF: si el archivo venia con CRLF
+  # hay que restaurarlo, si no el diff marca el archivo entero como cambiado.
+  local crlf=0
+  if grep -q $'\r' "$file"; then
+    crlf=1
+  fi
+  jq "${jq_flags[@]}" --arg v "$v" '.version = $v' "$file" > "$file.tmp"
+  if [ "$crlf" = "1" ]; then
+    awk '{ printf "%s\r\n", $0 }' "$file.tmp" > "$file.tmp2" && mv "$file.tmp2" "$file.tmp"
+  fi
+  cat "$file.tmp" > "$file" && rm -f "$file.tmp"
+}
+
 write_version() {
   local v="$1"
-  jq --arg v "$v" '.version = $v' "$CONF" > "$CONF.tmp" && mv "$CONF.tmp" "$CONF"
+  write_json_version "$CONF" "$v"
   if [ -f "$PKG" ] && [ "${SYNC:-1}" = "1" ]; then
-    jq --arg v "$v" '.version = $v' "$PKG" > "$PKG.tmp" && mv "$PKG.tmp" "$PKG"
+    write_json_version "$PKG" "$v"
   fi
   if [ -f "$CARGO" ] && [ "${SYNC:-1}" = "1" ]; then
-    # Cargo.toml: reemplaza la primera linea `version = "..."` luego de `name =`
-    if [[ "$(uname)" == "Darwin" ]]; then
-      /usr/bin/sed -i '' -E "0,/^name = .*/{s/^version = .*/version = \"$v\"/}" "$CARGO"
-    else
-      sed -i -E "0,/^name = .*/{s/^version = .*/version = \"$v\"/}" "$CARGO"
-    fi
+    # Cargo.toml: solo la linea `version = "..."` de [package]. BSD sed no
+    # soporta rangos `0,/re/`, asi que awk lo hace igual en mac y linux y no
+    # toca las versiones de las dependencias.
+    awk -v v="$v" '
+      /^\[package\]/ { inpkg = 1 }
+      inpkg && !done && /^version[[:space:]]*=/ {
+        print "version = \"" v "\""
+        done = 1
+        next
+      }
+      { print }
+    ' "$CARGO" > "$CARGO.tmp" && cat "$CARGO.tmp" > "$CARGO" && rm -f "$CARGO.tmp"
   fi
 }
 

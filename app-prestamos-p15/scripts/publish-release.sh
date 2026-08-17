@@ -26,6 +26,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONF="$ROOT/src-tauri/tauri.conf.json"
 PKG="$ROOT/package.json"
 CARGO="$ROOT/src-tauri/Cargo.toml"
+LOCK="$ROOT/src-tauri/Cargo.lock"
 
 cd "$ROOT"
 
@@ -81,6 +82,27 @@ write_version() {
       }
       { print }
     ' "$CARGO" > "$CARGO.tmp" && cat "$CARGO.tmp" > "$CARGO" && rm -f "$CARGO.tmp"
+
+    # Cargo.lock guarda la version del propio crate. Si no se actualiza aca,
+    # cargo la reescribe en la primera compilacion y deja el tree sucio, lo que
+    # bloquea el siguiente release en ensure_clean. Solo el bloque cuyo `name`
+    # coincide con el del [package]; las dependencias no se tocan.
+    if [ -f "$LOCK" ]; then
+      local pkg_name
+      pkg_name="$(awk '/^\[package\]/ { inpkg = 1 }
+        inpkg && /^name[[:space:]]*=/ { gsub(/^name[[:space:]]*=[[:space:]]*"|"[[:space:]]*$/, ""); print; exit }' "$CARGO")"
+      if [ -n "$pkg_name" ]; then
+        awk -v v="$v" -v pkg="$pkg_name" '
+          $0 == "name = \"" pkg "\"" { found = 1 }
+          found && !done && /^version[[:space:]]*=/ {
+            print "version = \"" v "\""
+            done = 1
+            next
+          }
+          { print }
+        ' "$LOCK" > "$LOCK.tmp" && cat "$LOCK.tmp" > "$LOCK" && rm -f "$LOCK.tmp"
+      fi
+    fi
   fi
 }
 
@@ -114,7 +136,7 @@ ensure_pushed() {
 # muere en ensure_clean (deadlock: no se puede reintentar ni publicar).
 rollback_versions() {
   local f
-  for f in "$CONF" "$PKG" "$CARGO"; do
+  for f in "$CONF" "$PKG" "$CARGO" "$LOCK"; do
     [ -f "$f" ] && git checkout -- "$f" 2>/dev/null || true
   done
   echo "Fallo la publicacion. Versiones revertidas al estado del ultimo commit." >&2
@@ -177,6 +199,7 @@ main() {
   if [ "$SYNC" = "1" ]; then
     if [ -f "$PKG" ]; then git add "$PKG"; fi
     if [ -f "$CARGO" ]; then git add "$CARGO"; fi
+    if [ -f "$LOCK" ]; then git add "$LOCK"; fi
   fi
 
   git commit -m "release: v$new_version"

@@ -23,7 +23,10 @@ ROOT="$TMP/proj"
 mkdir -p "$ROOT/src-tauri" "$ROOT/scripts"
 printf '{\n\t"version": "0.1.0",\n\t"productName": "X"\n}\n' > "$ROOT/src-tauri/tauri.conf.json"
 printf '{\n  "version": "0.1.0"\n}\n' > "$ROOT/package.json"
-printf '[package]\nversion = "0.1.0"\n\n[dependencies]\nserde = { version = "1.0" }\n' > "$ROOT/src-tauri/Cargo.toml"
+printf '[package]\nname = "app-prestamos-p15"\nversion = "0.1.0"\n\n[dependencies]\nserde = { version = "1.0" }\n' > "$ROOT/src-tauri/Cargo.toml"
+# Lock with a same-named dependency block BEFORE the crate's own, so a naive
+# "first version line wins" rewrite would corrupt the dependency instead.
+printf '[[package]]\nname = "serde"\nversion = "1.0.0"\n\n[[package]]\nname = "app-prestamos-p15"\nversion = "0.1.0"\ndependencies = [\n "serde",\n]\n' > "$ROOT/src-tauri/Cargo.lock"
 cp "$TARGET" "$ROOT/scripts/"
 
 git -C "$TMP" init -q .
@@ -36,6 +39,7 @@ git -C "$TMP" commit -qm init
 CONF="$ROOT/src-tauri/tauri.conf.json"
 PKG="$ROOT/package.json"
 CARGO="$ROOT/src-tauri/Cargo.toml"
+LOCK="$ROOT/src-tauri/Cargo.lock"
 cd "$ROOT"
 eval "$(sed -n '/^write_json_version()/,/^}/p;/^write_version()/,/^}/p;/^rollback_versions()/,/^}/p' "$TARGET")"
 
@@ -47,11 +51,14 @@ write_version 9.9.9
 grep -q '^version = "9.9.9"$' "$CARGO" || fail "Cargo.toml [package].version not bumped"
 grep -q 'serde = { version = "1.0" }' "$CARGO" || fail "Cargo.toml dependency version was clobbered"
 grep -q $'^\t"version"' "$CONF" || fail "tab indentation lost in tauri.conf.json"
+grep -q '^version = "9.9.9"$' "$LOCK" || fail "Cargo.lock crate version not bumped"
+grep -q '^version = "1.0.0"$' "$LOCK" || fail "Cargo.lock dependency version was clobbered"
 
 rollback_versions >/dev/null 2>&1
 
 [ "$(jq -r .version "$CONF")" = "0.1.0" ] || fail "rollback did not restore tauri.conf.json"
 [ "$(jq -r .version "$PKG")" = "0.1.0" ] || fail "rollback did not restore package.json"
 grep -q '^version = "0.1.0"$' "$CARGO" || fail "rollback did not restore Cargo.toml"
+grep -q '^version = "0.1.0"$' "$LOCK" || fail "rollback did not restore Cargo.lock"
 
 echo "OK: publish-release.sh version write + rollback"

@@ -476,6 +476,8 @@ function InventarioPanel() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  const hasActiveFilters = Boolean(searchTerm || filterCategory || filterStatus);
+
   const inventarioSummary = {
     disponibles: filteredEquipos.filter((equipo) => equipo.estado === "disponible").length,
     prestados: filteredEquipos.filter((equipo) => equipo.estado === "prestado").length,
@@ -617,32 +619,40 @@ function InventarioPanel() {
       />
 
       {/* Buscador y Filtros */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '250px', display: 'flex' }}>
-          <Icon
-            name="search"
-            size="1.05rem"
-            style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', pointerEvents: 'none' }}
-          />
+      <div className="admin-filters">
+        <div className="admin-filters-search">
+          <Icon name="search" size="1.05rem" className="admin-filters-icon" />
           <input
-            type="text"
+            type="search"
             placeholder="Buscar por nombre o ID..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            style={{ flex: 1, minWidth: 0, padding: '0.8rem 1rem 0.8rem 2.6rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}
           />
         </div>
-        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
           <option value="">Todas las categorías</option>
           {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
         </select>
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
           <option value="">Todos los estados</option>
           <option value="disponible">Disponible</option>
           <option value="prestado">Prestado</option>
           <option value="extraviado">Extraviado</option>
           <option value="mantenimiento">Mantenimiento</option>
         </select>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            className="admin-filters-clear"
+            onClick={() => {
+              setSearchTerm("");
+              setFilterCategory("");
+              setFilterStatus("");
+            }}
+          >
+            Limpiar filtros
+          </button>
+        )}
       </div>
 
       <div className="admin-grid">

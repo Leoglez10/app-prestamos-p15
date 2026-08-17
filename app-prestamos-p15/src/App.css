@@ -402,6 +402,69 @@ button.ghost {
   gap: 0.6rem;
 }
 
+/* -- Admin filter bar --
+   The global `input, select, button { width: 100% }` rule makes flex children
+   claim a full row each, which is why these controls stacked. A grid gives the
+   search field the slack and keeps both selects on fixed tracks beside it. */
+.admin-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 210px) minmax(150px, 210px) auto;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.7rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--surface-default);
+}
+
+.admin-filters select {
+  min-width: 0;
+}
+
+.admin-filters-search {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.admin-filters-search input {
+  padding-left: 2.6rem;
+}
+
+.admin-filters-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.admin-filters-clear {
+  width: auto;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-subtle);
+  font-weight: 600;
+}
+
+.admin-filters-clear:hover {
+  filter: none;
+  color: var(--text-primary);
+  border-color: var(--brand-primary);
+}
+
+@media (max-width: 1100px) {
+  .admin-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-filters-search {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 900px) {
   .admin-grid,
   .admin-form-grid,

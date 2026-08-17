@@ -18,7 +18,9 @@
 # Requisitos:
 #   - git, jq
 #   - origin configurado
-set -euo pipefail
+# -E (errtrace): sin esto el trap ERR no se hereda dentro de las funciones y un
+# fallo en write_version saldria sin revertir el bump.
+set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONF="$ROOT/src-tauri/tauri.conf.json"
@@ -40,10 +42,12 @@ current_version() {
 # `cat` (en vez de `mv`) mantiene los permisos originales.
 write_json_version() {
   local file="$1" v="$2"
-  local jq_flags=()
   # jq siempre reindenta; --tab cuando el archivo original usa tabs.
+  # Variable simple y no array: bash 3.2 (el de macOS) con `set -u` falla al
+  # expandir un array vacio.
+  local jq_flag=""
   if grep -q '^	' "$file"; then
-    jq_flags+=(--tab)
+    jq_flag="--tab"
   fi
   # jq tambien normaliza los saltos de linea a LF: si el archivo venia con CRLF
   # hay que restaurarlo, si no el diff marca el archivo entero como cambiado.
@@ -51,7 +55,7 @@ write_json_version() {
   if grep -q $'\r' "$file"; then
     crlf=1
   fi
-  jq "${jq_flags[@]}" --arg v "$v" '.version = $v' "$file" > "$file.tmp"
+  jq ${jq_flag:+"$jq_flag"} --arg v "$v" '.version = $v' "$file" > "$file.tmp"
   if [ "$crlf" = "1" ]; then
     awk '{ printf "%s\r\n", $0 }' "$file.tmp" > "$file.tmp2" && mv "$file.tmp2" "$file.tmp"
   fi
@@ -105,6 +109,17 @@ ensure_pushed() {
   fi
 }
 
+# Deshace los archivos de version si el script falla despues de escribirlos.
+# Sin esto un fallo a mitad de camino deja el tree sucio y el siguiente intento
+# muere en ensure_clean (deadlock: no se puede reintentar ni publicar).
+rollback_versions() {
+  local f
+  for f in "$CONF" "$PKG" "$CARGO"; do
+    [ -f "$f" ] && git checkout -- "$f" 2>/dev/null || true
+  done
+  echo "Fallo la publicacion. Versiones revertidas al estado del ultimo commit." >&2
+}
+
 main() {
   local new_version="${1:-}"
   local no_sync="${2:-}"
@@ -151,11 +166,18 @@ main() {
   echo "Bumpeando a $new_version (sync=$([ "$SYNC" = "1" ] && echo "package.json+Cargo.toml" || echo "solo tauri.conf.json"))..."
   ensure_clean
   ensure_pushed
+
+  # A partir de aca se tocan archivos: cualquier fallo revierte el bump.
+  trap rollback_versions ERR
   write_version "$new_version"
 
   git add "$CONF"
-  [ "$SYNC" = "1" ] && [ -f "$PKG" ] && git add "$PKG"
-  [ "$SYNC" = "1" ] && [ -f "$CARGO" ] && git add "$CARGO"
+  # `if` y no `a && b`: con `set -e` una lista `&&` que da falso aborta el script
+  # (rompia el modo --no-sync).
+  if [ "$SYNC" = "1" ]; then
+    if [ -f "$PKG" ]; then git add "$PKG"; fi
+    if [ -f "$CARGO" ]; then git add "$CARGO"; fi
+  fi
 
   git commit -m "release: v$new_version"
   git push
@@ -163,6 +185,7 @@ main() {
   local tag="v$new_version"
   git tag "$tag"
   git push origin "$tag"
+  trap - ERR
   echo "Listo. Tag $tag pusheado. La CI va a compilar y publicar el release."
 }
 

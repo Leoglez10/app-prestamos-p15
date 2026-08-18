@@ -44,6 +44,7 @@ export default function Kiosk() {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [hdmiPromptEquipo, setHdmiPromptEquipo] = useState<Equipo | null>(null);
   const [cartPulse, setCartPulse] = useState(0);
+  const [cartExpanded, setCartExpanded] = useState(false);
   const [flyToCartItems, setFlyToCartItems] = useState<Array<{ id: number; label: string; startX: number; startY: number; endX: number; endY: number }>>([]);
   const [returnAllModalOpen, setReturnAllModalOpen] = useState(false);
   const cartRef = useRef<HTMLDivElement | null>(null);
@@ -108,6 +109,7 @@ export default function Kiosk() {
   const setCategoriaAndClearSearch = (id: number | null) => {
     setSelectedCategoriaId(id);
     setEquipoSearchTerm("");
+    setCartExpanded(false);
   };
 
   const cargarPrestamos = async (codigo: string) => {
@@ -143,6 +145,7 @@ setSelectedEquipoIds([]);
       setItemCantidades({});
       setAutoAddedEquipoIds([]);
       setObservacionesEntrega("");
+      setCartExpanded(false);
       setSubmitting(false);
       setSuccessModalOpen(false);
       setHdmiPromptEquipo(null);
@@ -189,6 +192,7 @@ setSelectedEquipoIds([]);
       setItemCantidades({});
       setAutoAddedEquipoIds([]);
       setObservacionesEntrega("");
+      setCartExpanded(false);
       setSuccessModalOpen(true);
     } catch (error) {
       const msg = typeof error === 'string' ? error : (error instanceof Error ? error.message : "Error desconocido");
@@ -292,6 +296,7 @@ setSelectedEquipoIds([]);
       return equipo ? { equipo, count } : null;
     })
     .filter((item): item is { equipo: Equipo; count: number } => item !== null);
+  const isCartExpanded = cartExpanded && selectedEquiposSummary.length > 0;
 
   const spawnFlyToCart = (equipo: Equipo, sourceElement?: HTMLElement | null) => {
     if (!cartRef.current) return;
@@ -318,6 +323,7 @@ setSelectedEquipoIds([]);
 
   const handleToggleEquipo = (equipo: Equipo, sourceElement?: HTMLElement | null) => {
     if (!isEquipoDisponible(equipo)) return;
+    setCartExpanded(false);
 
     if (selectedEquipoIds.includes(equipo.id)) {
       setSelectedEquipoIds((prev) => prev.filter((id) => id !== equipo.id));
@@ -400,8 +406,6 @@ setSelectedEquipoIds([]);
     setCartPulse((value) => value + 1);
   };
 
-  const cartProgress = Math.min(100, selectedEquipoIds.length === 0 ? 18 : 30 + selectedEquipoIds.length * 20);
-
   // Solid, high-contrast chips: a tinted pastel badge was too easy to overlook.
   const getEquipoTone = (equipo: Equipo): { border: string; surface: string; text: string; label: string; icon: IconName } => {
     if (!isEquipoDisponible(equipo)) {
@@ -478,60 +482,69 @@ setSelectedEquipoIds([]);
           font-size: 1.15rem;
           line-height: 1;
         }
-        /* Exit actions: bottom-left, deliberately quiet. They sit off the
-           hot path (search → grid → confirm) so nobody hits them in a rush. */
-        /* One segmented control instead of two floating pills: it reads as a
-           single utility cluster and stays anchored to the column edge. */
+        /* Keep session controls anchored at the bottom, but make logout an
+           unmistakable primary utility for quick equipment returns. */
         .kiosk-exit-bar {
           flex: 0 0 auto;
           margin-top: auto;
-          align-self: start;
-          display: inline-flex;
-          align-items: stretch;
-          border: 1px solid var(--border-subtle);
-          border-radius: 12px;
-          background: var(--surface-default);
-          overflow: hidden;
-          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+          width: 100%;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 0.6rem;
         }
         .exit-btn {
           width: auto;
           display: inline-flex;
+          justify-content: center;
           align-items: center;
-          gap: 0.42rem;
-          padding: 0.5rem 0.8rem;
-          border: 0;
-          border-radius: 0;
-          background: transparent;
+          gap: 0.5rem;
+          min-height: 44px;
+          padding: 0.65rem 0.9rem;
+          border: 1px solid var(--border-subtle);
+          border-radius: 12px;
+          background: var(--surface-default);
           color: var(--text-secondary);
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: 0.9rem;
+          font-weight: 700;
           text-decoration: none;
           white-space: nowrap;
           cursor: pointer;
-          transition: background 0.18s ease, color 0.18s ease;
+          transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
         }
         .exit-btn svg {
-          width: 15px;
-          height: 15px;
+          width: 18px;
+          height: 18px;
           flex: 0 0 auto;
         }
         .exit-btn:hover {
           background: var(--surface-sunken);
           color: var(--text-primary);
         }
+        .exit-btn-danger {
+          min-height: 52px;
+          padding: 0.8rem 1.15rem;
+          background: #b91c1c;
+          border-color: #991b1b;
+          color: #fff;
+          font-size: 1.02rem;
+          font-weight: 800;
+          box-shadow: 0 8px 18px rgba(185, 28, 28, 0.24);
+        }
+        .exit-btn-danger svg {
+          width: 21px;
+          height: 21px;
+          stroke-width: 2.25;
+        }
         .exit-btn-danger:hover {
-          background: rgba(220, 38, 38, 0.08);
-          color: var(--danger-base);
+          background: #991b1b;
+          color: #fff;
+          transform: translateY(-1px);
+          box-shadow: 0 10px 22px rgba(153, 27, 27, 0.3);
         }
         .exit-btn:focus-visible {
           outline: 2px solid var(--brand-primary);
-          outline-offset: -2px;
-        }
-        .exit-divider {
-          flex: 0 0 auto;
-          width: 1px;
-          background: var(--border-subtle);
+          outline-offset: 2px;
         }
         .nav-btn {
           display: inline-flex;
@@ -979,44 +992,158 @@ setSelectedEquipoIds([]);
           margin-bottom: 0.6rem;
         }
         .cart-panel {
-          border-radius: 16px;
+          border-radius: 14px;
           border: 1px solid rgba(37, 99, 235, 0.16);
           background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0.96), rgba(16, 185, 129, 0.08));
-          padding: 0.75rem 0.9rem;
-          display: grid;
-          gap: 0.55rem;
-          transition: transform 220ms ease, box-shadow 220ms ease;
-          box-shadow: 0 18px 40px rgba(37, 99, 235, 0.08);
+          padding: 0.4rem;
+          transition: transform 220ms ease, box-shadow 220ms ease, padding 220ms ease;
+          box-shadow: 0 10px 24px rgba(37, 99, 235, 0.07);
+        }
+        .cart-panel.expanded {
+          padding-bottom: 0.75rem;
         }
         .cart-panel.pulse {
           animation: cartPulse 320ms ease;
         }
-        .cart-header {
-          display: flex;
-          justify-content: space-between;
+        .cart-summary-toggle {
+          width: 100%;
+          min-height: 58px;
+          display: grid;
+          grid-template-columns: auto minmax(0, auto) minmax(0, 1fr) auto auto;
           align-items: center;
-          gap: 1rem;
-          flex-wrap: wrap;
+          gap: 0.65rem;
+          padding: 0.45rem 0.55rem;
+          border: 0;
+          border-radius: 11px;
+          background: transparent;
+          color: var(--text-primary);
+          font: inherit;
+          text-align: left;
+          cursor: pointer;
+        }
+        .cart-summary-toggle:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.62);
+        }
+        .cart-summary-toggle:focus-visible {
+          outline: 2px solid var(--brand-primary);
+          outline-offset: 2px;
+        }
+        .cart-summary-toggle:disabled {
+          cursor: default;
+        }
+        .cart-summary-icon {
+          width: 36px;
+          height: 36px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: var(--brand-primary);
+          color: #fff;
+          box-shadow: 0 7px 16px rgba(37, 99, 235, 0.2);
+        }
+        .cart-summary-copy {
+          min-width: 84px;
+        }
+        .cart-summary-title {
+          display: block;
+          font-size: 1rem;
+          font-weight: 800;
+          line-height: 1.1;
+        }
+        .cart-summary-hint {
+          display: block;
+          margin-top: 0.18rem;
+          color: var(--text-secondary);
+          font-size: 0.75rem;
+          font-weight: 650;
+        }
+        .cart-preview {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          overflow: hidden;
+        }
+        .cart-preview-chip {
+          min-width: 0;
+          max-width: 180px;
+          padding: 0.35rem 0.58rem;
+          border: 1px solid rgba(37, 99, 235, 0.13);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.78);
+          color: var(--text-secondary);
+          font-size: 0.78rem;
+          font-weight: 750;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .cart-preview-empty {
+          color: var(--text-secondary);
+          font-size: 0.84rem;
+          font-weight: 650;
+        }
+        .cart-preview-more {
+          flex: 0 0 auto;
+          color: var(--brand-primary);
+          font-size: 0.78rem;
+          font-weight: 800;
         }
         .cart-count {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 42px;
-          height: 42px;
-          padding: 0 0.9rem;
+          min-width: 34px;
+          height: 34px;
+          padding: 0 0.65rem;
           border-radius: 999px;
           background: var(--brand-primary);
           color: white;
           font-weight: 800;
-          box-shadow: 0 10px 20px rgba(37, 99, 235, 0.24);
+        }
+        .cart-chevron {
+          width: 10px;
+          height: 10px;
+          margin: 0 0.55rem 4px 0.2rem;
+          border-right: 2px solid var(--brand-primary);
+          border-bottom: 2px solid var(--brand-primary);
+          transform: rotate(45deg);
+          transition: transform 180ms ease;
+        }
+        .cart-panel.expanded .cart-chevron {
+          margin-bottom: -3px;
+          transform: rotate(225deg);
+        }
+        .cart-details {
+          margin: 0.35rem 0.5rem 0;
+          padding-top: 0.65rem;
+          border-top: 1px dashed rgba(37, 99, 235, 0.24);
+          display: grid;
+          gap: 0.55rem;
+          animation: cartDetailsIn 180ms ease-out;
         }
         .cart-items {
           display: grid;
           gap: 0.5rem;
-          /* Capped so a long cart cannot push the catalog off screen. */
-          max-height: 22vh;
+          /* Show roughly two rows, then keep the catalog stable by scrolling
+             only the selected equipment list. */
+          max-height: 150px;
           overflow-y: auto;
+          overscroll-behavior: contain;
+          scrollbar-gutter: stable;
+          padding-right: 0.3rem;
+        }
+        .cart-items::-webkit-scrollbar {
+          width: 8px;
+        }
+        .cart-items::-webkit-scrollbar-track {
+          background: rgba(148, 163, 184, 0.16);
+          border-radius: 999px;
+        }
+        .cart-items::-webkit-scrollbar-thumb {
+          background: rgba(37, 99, 235, 0.52);
+          border-radius: 999px;
         }
         .cart-item {
           display: grid;
@@ -1037,25 +1164,6 @@ setSelectedEquipoIds([]);
           padding: 0.45rem 0.75rem;
           font-weight: 700;
           cursor: pointer;
-        }
-        .cart-empty {
-          padding: 0.9rem 1rem;
-          border-radius: 16px;
-          background: rgba(255, 255, 255, 0.7);
-          color: var(--text-secondary);
-          text-align: center;
-        }
-        .cart-progress-track {
-          height: 10px;
-          border-radius: 999px;
-          background: rgba(148, 163, 184, 0.18);
-          overflow: hidden;
-        }
-        .cart-progress-fill {
-          height: 100%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, #2563eb, #10b981);
-          transition: width 220ms ease;
         }
         .quick-filter-row {
           display: flex;
@@ -1179,7 +1287,7 @@ setSelectedEquipoIds([]);
           .glass-card { padding: 0.85rem; border-radius: 16px; }
           .eq-item { padding: 0.7rem; }
           .eq-grid { gap: 0.65rem; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-          .cart-items { max-height: 16vh; }
+          .cart-items { max-height: 128px; }
         }
         .fly-token {
           position: fixed;
@@ -1205,6 +1313,10 @@ setSelectedEquipoIds([]);
         @keyframes cartItemIn {
           0% { opacity: 0; transform: translateY(10px) scale(0.98); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes cartDetailsIn {
+          0% { opacity: 0; transform: translateY(-5px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes flyToCart {
           0% {
@@ -1369,7 +1481,6 @@ setSelectedEquipoIds([]);
                 </svg>
                 Cerrar sesión
               </button>
-              <span className="exit-divider" aria-hidden="true" />
               <Link to="/" className="exit-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M3 9.5 12 3l9 6.5V20a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 20z" />
@@ -1463,6 +1574,7 @@ setSelectedEquipoIds([]);
                         className="eq-search-input"
                         value={equipoSearchTerm}
                         onChange={(e) => setEquipoSearchTerm(e.target.value)}
+                        onFocus={() => setCartExpanded(false)}
                         placeholder="Buscar en todas las áreas por nombre, categoría o identificador… (Enter agrega el primero)"
                         aria-label="Buscar equipo"
                         onKeyDown={(e) => {
@@ -1504,34 +1616,49 @@ setSelectedEquipoIds([]);
                   ) : null}
 
                   <div className="cart-shell" ref={cartRef}>
-                    <div className={`cart-panel ${cartPulse > 0 ? 'pulse' : ''}`} key={cartPulse}>
-                      <div className="cart-header">
-                        <div>
-                          <div style={{ color: 'var(--brand-primary)', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                            Carrito de prestamo
-                          </div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                            Seleccion actual
-                          </div>
-                        </div>
-                        <div className="cart-count">{selectedEquipoIds.length}</div>
-                      </div>
-                      <div>
-                        <div className="muted-metric" style={{ marginBottom: '0.45rem' }}>
-                          {selectedEquipoIds.length === 0
-                            ? 'Agrega equipos para avanzar a la confirmacion.'
-                            : `${selectedEquipoIds.length} articulo(s) listos para confirmar`}
-                        </div>
-                        <div className="cart-progress-track">
-                          <div className="cart-progress-fill" style={{ width: `${cartProgress}%` }} />
-                        </div>
-                      </div>
+                    <div className={`cart-panel ${isCartExpanded ? 'expanded' : ''} ${cartPulse > 0 ? 'pulse' : ''}`} key={cartPulse}>
+                      <button
+                        type="button"
+                        className="cart-summary-toggle"
+                        onClick={() => setCartExpanded((expanded) => !expanded)}
+                        aria-expanded={isCartExpanded}
+                        aria-controls={selectedEquiposSummary.length > 0 ? "kiosk-cart-details" : undefined}
+                        aria-label={selectedEquiposSummary.length > 0
+                          ? `${isCartExpanded ? 'Ocultar' : 'Revisar'} carrito con ${selectedEquipoIds.length} objetos`
+                          : "Carrito vacío"}
+                        disabled={selectedEquiposSummary.length === 0}
+                      >
+                        <span className="cart-summary-icon" aria-hidden="true">
+                          <Icon name="clipboard" size="1.15rem" />
+                        </span>
+                        <span className="cart-summary-copy">
+                          <span className="cart-summary-title">Carrito</span>
+                          <span className="cart-summary-hint">
+                            {selectedEquiposSummary.length > 0 ? 'Toca para revisar' : 'Aún sin objetos'}
+                          </span>
+                        </span>
+                        <span className="cart-preview" aria-hidden="true">
+                          {selectedEquiposSummary.length === 0 ? (
+                            <span className="cart-preview-empty">Selecciona un objeto del catálogo</span>
+                          ) : (
+                            <>
+                              {selectedEquiposSummary.slice(0, 2).map(({ equipo, count }) => (
+                                <span key={`preview-${equipo.id}`} className="cart-preview-chip">
+                                  {equipo.nombre_equipo}{count > 1 ? ` ×${count}` : ''}
+                                </span>
+                              ))}
+                              {selectedEquiposSummary.length > 2 ? (
+                                <span className="cart-preview-more">+{selectedEquiposSummary.length - 2} más</span>
+                              ) : null}
+                            </>
+                          )}
+                        </span>
+                        <span className="cart-count" aria-hidden="true">{selectedEquipoIds.length}</span>
+                        <span className="cart-chevron" aria-hidden="true" />
+                      </button>
 
-                      {selectedEquiposSummary.length === 0 ? (
-                        <div className="cart-empty">
-                          Selecciona equipos y apareceran aqui de forma inmediata.
-                        </div>
-                      ) : (
+                      {isCartExpanded ? (
+                        <div id="kiosk-cart-details" className="cart-details">
                         <div className="cart-items">
                           {selectedEquiposSummary.map(({ equipo }) => {
                               const cantidad = itemCantidades[equipo.id] ?? 1;
@@ -1565,7 +1692,7 @@ setSelectedEquipoIds([]);
                                             });
                                           }
                                         }}
-                                        aria-label={`Quitar una unidad de `}
+                                        aria-label={`Quitar una unidad de ${equipo.nombre_equipo}`}
                                         style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1.5px solid #d1d5db', background: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#374151' }}
                                       >
                                         <Icon name="minus" size="1rem" strokeWidth={3} />
@@ -1580,7 +1707,7 @@ setSelectedEquipoIds([]);
                                           }
                                         }}
                                         disabled={cantidad >= maxStock}
-                                        aria-label={`Agregar una unidad de `}
+                                        aria-label={`Agregar una unidad de ${equipo.nombre_equipo}`}
                                         style={{ width: '28px', height: '28px', borderRadius: '8px', border: cantidad >= maxStock ? '1.5px solid #e5e7eb' : '1.5px solid #d1d5db', background: cantidad >= maxStock ? '#f3f4f6' : 'white', cursor: cantidad >= maxStock ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: cantidad >= maxStock ? '#9ca3af' : '#374151' }}
                                       >
                                         <Icon name="plus" size="1rem" strokeWidth={3} />
@@ -1596,22 +1723,22 @@ setSelectedEquipoIds([]);
                               );
                             })}
                         </div>
-                      )}
-
-                      <details className="cart-notes" open={observacionesEntrega.trim().length > 0}>
-                        <summary className="cart-notes-summary">
-                          Agregar observacion
-                          {observacionesEntrega.trim() ? <span className="cart-notes-flag">Con nota</span> : null}
-                        </summary>
-                        <textarea
-                          id="observaciones-cart"
-                          className="kiosk-textarea"
-                          value={observacionesEntrega}
-                          onChange={(e) => setObservacionesEntrega(e.target.value)}
-                          placeholder="Ej. No estaba este control, me llevo otro en su lugar."
-                          aria-label="Observaciones del profesor"
-                        />
-                      </details>
+                          <details className="cart-notes" open={observacionesEntrega.trim().length > 0}>
+                            <summary className="cart-notes-summary">
+                              Agregar observacion
+                              {observacionesEntrega.trim() ? <span className="cart-notes-flag">Con nota</span> : null}
+                            </summary>
+                            <textarea
+                              id="observaciones-cart"
+                              className="kiosk-textarea"
+                              value={observacionesEntrega}
+                              onChange={(e) => setObservacionesEntrega(e.target.value)}
+                              placeholder="Ej. No estaba este control, me llevo otro en su lugar."
+                              aria-label="Observaciones del profesor"
+                            />
+                          </details>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
 

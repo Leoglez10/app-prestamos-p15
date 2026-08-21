@@ -243,6 +243,10 @@ sin depender de un permiso administrativo.
 > 📄 **Guía completa paso a paso: [SERVIDOR.md](./SERVIDOR.md)** — de cero a
 > funcionando, con la implementación concreta sobre esta app, checklist y glosario.
 
+> 📱 **Decisiones de QR y celular: [QR_CELULAR.md](./QR_CELULAR.md)** — qué se midió
+> en la red de la prepa, por qué el QR impreso no lleva la dirección adentro, las
+> opciones descartadas y cómo borrar el experimento que ya está en Admin.
+
 **Costo:** alto. Estos tres requerimientos son **un solo proyecto**, no tres.
 
 ### Por qué van juntos

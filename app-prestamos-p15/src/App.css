@@ -1341,3 +1341,23 @@ button.ghost {
   .home-card:hover .home-card-arrow { transform: none; }
   .home-stat:hover { transform: none; }
 }
+
+/* Equipment name doubles as the link into its detail modal: the row already
+   holds the actions menu, so the whole row is not clickable. */
+.row-link {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.row-link:hover,
+.row-link:focus-visible {
+  color: var(--brand-primary);
+  text-decoration: underline;
+}

@@ -29,6 +29,9 @@ import {
   updatePrestamoObservacionesAdmin,
   updateProfesor,
   getReportePrestamos,
+  // EXPERIMENT: fotos de devolución. Ver docs/QR_CELULAR.md para quitarlo.
+  getPrestamosConFoto,
+  getFotoRegreso,
   ReportePrestamo,
   devolverEquipo,
   marcarEquipoPerdido,
@@ -38,8 +41,13 @@ import {
 import "../App.css";
 import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSchedule";
 import { formatSqliteDateTime } from "../utils/datetime";
+import { generarIdentificadores } from "../utils/identificadores";
 import { html, buildPrintDocument, printHtmlDocument } from "../utils/print";
 import { Icon } from "../components/Icon";
+// EXPERIMENT: phone access over the LAN. See docs/QR_CELULAR.md to remove.
+import { RedCelularPanel } from "../components/RedCelularPanel";
+import { EtiquetasQrPanel } from "../components/EtiquetasQrPanel";
+import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
@@ -380,6 +388,7 @@ function InventarioPanel() {
   const [esPrestable, setEsPrestable] = useState(true);
   const [esGranel, setEsGranel] = useState(false);
   const [stockTotal, setStockTotal] = useState("1");
+  const [cantidadUnidades, setCantidadUnidades] = useState("1");
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -390,6 +399,7 @@ function InventarioPanel() {
   const [quickNombre, setQuickNombre] = useState("");
   const [quickCategoria, setQuickCategoria] = useState("");
   const formDialogRef = useRef<HTMLDialogElement>(null);
+  const [detalleId, setDetalleId] = useState<number | null>(null);
   const [inventarioPdf, setInventarioPdf] = useState({
     title: "Inventario completo P15",
     subtitle: "Control general de equipos, disponibilidad y estado administrativo.",
@@ -421,6 +431,13 @@ function InventarioPanel() {
     void loadData();
   }, []);
 
+  // Las unidades que creará el alta múltiple. Se muestran ANTES de guardar: la
+  // numeración no es algo que se deba descubrir después de imprimir etiquetas.
+  const identificadoresPrevistos = useMemo(
+    () => generarIdentificadores(identificador, editingId ? 1 : Number(cantidadUnidades)),
+    [identificador, cantidadUnidades, editingId]
+  );
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!nombre || !categoriaId) return;
@@ -436,15 +453,28 @@ function InventarioPanel() {
           es_granel: esGranel ? 1 : 0,
           stock_total: Number(stockTotal) || 1
         });
-      } else {
+      } else if (esGranel) {
         await createEquipo({
           nombre_equipo: nombre,
           identificador: identificador || null,
           categoria_id: Number(categoriaId),
           es_prestable: esPrestable ? 1 : 0,
-          es_granel: esGranel ? 1 : 0,
+          es_granel: 1,
           stock_total: Number(stockTotal) || 1
         });
+      } else {
+        // Una fila por unidad: es lo que le da a cada objeto su propio QR y su
+        // propio historial. Ver src/utils/identificadores.ts.
+        for (const codigo of identificadoresPrevistos) {
+          await createEquipo({
+            nombre_equipo: nombre,
+            identificador: codigo,
+            categoria_id: Number(categoriaId),
+            es_prestable: esPrestable ? 1 : 0,
+            es_granel: 0,
+            stock_total: 1
+          });
+        }
       }
       handleCancelEdit();
       await loadData();
@@ -463,6 +493,7 @@ function InventarioPanel() {
     setEsPrestable(eq.es_prestable === 1);
     setEsGranel(eq.es_granel === 1);
     setStockTotal(eq.stock_total.toString());
+    setCantidadUnidades("1");
   };
 
   const handleCancelEdit = () => {
@@ -475,6 +506,7 @@ function InventarioPanel() {
     setEsPrestable(true);
     setEsGranel(false);
     setStockTotal("1");
+    setCantidadUnidades("1");
   };
 
   // Reset first so the dialog never opens showing the equipment edited last.
@@ -590,7 +622,9 @@ function InventarioPanel() {
     noPrestables: filteredEquipos.filter((equipo) => equipo.es_prestable !== 1).length,
   };
 
-  const handlePrintInventario = () => {
+  // Builds the PDF body. `rowLimit` trims the table for the on-screen preview so
+  // typing in the designer stays responsive on large inventories; printing passes none.
+  const buildInventarioBody = (rowLimit?: number): string => {
     const summaryCards = inventarioPdf.includeSummary ? `
       <div class="summary cols-5">
         ${[
@@ -621,7 +655,9 @@ function InventarioPanel() {
       ? `<div class="notes">${html(inventarioPdf.notes)}</div>`
       : "";
 
-    const rows = filteredEquipos
+    const visibleEquipos = rowLimit ? filteredEquipos.slice(0, rowLimit) : filteredEquipos;
+
+    const rows = visibleEquipos
       .map((eq) => {
         const columns = [
           `<td>${html(eq.nombre_equipo)}${inventarioPdf.includeIdentifier ? `<br /><span class="muted">${html(eq.identificador || "S/N")}</span>` : ""}</td>`,
@@ -649,9 +685,12 @@ function InventarioPanel() {
       .filter(Boolean)
       .join("");
 
-    printHtmlDocument(
-      inventarioPdf.title || "Inventario completo P15",
-      `
+    const truncatedNotice =
+      rowLimit && filteredEquipos.length > rowLimit
+        ? `<tr><td colspan="${headerColumns.split("<th>").length - 1}" class="muted">Vista previa: mostrando ${rowLimit} de ${filteredEquipos.length} equipos. El PDF incluye todos.</td></tr>`
+        : "";
+
+    return `
         <div class="header">
           <div class="brand">
             ${inventarioPdf.includeLogo ? `<img src="${logoP15}" alt="P15" />` : ""}
@@ -670,11 +709,19 @@ function InventarioPanel() {
         ${notesBlock}
         <table>
           <thead><tr>${headerColumns}</tr></thead>
-          <tbody>${rows}</tbody>
+          <tbody>${rows}${truncatedNotice}</tbody>
         </table>
-      `,
-    );
+      `;
   };
+
+  const handlePrintInventario = () => {
+    printHtmlDocument(inventarioPdf.title || "Inventario completo P15", buildInventarioBody());
+  };
+
+  // useDeferredValue keeps the designer inputs snappy: the iframe catches up a tick later.
+  const inventarioPreviewDocument = useDeferredValue(
+    buildPrintDocument(inventarioPdf.title || "Inventario completo P15", buildInventarioBody(25)),
+  );
 
   if (loading) return <div>Cargando inventario...</div>;
 
@@ -693,7 +740,7 @@ function InventarioPanel() {
 
       <PdfDesignerPanel
         heading="Diseño del PDF de inventario"
-        subheading="Personaliza el contenido, revisa una vista textual y genera un documento más claro antes de imprimir."
+        subheading="Personaliza el contenido, revisa la vista previa del documento y genera un PDF más claro antes de imprimir."
         title={inventarioPdf.title}
         subtitle={inventarioPdf.subtitle}
         notes={inventarioPdf.notes}
@@ -716,10 +763,13 @@ function InventarioPanel() {
         previewLabel="Resumen del documento"
         previewValue={`${filteredEquipos.length} equipos filtrados`}
         previewMeta={`${inventarioSummary.disponibles} disponibles · ${inventarioSummary.prestados} prestados · ${inventarioSummary.noPrestables} solo inventario`}
+        previewDocument={inventarioPreviewDocument}
         onAction={handlePrintInventario}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginBottom: '0.75rem' }}>
+        {/* EXPERIMENT: etiquetas QR por equipo. Ver docs/QR_CELULAR.md para quitarlo. */}
+        <EtiquetasQrPanel equipos={filteredEquipos} />
         <button
           type="button"
           onClick={handleNuevoEquipo}
@@ -879,6 +929,34 @@ function InventarioPanel() {
                   <small style={{ color: 'var(--text-secondary)' }}>Opcional, útil para control interno del equipo.</small>
                 </div>
               )}
+              {!esGranel && !editingId && (
+                <div>
+                  <label>¿Cuántas unidades?</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="200"
+                    value={cantidadUnidades}
+                    onChange={e => setCantidadUnidades(e.target.value)}
+                  />
+                  <small style={{ color: 'var(--text-secondary)' }}>
+                    Cada unidad se registra por separado, con su propio QR e historial.
+                  </small>
+                  {identificadoresPrevistos.length > 1 && (
+                    <div style={{ marginTop: '0.5rem', padding: '0.55rem 0.7rem', borderRadius: '12px', background: 'rgba(37, 99, 235, 0.07)', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      {identificadoresPrevistos[0] === null ? (
+                        <>Se crearán {identificadoresPrevistos.length} unidades sin código. Escribe uno arriba para numerarlas.</>
+                      ) : (
+                        <>
+                          Se crearán: <code>{identificadoresPrevistos[0]}</code>
+                          {identificadoresPrevistos.length > 2 ? ' … ' : ', '}
+                          <code>{identificadoresPrevistos[identificadoresPrevistos.length - 1]}</code>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               {esGranel && (
                 <div>
                   <label>Cantidad total</label>
@@ -961,7 +1039,7 @@ function InventarioPanel() {
                   {categoriaId ? `Categoría: ${categorias.find((c) => c.id === Number(categoriaId))?.nombre || 'Seleccionada'}` : 'Elige una categoría'}
                 </div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  Tipo: {esGranel ? `Por cantidad (${stockTotal || 1} total)` : 'Equipo único'}
+                  Tipo: {esGranel ? `Por cantidad (${stockTotal || 1} total)` : `Equipo único${!editingId && identificadoresPrevistos.length > 1 ? ` × ${identificadoresPrevistos.length}` : ''}`}
                 </div>
                 <div style={{ color: esPrestable ? 'var(--success-base)' : 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 700 }}>
                   {esPrestable ? 'Visible para préstamo' : 'Solo inventario interno'}
@@ -973,7 +1051,7 @@ function InventarioPanel() {
             </div>
 
             <div className="admin-dialog-actions">
-              <button type="submit" style={{ flex: 2 }}>{editingId ? "Guardar cambios" : "Guardar equipo"}</button>
+              <button type="submit" style={{ flex: 2 }}>{editingId ? "Guardar cambios" : (!esGranel && identificadoresPrevistos.length > 1 ? `Guardar ${identificadoresPrevistos.length} unidades` : "Guardar equipo")}</button>
               <button type="button" className="ghost" onClick={handleCancelEdit} style={{ flex: 1 }}>Cancelar</button>
             </div>
           </form>
@@ -1031,7 +1109,9 @@ function InventarioPanel() {
               {filteredEquipos.map(eq => (
                 <tr key={eq.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: editingId === eq.id ? 'var(--surface-sunken)' : 'transparent' }}>
                   <td style={{ padding: '0.55rem 1rem' }}>
-                    <strong>{eq.nombre_equipo}</strong>
+                    <button type="button" className="row-link" onClick={() => setDetalleId(eq.id)}>
+                      {eq.nombre_equipo}
+                    </button>
                     {eq.es_granel === 0 ? (
                       <>
                         <br />
@@ -1096,6 +1176,9 @@ function InventarioPanel() {
                           <Icon name="more" size="1.15rem" />
                         </summary>
                         <div className="row-menu-list">
+                          <button type="button" onClick={(event) => { closeRowMenu(event); setDetalleId(eq.id); }}>
+                            Ver detalle
+                          </button>
                           <button type="button" onClick={(event) => { closeRowMenu(event); handleEditInit(eq); }}>
                             Editar equipo
                           </button>
@@ -1116,11 +1199,35 @@ function InventarioPanel() {
             </tbody>
           </table>
       </div>
+
+      <EquipoDetalleModal
+        equipo={detalleId === null ? null : equipos.find(eq => eq.id === detalleId) ?? null}
+        onClose={() => setDetalleId(null)}
+        onEditar={(eq) => { setDetalleId(null); handleEditInit(eq); }}
+      />
     </section>
   );
 }
 
+/**
+ * Primer préstamo del grupo que tenga foto, o null.
+ *
+ * Una fila del reporte agrupa varios préstamos (ver `ids` en `ReportePrestamo`),
+ * así que hay que revisarlos todos y no solo el que se muestra.
+ */
+function idConFoto(ids: string | null, conFoto: Set<number>): number | null {
+  if (!ids) return null;
+  for (const parte of ids.split(",")) {
+    const id = Number(parte);
+    if (conFoto.has(id)) return id;
+  }
+  return null;
+}
+
 function ReportesPanel() {
+  // EXPERIMENT: fotos de devolución. Ver docs/QR_CELULAR.md para quitarlo.
+  const [conFoto, setConFoto] = useState<Set<number>>(new Set());
+  const [fotoAbierta, setFotoAbierta] = useState<string | null>(null);
   const [reportes, setReportes] = useState<ReportePrestamo[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1167,6 +1274,8 @@ function ReportesPanel() {
         limit: 1000,
       });
       setReportes(data);
+      // Solo los ids: la imagen se pide al abrirla.
+      setConFoto(await getPrestamosConFoto());
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al cargar reportes");
@@ -1493,6 +1602,28 @@ function ReportesPanel() {
                                 {r.condicion_regreso}
                               </span>
                             ) : null}
+                            {/* EXPERIMENT: fotos de devolución. Ver docs/QR_CELULAR.md para quitarlo. */}
+                            {/* `r.id` es el MIN del grupo, no un préstamo concreto:
+                                la foto puede estar en cualquiera de los agrupados. */}
+                            {idConFoto(r.ids, conFoto) !== null ? (
+                              <button
+                                type="button"
+                                className="ghost"
+                                onClick={() => void getFotoRegreso(idConFoto(r.ids, conFoto)!).then(setFotoAbierta)}
+                                style={{
+                                  width: 'fit-content',
+                                  padding: '0.2rem 0.5rem',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
+                                }}
+                              >
+                                <Icon name="search" size="0.75rem" />
+                                Ver foto
+                              </button>
+                            ) : null}
                           </>
                         ) : (
                           <small style={{ color: 'var(--text-secondary)' }}>Pendiente</small>
@@ -1571,6 +1702,29 @@ function ReportesPanel() {
             </tbody>
           </table>
       </div>
+
+      {/* EXPERIMENT: fotos de devolución. Ver docs/QR_CELULAR.md para quitarlo. */}
+      {fotoAbierta ? (
+        <div
+          onClick={() => setFotoAbierta(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.7)',
+            display: 'grid',
+            placeItems: 'center',
+            padding: '2rem',
+            zIndex: 60,
+            cursor: 'zoom-out',
+          }}
+        >
+          <img
+            src={fotoAbierta}
+            alt="Foto de la devolución"
+            style={{ maxWidth: '100%', maxHeight: '85vh', borderRadius: '14px', boxShadow: '0 10px 40px rgba(0,0,0,.4)' }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2267,7 +2421,7 @@ function ProfesoresPanel() {
   );
 }
 
-function ConfiguracionPanel() {
+function ConfiguracionPanel({ adminUser }: { adminUser: Profesor }) {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -2561,6 +2715,8 @@ function ConfiguracionPanel() {
           </button>
         </div>
       </div>
+      {/* EXPERIMENT: phone access over the LAN. See docs/QR_CELULAR.md to remove. */}
+      <RedCelularPanel adminId={adminUser.id} adminNombre={adminUser.nombre} />
     </section>
   );
 }
@@ -2775,7 +2931,7 @@ export default function Admin() {
           </section>
         )}
 
-        {activeTab === "configuracion" && <ConfiguracionPanel />}
+        {activeTab === "configuracion" && <ConfiguracionPanel adminUser={adminUser} />}
 
       </main>
     </div>

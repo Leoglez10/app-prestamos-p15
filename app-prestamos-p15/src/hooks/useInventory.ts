@@ -46,6 +46,17 @@ type IntegrityRow = {
   integrity_check: string;
 };
 
+export type HistorialEquipo = {
+  id: number;
+  codigo_profe: string;
+  nombre_profe: string | null;
+  fecha_salida: string;
+  fecha_retorno: string | null;
+  estado_prestamo: string | null;
+  observaciones_entrega: string | null;
+  condicion_regreso: string | null;
+};
+
 export type ReportePrestamoFilters = {
   busqueda?: string;
   estado?: string;
@@ -130,6 +141,31 @@ const schemaStatements = [
   `CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
+  )`,
+  // Fotos de devolución, guardadas dentro de la base para que el respaldo siga
+  // siendo un solo archivo que se copia a una USB y trae todo.
+  //
+  // Va en tabla aparte, no como columna de `prestamos`: así ninguna consulta de
+  // préstamos arrastra el blob sin querer. Ver docs/QR_CELULAR.md.
+  `CREATE TABLE IF NOT EXISTS fotos_regreso (
+    prestamo_id INTEGER PRIMARY KEY,
+    imagen TEXT NOT NULL,
+    creada_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (prestamo_id) REFERENCES prestamos(id) ON DELETE CASCADE
+  )`,
+
+  // Celulares vinculados para el acceso por QR. El token nunca se guarda en claro:
+  // solo su SHA-256, para que una copia de la base no entregue accesos usables.
+  // Ver docs/QR_CELULAR.md.
+  `CREATE TABLE IF NOT EXISTS celular_dispositivos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    profesor_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    etiqueta TEXT NOT NULL,
+    creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ultimo_uso DATETIME,
+    revocado_en DATETIME,
+    FOREIGN KEY (profesor_id) REFERENCES profesores(id)
   )`,
   `CREATE TABLE IF NOT EXISTS prestamos_rapidos_alumnos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -538,6 +574,66 @@ export const updateProfesor = async (
   await db.execute(
     "UPDATE profesores SET codigo = ?, nombre = ?, es_admin = ?, admin_pin = ? WHERE id = ?",
     [codigo, nombre, esAdmin, adminPin, id],
+  );
+};
+
+// --- Fotos de devolución. Ver docs/QR_CELULAR.md. ---
+
+/**
+ * Solo los ids que tienen foto, no las imágenes.
+ *
+ * Traer todas las fotos para pintar una tabla sería cargar megabytes que casi
+ * nadie va a mirar; la imagen se pide una por una al abrirla.
+ */
+export const getPrestamosConFoto = async (): Promise<Set<number>> => {
+  const db = await getDb();
+  const filas = await db.select<Array<{ prestamo_id: number }>>(
+    "SELECT prestamo_id FROM fotos_regreso"
+  );
+  return new Set(filas.map((fila) => fila.prestamo_id));
+};
+
+/** Devuelve el data URL listo para un `<img src>`, o null si no hay foto. */
+export const getFotoRegreso = async (prestamoId: number): Promise<string | null> => {
+  const db = await getDb();
+  const filas = await db.select<Array<{ imagen: string }>>(
+    "SELECT imagen FROM fotos_regreso WHERE prestamo_id = ? LIMIT 1",
+    [prestamoId]
+  );
+  return filas.length > 0 ? filas[0].imagen : null;
+};
+
+// --- Celulares vinculados (acceso por QR). Ver docs/QR_CELULAR.md. ---
+
+export type CelularDispositivo = {
+  id: number;
+  etiqueta: string;
+  nombre_profesor: string;
+  creado_en: string;
+  ultimo_uso: string | null;
+};
+
+/** Solo los dispositivos vigentes: los revocados dejan de existir para la UI. */
+export const getCelularDispositivos = async (): Promise<CelularDispositivo[]> => {
+  const db = await getDb();
+  return db.select<CelularDispositivo[]>(
+    `SELECT d.id, d.etiqueta, p.nombre AS nombre_profesor, d.creado_en, d.ultimo_uso
+       FROM celular_dispositivos d
+       JOIN profesores p ON p.id = d.profesor_id
+      WHERE d.revocado_en IS NULL
+      ORDER BY d.creado_en DESC`
+  );
+};
+
+/**
+ * Revoca el acceso de un celular. No se borra la fila: queda el registro de que
+ * ese dispositivo existió y cuándo se le quitó el acceso.
+ */
+export const revocarCelularDispositivo = async (id: number): Promise<void> => {
+  const db = await getDb();
+  await db.execute(
+    "UPDATE celular_dispositivos SET revocado_en = CURRENT_TIMESTAMP WHERE id = ?",
+    [id]
   );
 };
 
@@ -998,6 +1094,13 @@ export type ReportePrestamo = {
   admin_condicion_entrega: string | null;
   admin_notas_retorno: string | null;
   cantidad_prestada: number;
+  /**
+   * Ids de TODOS los préstamos que esta fila agrupa, separados por coma.
+   *
+   * `id` es solo el más chico del grupo (`MIN(p.id)`), así que no sirve para
+   * buscar algo atado a un préstamo puntual —como su foto de devolución—.
+   */
+  ids: string;
 };
 
 export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}): Promise<ReportePrestamo[]> => {
@@ -1046,7 +1149,8 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
             MIN(p.condicion_regreso) AS condicion_regreso,
             MIN(p.admin_condicion_entrega) AS admin_condicion_entrega,
             MIN(p.admin_notas_retorno) AS admin_notas_retorno,
-            COUNT(*) AS cantidad_prestada
+            COUNT(*) AS cantidad_prestada,
+            GROUP_CONCAT(p.id) AS ids
      FROM prestamos p
      LEFT JOIN inventario i ON i.id = p.equipo_id
      LEFT JOIN categorias c ON c.id = i.categoria_id
@@ -1063,6 +1167,37 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
     nombre_profe: r.nombre_profe || 'Desconocido',
     estado_prestamo: r.estado_prestamo || 'activo',
     cantidad_prestada: r.cantidad_prestada || 1
+  }));
+};
+
+/**
+ * Loan history of ONE inventory row.
+ *
+ * A row with `es_granel = 0` is one physical object, so `prestamos.equipo_id`
+ * already tells us who took that exact unit. Nothing to join or group: the
+ * per-unit trace is the reason units get their own row and their own QR.
+ */
+export const getHistorialEquipo = async (equipoId: number): Promise<HistorialEquipo[]> => {
+  const db = await getDb();
+  const rows = await db.select<HistorialEquipo[]>(
+    `SELECT p.id,
+            p.codigo_profe,
+            p.nombre_profe,
+            p.fecha_salida,
+            p.fecha_retorno,
+            p.estado_prestamo,
+            p.observaciones_entrega,
+            p.condicion_regreso
+     FROM prestamos p
+     WHERE p.equipo_id = ?
+     ORDER BY p.fecha_salida DESC
+     LIMIT 50`,
+    [equipoId]
+  );
+  return rows.map(r => ({
+    ...r,
+    nombre_profe: r.nombre_profe || r.codigo_profe,
+    estado_prestamo: r.estado_prestamo || (r.fecha_retorno ? "devuelto" : "activo"),
   }));
 };
 

@@ -1,3 +1,6 @@
+mod celular;
+mod certificado;
+
 use chrono::Local;
 use serde::Serialize;
 use std::{
@@ -267,9 +270,51 @@ fn restore_backup_from_bytes(
     })
 }
 
+/// Links a phone to a teacher and returns its token once, so the caller can turn
+/// it into a QR. The token is never retrievable again: only its hash is stored.
+#[tauri::command]
+async fn celular_registrar_dispositivo(
+    app: AppHandle,
+    profesor_id: i64,
+    etiqueta: String,
+) -> Result<String, String> {
+    let db_path = database_path(&app)?;
+    celular::registrar_dispositivo(&db_path, profesor_id, etiqueta.trim()).await
+}
+
+#[tauri::command]
+fn local_ip() -> Result<String, String> {
+    // A UDP "connect" sends no packets. It only asks the OS which local interface
+    // would be used to reach the target, which is the LAN address a phone on the
+    // same network has to dial. No extra crate needed for this.
+    // ponytail: this fails when the machine has no default route; the UI falls back
+    // to asking the admin to read the address from System Settings.
+    let socket = std::net::UdpSocket::bind("0.0.0.0:0")
+        .map_err(|error| format!("No se pudo abrir un socket local: {error}"))?;
+    socket
+        .connect("8.8.8.8:80")
+        .map_err(|error| format!("No se pudo determinar la interfaz de red activa: {error}"))?;
+    let address = socket
+        .local_addr()
+        .map_err(|error| format!("No se pudo leer la direccion local: {error}"))?;
+
+    Ok(address.ip().to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            // The phone server is optional: if it cannot start, the desktop app
+            // must keep working, so failures are logged inside `iniciar`.
+            match (database_path(&app.handle()), ensure_app_data_root(&app.handle())) {
+                (Ok(db_path), Ok(carpeta)) => celular::iniciar(db_path, carpeta),
+                (Err(error), _) | (_, Err(error)) => {
+                    eprintln!("[celular] sin ruta de datos: {error}")
+                }
+            }
+            Ok(())
+        })
         .plugin(tauri_plugin_sql::Builder::default().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
@@ -277,7 +322,9 @@ pub fn run() {
             create_backup,
             list_backups,
             open_backups_dir,
-            restore_backup_from_bytes
+            restore_backup_from_bytes,
+            local_ip,
+            celular_registrar_dispositivo
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

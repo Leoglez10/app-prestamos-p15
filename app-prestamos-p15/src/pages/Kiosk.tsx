@@ -20,6 +20,9 @@ import {
 import { formatSqliteLoanDate } from "../utils/datetime";
 import { Icon, type IconName } from "../components/Icon";
 
+/** Seconds the success modal stays open before closing the teacher's session. */
+const SUCCESS_AUTO_LOGOUT_SECONDS = 3;
+
 export default function Kiosk() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
@@ -42,6 +45,8 @@ export default function Kiosk() {
   const [observacionesEntrega, setObservacionesEntrega] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successCountdown, setSuccessCountdown] = useState(SUCCESS_AUTO_LOGOUT_SECONDS);
+  const [successItems, setSuccessItems] = useState<{ nombre: string; cantidad: number }[]>([]);
   const [hdmiPromptEquipo, setHdmiPromptEquipo] = useState<Equipo | null>(null);
   const [cartPulse, setCartPulse] = useState(0);
   const [cartExpanded, setCartExpanded] = useState(false);
@@ -155,6 +160,27 @@ setSelectedEquipoIds([]);
       setErrorMessage("");
   };
 
+  // Kiosk is shared, so the success modal closes the session on its own if the
+  // teacher walks away. Ref keeps the interval from restarting every render.
+  const logoutRef = useRef(handleLogout);
+  logoutRef.current = handleLogout;
+
+  useEffect(() => {
+    if (!successModalOpen) return;
+    setSuccessCountdown(SUCCESS_AUTO_LOGOUT_SECONDS);
+    const timer = window.setInterval(() => {
+      setSuccessCountdown((seconds) => {
+        if (seconds <= 1) {
+          window.clearInterval(timer);
+          logoutRef.current();
+          return 0;
+        }
+        return seconds - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [successModalOpen]);
+
   const handlePrestamo = async () => {
     setErrorMessage("");
     setStatusMessage("");
@@ -175,6 +201,12 @@ setSelectedEquipoIds([]);
       }
     }
 
+    // Snapshot for the success modal: the cart is emptied right after the save.
+    const resumen = Object.entries(itemCantidades).map(([id, cantidad]) => ({
+      nombre: allEquipos.find((equipo) => equipo.id === Number(id))?.nombre_equipo ?? `Equipo ${id}`,
+      cantidad,
+    }));
+
     try {
       await createPrestamoRapido({
         equipoIds: expandedIds,
@@ -193,6 +225,7 @@ setSelectedEquipoIds([]);
       setAutoAddedEquipoIds([]);
       setObservacionesEntrega("");
       setCartExpanded(false);
+      setSuccessItems(resumen);
       setSuccessModalOpen(true);
     } catch (error) {
       const msg = typeof error === 'string' ? error : (error instanceof Error ? error.message : "Error desconocido");
@@ -411,8 +444,12 @@ setSelectedEquipoIds([]);
     if (!isEquipoDisponible(equipo)) {
       return { border: "#ef4444", surface: "#dc2626", text: "#ffffff", label: "Agotado", icon: "x" };
     }
-    if (equipo.es_granel === 1 && equipo.stock_disponible <= 2) {
-      return { border: "#f59e0b", surface: "#d97706", text: "#ffffff", label: "Ultimas unidades", icon: "alert" };
+    if (equipo.es_granel === 1) {
+      const stock = equipo.stock_disponible;
+      const label = `${stock} ${stock === 1 ? "disponible" : "disponibles"}`;
+      return stock <= 2
+        ? { border: "#f59e0b", surface: "#d97706", text: "#ffffff", label, icon: "alert" }
+        : { border: "#22c55e", surface: "#16a34a", text: "#ffffff", label, icon: "check" };
     }
     return { border: "#22c55e", surface: "#16a34a", text: "#ffffff", label: "Listo para llevar", icon: "check" };
   };
@@ -688,9 +725,9 @@ setSelectedEquipoIds([]);
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          padding: 0.42rem 0.85rem;
+          padding: 0.34rem 0.7rem;
           border-radius: 999px;
-          font-size: 0.86rem;
+          font-size: 0.74rem;
           font-weight: 900;
           letter-spacing: 0.04em;
           text-transform: uppercase;
@@ -708,8 +745,9 @@ setSelectedEquipoIds([]);
           line-height: 1;
         }
         .eq-support {
-          font-size: 0.92rem;
-          line-height: 1.5;
+          font-size: 1rem;
+          line-height: 1.4;
+          font-weight: 700;
           color: var(--text-secondary);
         }
         .eq-meta-row {
@@ -745,17 +783,6 @@ setSelectedEquipoIds([]);
           background: rgba(148, 163, 184, 0.25);
           color: var(--text-secondary);
           box-shadow: none;
-        }
-        .eq-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
-          padding: 0.38rem 0.7rem;
-          border-radius: 999px;
-          font-size: 0.78rem;
-          font-weight: 800;
-          background: rgba(15, 23, 42, 0.06);
-          color: var(--text-secondary);
         }
         .loan-card {
           display: grid;
@@ -860,39 +887,24 @@ setSelectedEquipoIds([]);
           text-align: center;
           line-height: 1.6;
         }
-        .success-actions {
+        .success-items {
+          list-style: none;
+          margin: 0 0 0.9rem;
+          padding: 0;
           display: grid;
-          grid-template-columns: 1fr 1.15fr;
-          gap: 0.9rem;
-          align-items: stretch;
+          gap: 0.35rem;
+          text-align: left;
         }
-        .success-secondary-btn {
-          border: 1px solid rgba(21, 128, 61, 0.18);
-          background: rgba(255, 255, 255, 0.72);
-          color: #166534;
-          border-radius: 16px;
-          padding: 1rem 1.2rem;
-          font-weight: 800;
+        .success-items li {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          padding: 0.5rem 0.85rem;
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.7);
           font-size: 1rem;
-          cursor: pointer;
-          transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
-        }
-        .success-secondary-btn:hover {
-          transform: translateY(-1px);
-          background: rgba(255, 255, 255, 0.9);
-          box-shadow: 0 12px 24px rgba(22, 101, 52, 0.08);
-        }
-        .success-primary-btn {
-          width: 100%;
-          min-width: 0;
-          padding: 1.1rem 1.5rem;
-          font-size: 1.08rem;
-          border-radius: 16px;
-          background: linear-gradient(180deg, #16a34a, #15803d);
-          box-shadow: 0 18px 34px rgba(22, 163, 74, 0.24);
-        }
-        .success-primary-btn:hover:not(:disabled) {
-          box-shadow: 0 22px 40px rgba(22, 163, 74, 0.32);
+          font-weight: 700;
         }
         .success-footer-note {
           text-align: center;
@@ -1270,12 +1282,26 @@ setSelectedEquipoIds([]);
           padding-top: 0.7rem;
           border-top: 1px solid var(--border-subtle);
         }
+        /* Subtle glow so teachers notice the confirm action once the cart has items. */
+        .confirm-nudge {
+          animation: confirmNudge 1.5s ease-in-out infinite;
+        }
+        @keyframes confirmNudge {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25), 0 0 0 0 rgba(37, 99, 235, 0.5);
+          }
+          50% {
+            transform: scale(1.04);
+            box-shadow: 0 10px 26px rgba(37, 99, 235, 0.5), 0 0 0 10px rgba(37, 99, 235, 0);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .confirm-nudge { animation: none; }
+        }
         @media (max-width: 1100px) {
           .kiosk-main {
             padding: 0.8rem;
-          }
-          .success-actions {
-            grid-template-columns: 1fr;
           }
         }
         /* Short laptop screens: trade decoration for rows of equipment. */
@@ -1756,7 +1782,6 @@ setSelectedEquipoIds([]);
                       </div>
                     ) : null}
                     {filteredEquipos.map(eq => {
-                      const isGranel = eq.es_granel === 1;
                       const isAvail = isEquipoDisponible(eq);
                       const isSelected = selectedEquipoIds.includes(eq.id);
                       const selectedCount = selectedEquipoIds.filter((id) => id === eq.id).length;
@@ -1787,22 +1812,14 @@ setSelectedEquipoIds([]);
                             <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
                               {eq.categoria_nombre}
                             </span>
-                                <strong style={{ fontSize: '1.18rem', color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', marginTop: '0.35rem', lineHeight: 1.25 }}>
+                                <strong style={{ fontSize: '1.45rem', color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', marginTop: '0.3rem', lineHeight: 1.2, letterSpacing: '-0.01em' }}>
                                   {eq.nombre_equipo}
                                 </strong>
                           </div>
-                          <div className="eq-support">
-                            {getEquipoSupportingText(eq)}
-                          </div>
+                          {!isAvail ? (
+                            <div className="eq-support">{getEquipoSupportingText(eq)}</div>
+                          ) : null}
                           <div className="eq-meta-row">
-                            <span className="eq-tag">
-                              {isGranel ? `${eq.stock_disponible}/${eq.stock_total} stock` : eq.estado}
-                            </span>
-                            {!isAvail && eq.prestamo_activo_profe ? (
-                              <span className="selection-pill" style={{ background: 'rgba(14, 116, 144, 0.10)', color: '#155e75' }}>
-                                Con: {eq.prestamo_activo_profe}
-                              </span>
-                            ) : null}
                             {selectedCount > 1 ? <span className="selection-pill">x{selectedCount} seleccionados</span> : null}
                           </div>
                           {/* Fake button: the whole card is the real button, but teachers
@@ -1840,7 +1857,7 @@ setSelectedEquipoIds([]);
                     <button
                       type="button"
                       onClick={() => void handlePrestamo()}
-                      className="kiosk-btn-primary"
+                      className={`kiosk-btn-primary ${selectedEquipoIds.length > 0 && !submitting ? 'confirm-nudge' : ''}`}
                       disabled={selectedEquipoIds.length === 0 || submitting}
                       style={{ padding: '0.8rem 1.6rem', fontSize: '1rem', margin: 0, width: 'auto', minWidth: '220px' }}
                     >
@@ -1900,31 +1917,18 @@ setSelectedEquipoIds([]);
               </h3>
             </div>
             <div className="success-panel" role="status">
-              El prestamo quedo guardado correctamente. Puedes registrar algo mas o cerrar la sesion del profesor actual.
-              <br />
+              <ul className="success-items">
+                {successItems.map((item) => (
+                  <li key={item.nombre}>
+                    <span>{item.nombre}</span>
+                    <strong>x{item.cantidad}</strong>
+                  </li>
+                ))}
+              </ul>
               <strong>Cuida bien tus equipos.</strong>
             </div>
-            <div className="success-actions">
-              <button
-                type="button"
-                className="success-secondary-btn"
-                onClick={() => {
-                  setSuccessModalOpen(false);
-                  setStatusMessage("");
-                }}
-              >
-                Registrar algo mas
-              </button>
-              <button
-                type="button"
-                className="kiosk-btn-primary success-primary-btn"
-                onClick={handleLogout}
-              >
-                Cerrar sesion
-              </button>
-            </div>
             <div className="success-footer-note" role="status">
-              La sesion sigue activa hasta que elijas una de estas opciones.
+              La sesion se cierra sola en {successCountdown} segundo{successCountdown === 1 ? '' : 's'}.
             </div>
           </div>
         </div>

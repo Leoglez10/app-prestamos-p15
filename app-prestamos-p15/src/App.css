@@ -363,13 +363,6 @@ button.ghost {
 }
 
 /* -- Responsive Admin Layout Classes -- */
-.admin-grid {
-  display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-
 .admin-form-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
@@ -493,8 +486,326 @@ button.ghost {
   }
 }
 
+/* -- Admin status chips --
+   Status is the filter used all day, so it gets one click and a live count
+   instead of a select the user has to open to read. */
+.admin-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-chip {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-default);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.admin-chip:hover {
+  filter: none;
+  border-color: var(--brand-primary);
+  color: var(--text-primary);
+}
+
+.admin-chip span {
+  font-weight: 800;
+  opacity: 0.65;
+}
+
+.admin-chip.is-active {
+  border-color: var(--brand-primary);
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--brand-primary);
+  font-weight: 800;
+}
+
+.admin-chip.is-active span { opacity: 1; }
+
+/* -- Admin equipment dialog --
+   Replaces the permanent 350px form column; the table now owns the full width
+   and the form appears only while something is being registered or edited. */
+.admin-dialog {
+  width: min(430px, calc(100vw - 2rem));
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 22px;
+  background: var(--surface-default);
+  color: var(--text-primary);
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
+}
+
+/* The PDF designer needs room for the options grid and the document preview. */
+.admin-dialog.is-wide {
+  width: min(1000px, calc(100vw - 2rem));
+}
+
+/* Wider shell for the equipment form: two columns instead of one cramped strip. */
+.admin-dialog.is-form {
+  width: min(860px, calc(100vw - 2rem));
+}
+
+.admin-dialog-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.admin-form-section {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.admin-form-section-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-primary);
+}
+
+.admin-dialog input,
+.admin-dialog select,
+.admin-dialog textarea {
+  padding: 0.72rem 0.85rem;
+  font-size: 1rem;
+}
+
+.admin-dialog label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Save/Cancel stay reachable while the form scrolls. */
+.admin-dialog-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 0.9rem 0 0;
+  background: var(--surface-default);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.admin-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+/* -- Confirm / alert dialog (src/utils/confirm.ts) --
+   Stands in for window.confirm()/alert(), which WKWebView silently discards
+   under Tauri on macOS. */
+.app-confirm {
+  width: min(420px, calc(100vw - 2rem));
+  padding: 1.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  background: var(--surface-default);
+  color: var(--text-primary);
+  box-shadow: 0 30px 70px rgba(15, 23, 42, 0.3);
+}
+
+.app-confirm::backdrop {
+  background: rgba(15, 23, 42, 0.55);
+}
+
+/* pre-line keeps the blank lines the longer warnings rely on. */
+.app-confirm-message {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.app-confirm-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.app-confirm-actions button {
+  flex: 1;
+}
+
+.admin-dialog-close {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.admin-dialog-close:hover {
+  filter: none;
+  border-color: var(--danger-base);
+  color: var(--danger-base);
+}
+
+/* -- Admin table: sorting, quick add, row actions -- */
+.admin-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-table th.sortable:hover { color: var(--brand-primary); }
+
+.admin-table .sort-arrow {
+  margin-left: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--brand-primary);
+}
+
+.quick-add-row td {
+  padding: 0.55rem 1rem;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.quick-add-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.quick-add-form input,
+.quick-add-form select {
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.92rem;
+}
+
+.quick-add-form select { flex: 0 1 200px; }
+
+.quick-add-form button {
+  width: auto;
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.quick-add-form button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Stacking every action as its own button made rows ~200px tall; only the
+   contextual primary action stays visible and the rest move into the menu. */
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.row-action-primary {
+  width: auto;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  background: var(--success-base);
+  color: white;
+}
+
+.row-menu { position: relative; }
+
+.row-menu > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.row-menu > summary::-webkit-details-marker { display: none; }
+
+.row-menu > summary:hover {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+}
+
+.row-menu[open] > summary {
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.row-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 30;
+  min-width: 200px;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--surface-default);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+.row-menu-list button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.row-menu-list button:hover {
+  filter: none;
+  background: var(--surface-sunken);
+}
+
+.row-menu-list button.danger { color: var(--danger-base); }
+
+.row-menu-list button.danger:hover { background: rgba(239, 68, 68, 0.1); }
+
 @media (max-width: 900px) {
-  .admin-grid,
+  .quick-add-form { flex-wrap: wrap; }
+  .quick-add-form input { flex: 1 1 100%; }
+  .quick-add-form select { flex: 1 1 auto; }
+}
+
+@media (max-width: 900px) {
   .admin-form-grid,
   .admin-2col-grid,
   .admin-3col-grid,

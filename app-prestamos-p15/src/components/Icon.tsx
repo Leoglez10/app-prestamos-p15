@@ -36,6 +36,8 @@ const ICONS = {
   checkCircle: <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM8.5 12.5 11 15l4.5-5" />,
   inbox: <path d="M5.5 5h13l2.5 8v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5zM3 13h5l1.5 3h5L16 13h5" />,
   smile: <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM8.5 14.5a5 5 0 0 0 7 0M9 9.4v.2M15 9.4v.2" />,
+  more: <path d="M6 12h.01M12 12h.01M18 12h.01" />,
+  chevronDown: <path d="m6 9 6 6 6-6" />,
   dot: <circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none" />,
 } satisfies Record<string, ReactNode>;
 

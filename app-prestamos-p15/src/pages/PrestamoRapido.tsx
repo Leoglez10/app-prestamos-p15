@@ -15,6 +15,7 @@ import { useAuth } from "../auth/AuthContext";
 import { LoginForm } from "../auth/LoginForm";
 import { SessionBadge } from "../auth/SessionBadge";
 import { Icon } from "../components/Icon";
+import { confirmDialog } from "../utils/confirm";
 
 type FilterEstado = "todos" | "activo" | "vencido" | "devuelto";
 
@@ -237,7 +238,7 @@ export default function PrestamoRapido() {
   };
 
   const handleEliminar = async (item: PrestamoRapidoAlumno) => {
-    const confirmado = confirm(
+    const confirmado = await confirmDialog(
       `¿Eliminar el registro de ${item.nombre_alumno} (${item.nombre_equipo})?\n\nEsta acción no se puede deshacer.`
     );
     if (!confirmado) return;

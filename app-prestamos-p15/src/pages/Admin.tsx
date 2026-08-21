@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useDeferredValue, FormEvent, ChangeEvent, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useDeferredValue, FormEvent, ChangeEvent, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import { Link } from "react-router-dom";
 import logoP15 from "../../img/logo-p15.png";
 import {
@@ -22,6 +22,7 @@ import {
   getSettings,
   initializeInventoryDb,
   loginAdmin,
+  openBackupsFolder,
   restoreBackupFromFile,
   updateCategoria,
   updateEquipo,
@@ -35,9 +36,18 @@ import {
   updateSetting
 } from "../hooks/useInventory";
 import "../App.css";
+import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSchedule";
 import { formatSqliteDateTime } from "../utils/datetime";
 import { html, buildPrintDocument, printHtmlDocument } from "../utils/print";
 import { Icon } from "../components/Icon";
+import { confirmDialog, alertDialog } from "../utils/confirm";
+
+const BACKUP_KIND_LABELS: Record<string, string> = {
+  auto: "Automático",
+  manual: "Manual",
+  "pre-restore": "Previo a importar",
+  otro: "Otro",
+};
 
 type PdfOptionItem = {
   key: string;
@@ -84,18 +94,35 @@ function PdfDesignerPanel({
   previewDocument?: string;
   onAction: () => void;
 }) {
+  // The designer used to sit expanded at the top of every panel and ate most of
+  // the viewport. It now lives behind a dialog, like the equipment form.
+  const pdfDialogRef = useRef<HTMLDialogElement>(null);
+
   return (
-    <div
-      className="panel"
-      style={{
-        marginBottom: "0.95rem",
-        display: "grid",
-        gap: "0.75rem",
-        padding: "0.9rem",
-        border: "1px solid rgba(148, 163, 184, 0.18)",
-        boxShadow: "0 18px 40px rgba(15, 23, 42, 0.06)",
-      }}
-    >
+    <>
+      <button
+        type="button"
+        className="ghost"
+        onClick={() => pdfDialogRef.current?.showModal()}
+        style={{ width: "auto", justifySelf: "start", padding: "0.75rem 1.1rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+      >
+        <Icon name="clipboard" size="1rem" />
+        {actionLabel}
+      </button>
+
+      <dialog ref={pdfDialogRef} className="admin-dialog is-wide">
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
+          <strong style={{ fontSize: "1rem" }}>{heading}</strong>
+          <button
+            type="button"
+            className="admin-dialog-close"
+            onClick={() => pdfDialogRef.current?.close()}
+            aria-label="Cerrar"
+          >
+            <Icon name="x" size="1rem" />
+          </button>
+        </div>
+        <div style={{ display: "grid", gap: "0.75rem" }}>
       <div
         style={{
           borderRadius: "16px",
@@ -165,7 +192,10 @@ function PdfDesignerPanel({
           </div>
           <button
             type="button"
-            onClick={onAction}
+            onClick={() => {
+              pdfDialogRef.current?.close();
+              onAction();
+            }}
             style={{
               minWidth: "190px",
               padding: "0.68rem 0.95rem",
@@ -329,7 +359,9 @@ function PdfDesignerPanel({
           </div>
         </div>
       </div>
-    </div>
+        </div>
+      </dialog>
+    </>
   );
 }
 
@@ -353,6 +385,11 @@ function InventarioPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [sortKey, setSortKey] = useState<"nombre" | "categoria" | "estado">("nombre");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [quickNombre, setQuickNombre] = useState("");
+  const [quickCategoria, setQuickCategoria] = useState("");
+  const formDialogRef = useRef<HTMLDialogElement>(null);
   const [inventarioPdf, setInventarioPdf] = useState({
     title: "Inventario completo P15",
     subtitle: "Control general de equipos, disponibilidad y estado administrativo.",
@@ -417,6 +454,7 @@ function InventarioPanel() {
   };
 
   const handleEditInit = (eq: Equipo) => {
+    formDialogRef.current?.showModal();
     setEditingId(eq.id);
     setNombre(eq.nombre_equipo);
     setIdentificador(eq.identificador || "");
@@ -428,6 +466,7 @@ function InventarioPanel() {
   };
 
   const handleCancelEdit = () => {
+    formDialogRef.current?.close();
     setEditingId(null);
     setNombre("");
     setIdentificador("");
@@ -438,8 +477,35 @@ function InventarioPanel() {
     setStockTotal("1");
   };
 
+  // Reset first so the dialog never opens showing the equipment edited last.
+  const handleNuevoEquipo = () => {
+    handleCancelEdit();
+    formDialogRef.current?.showModal();
+  };
+
+  // Name + category is the whole cost of adding one more unique item; the full
+  // form stays for stock, serial numbers and kiosk visibility.
+  const handleQuickAdd = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!quickNombre.trim() || !quickCategoria) return;
+    try {
+      await createEquipo({
+        nombre_equipo: quickNombre.trim(),
+        identificador: null,
+        categoria_id: Number(quickCategoria),
+        es_prestable: 1,
+        es_granel: 0,
+        stock_total: 1,
+      });
+      setQuickNombre("");
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al guardar el equipo");
+    }
+  };
+
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Seguro que deseas eliminar este equipo?")) return;
+    if (!(await confirmDialog("¿Seguro que deseas eliminar este equipo?"))) return;
     try {
       await deleteEquipo(id);
       await loadData();
@@ -449,7 +515,7 @@ function InventarioPanel() {
   };
 
   const handleForzarDevolucion = async (prestamoId: number, equipoId: number) => {
-    if (!confirm("¿Marcar este equipo como devuelto administrativamente?")) return;
+    if (!(await confirmDialog("¿Marcar este equipo como devuelto administrativamente?"))) return;
     try {
       await devolverEquipo(prestamoId, equipoId, "Devuelto por Admin", "Devolución registrada por el administrador.");
       await loadData();
@@ -459,7 +525,7 @@ function InventarioPanel() {
   };
 
   const handleMarcarPerdido = async (prestamoId: number, equipoId: number) => {
-    if (!confirm("¿Seguro que deseas marcar este equipo como PERDIDO/NO DEVUELTO? Esto afectará al inventario.")) return;
+    if (!(await confirmDialog("¿Seguro que deseas marcar este equipo como PERDIDO/NO DEVUELTO? Esto afectará al inventario."))) return;
     try {
       await marcarEquipoPerdido(prestamoId, equipoId);
       await loadData();
@@ -468,13 +534,51 @@ function InventarioPanel() {
     }
   };
 
-  const filteredEquipos = equipos.filter(eq => {
+  // Search and category are applied before the status chips so each chip count
+  // describes the current view; applying the status here too would make every
+  // chip except the active one read 0.
+  const baseEquipos = equipos.filter(eq => {
     const matchesSearch = eq.nombre_equipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (eq.identificador && eq.identificador.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = filterCategory ? eq.categoria_id.toString() === filterCategory : true;
-    const matchesStatus = filterStatus ? eq.estado === filterStatus : true;
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory;
   });
+
+  const statusChips = [
+    { value: "", label: "Todos" },
+    { value: "disponible", label: "Disponibles" },
+    { value: "prestado", label: "Prestados" },
+    { value: "extraviado", label: "Extraviados" },
+    { value: "mantenimiento", label: "Mantenimiento" },
+  ];
+
+  const countForStatus = (value: string) =>
+    value ? baseEquipos.filter(eq => eq.estado === value).length : baseEquipos.length;
+
+  const sortValue = (eq: Equipo) =>
+    sortKey === "categoria" ? eq.categoria_nombre : sortKey === "estado" ? eq.estado : eq.nombre_equipo;
+
+  const filteredEquipos = baseEquipos
+    .filter(eq => (filterStatus ? eq.estado === filterStatus : true))
+    .sort((a, b) => (sortDir === "asc" ? 1 : -1) * sortValue(a).localeCompare(sortValue(b), "es", { numeric: true }));
+
+  const toggleSort = (key: typeof sortKey) => {
+    if (sortKey === key) {
+      setSortDir(current => (current === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const sortArrow = (key: typeof sortKey) =>
+    sortKey === key ? <span className="sort-arrow">{sortDir === "asc" ? "\u2191" : "\u2193"}</span> : null;
+
+  // <details> keeps the menu open after the action fires, so each item closes
+  // the menu it lives in.
+  const closeRowMenu = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.currentTarget.closest("details")?.removeAttribute("open");
+  };
 
   const hasActiveFilters = Boolean(searchTerm || filterCategory || filterStatus);
 
@@ -582,9 +686,6 @@ function InventarioPanel() {
           <div style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
             Total: <strong>{filteredEquipos.length}</strong> equipos {filteredEquipos.length !== equipos.length && `(de ${equipos.length})`}
           </div>
-          <button type="button" onClick={handlePrintInventario} style={{ width: 'auto', padding: '0.75rem 1rem' }}>
-            Imprimir / Guardar PDF
-          </button>
         </div>
       </div>
 
@@ -617,6 +718,17 @@ function InventarioPanel() {
         previewMeta={`${inventarioSummary.disponibles} disponibles · ${inventarioSummary.prestados} prestados · ${inventarioSummary.noPrestables} solo inventario`}
         onAction={handlePrintInventario}
       />
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+        <button
+          type="button"
+          onClick={handleNuevoEquipo}
+          style={{ width: 'auto', padding: '0.75rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
+        >
+          <Icon name="plus" size="1.05rem" />
+          Nuevo equipo
+        </button>
+      </div>
 
       {/* Buscador y Filtros */}
       <div className="admin-filters">
@@ -663,29 +775,42 @@ function InventarioPanel() {
         )}
       </div>
 
-      <div className="admin-grid">
+      {/* Status is the filter used most, so it gets one click instead of a select. */}
+      <div className="admin-chips">
+        {statusChips.map(chip => (
+          <button
+            key={chip.value || "todos"}
+            type="button"
+            className={`admin-chip${filterStatus === chip.value ? " is-active" : ""}`}
+            onClick={() => setFilterStatus(chip.value)}
+          >
+            {chip.label}
+            <span>{countForStatus(chip.value)}</span>
+          </button>
+        ))}
+      </div>
 
-        {/* Formulario Lateral */}
-        <div style={{ alignSelf: 'start' }}>
-        <div
-          className="panel stack"
-          style={{
-            position: 'sticky',
-            top: '1.5rem',
-            width: '350px',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div style={{ display: 'grid', gap: '0.25rem', marginBottom: '0.85rem' }}>
-            <h3 style={{ margin: 0 }}>{editingId ? "Editar equipo" : "Registrar equipo nuevo"}</h3>
-            <div style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              Agrega un artículo al inventario y define si se controlará por unidad o por cantidad.
+      {/* The register/edit form used to sit in a permanent 350px column that took
+          about half the shell from the table. It is only needed while editing. */}
+      <dialog ref={formDialogRef} className="admin-dialog is-form" onClose={handleCancelEdit}>
+        <div className="stack">
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.85rem' }}>
+            <div style={{ display: 'grid', gap: '0.25rem' }}>
+              <h3 style={{ margin: 0 }}>{editingId ? "Editar equipo" : "Registrar equipo nuevo"}</h3>
+              <div style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Agrega un artículo al inventario y define si se controlará por unidad o por cantidad.
+              </div>
             </div>
+            <button type="button" className="admin-dialog-close" onClick={handleCancelEdit} aria-label="Cerrar">
+              <Icon name="x" size="1.1rem" />
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="stack" style={{ gap: '0.8rem' }}>
-            <div style={{ display: 'grid', gap: '0.65rem', padding: '0.8rem', borderRadius: '18px', background: 'linear-gradient(180deg, rgba(248,250,252,0.98), rgba(255,255,255,0.96))', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-              <div style={{ fontSize: '0.76rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-primary)' }}>
+            <div className="admin-dialog-cols">
+            <div className="stack" style={{ gap: '0.8rem' }}>
+            <div className="admin-form-section">
+              <div className="admin-form-section-title">
                 Datos del equipo
               </div>
               <div>
@@ -704,11 +829,11 @@ function InventarioPanel() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gap: '0.65rem', padding: '0.8rem', borderRadius: '18px', background: 'linear-gradient(180deg, rgba(248,250,252,0.98), rgba(255,255,255,0.96))', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-              <div style={{ fontSize: '0.76rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-primary)' }}>
+            <div className="admin-form-section">
+              <div className="admin-form-section-title">
                 Tipo de registro
               </div>
-              <div className="admin-2col-grid">
+              <div style={{ display: 'grid', gap: '0.55rem' }}>
                 <button
                   type="button"
                   onClick={() => setEsGranel(false)}
@@ -770,8 +895,11 @@ function InventarioPanel() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gap: '0.65rem', padding: '0.8rem', borderRadius: '18px', background: 'linear-gradient(180deg, rgba(248,250,252,0.98), rgba(255,255,255,0.96))', border: '1px solid rgba(148, 163, 184, 0.16)' }}>
-              <div style={{ fontSize: '0.76rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-primary)' }}>
+            </div>
+
+            <div className="stack" style={{ gap: '0.8rem' }}>
+            <div className="admin-form-section">
+              <div className="admin-form-section-title">
                 Disponibilidad y vista rápida
               </div>
               <button
@@ -841,29 +969,58 @@ function InventarioPanel() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-              <button type="submit" style={{ flex: 1 }}>{editingId ? "Guardar cambios" : "Guardar equipo"}</button>
-              {editingId && (
-                <button type="button" className="ghost" onClick={handleCancelEdit} style={{ flex: 1 }}>Cancelar</button>
-              )}
+            </div>
+            </div>
+
+            <div className="admin-dialog-actions">
+              <button type="submit" style={{ flex: 2 }}>{editingId ? "Guardar cambios" : "Guardar equipo"}</button>
+              <button type="button" className="ghost" onClick={handleCancelEdit} style={{ flex: 1 }}>Cancelar</button>
             </div>
           </form>
         </div>
-        </div>
+      </dialog>
 
-        {/* Tabla Central */}
-        <div className="panel" style={{ padding: '0', overflowX: 'auto' }}>
+      {/* The row menus are absolutely positioned, so the panel must not clip them. */}
+      <div className="panel" style={{ padding: '0' }}>
           <table className="admin-table">
             <thead>
               <tr style={{ background: 'var(--surface-sunken)', borderBottom: '2px solid var(--border-subtle)' }}>
-                <th style={{ padding: '1rem', width: '26%' }}>ID / Nombre</th>
-                <th className="col-optional" style={{ padding: '1rem', width: '15%' }}>Categoría</th>
-                <th style={{ padding: '1rem', width: '18%' }}>Préstamo</th>
-                <th style={{ padding: '1rem', width: '21%' }}>Estado</th>
-                <th style={{ padding: '1rem', width: '20%', textAlign: 'right' }}>Acciones</th>
+                <th className="sortable" style={{ padding: '0.85rem 1rem', width: '30%' }} onClick={() => toggleSort("nombre")}>
+                  ID / Nombre{sortArrow("nombre")}
+                </th>
+                <th className="col-optional sortable" style={{ padding: '0.85rem 1rem', width: '17%' }} onClick={() => toggleSort("categoria")}>
+                  Categoría{sortArrow("categoria")}
+                </th>
+                <th style={{ padding: '0.85rem 1rem', width: '15%' }}>Préstamo</th>
+                <th className="sortable" style={{ padding: '0.85rem 1rem', width: '24%' }} onClick={() => toggleSort("estado")}>
+                  Estado{sortArrow("estado")}
+                </th>
+                <th style={{ padding: '0.85rem 1rem', width: '14%', textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
+              <tr className="quick-add-row">
+                <td colSpan={5}>
+                  <form className="quick-add-form" onSubmit={handleQuickAdd}>
+                    <Icon name="plus" size="1rem" />
+                    <input
+                      value={quickNombre}
+                      onChange={e => setQuickNombre(e.target.value)}
+                      placeholder="Alta rápida: nombre del equipo"
+                      aria-label="Nombre del equipo nuevo"
+                    />
+                    <select
+                      value={quickCategoria}
+                      onChange={e => setQuickCategoria(e.target.value)}
+                      aria-label="Categoría del equipo nuevo"
+                    >
+                      <option value="">Categoría...</option>
+                      {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                    </select>
+                    <button type="submit" disabled={!quickNombre.trim() || !quickCategoria}>Agregar</button>
+                  </form>
+                </td>
+              </tr>
               {filteredEquipos.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
@@ -873,7 +1030,7 @@ function InventarioPanel() {
               ) : null}
               {filteredEquipos.map(eq => (
                 <tr key={eq.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: editingId === eq.id ? 'var(--surface-sunken)' : 'transparent' }}>
-                  <td style={{ padding: '1rem' }}>
+                  <td style={{ padding: '0.55rem 1rem' }}>
                     <strong>{eq.nombre_equipo}</strong>
                     {eq.es_granel === 0 ? (
                       <>
@@ -887,13 +1044,13 @@ function InventarioPanel() {
                       </>
                     )}
                   </td>
-                  <td className="col-optional" style={{ padding: '1rem' }}>{eq.categoria_nombre}</td>
-                  <td style={{ padding: '1rem' }}>
+                  <td className="col-optional" style={{ padding: '0.55rem 1rem' }}>{eq.categoria_nombre}</td>
+                  <td style={{ padding: '0.55rem 1rem' }}>
                     <span className={`state ${eq.es_prestable === 1 ? 'activo' : 'historico'}`} style={{ width: 'fit-content' }}>
                       {eq.es_prestable === 1 ? 'Prestable' : 'Solo inventario'}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem' }}>
+                  <td style={{ padding: '0.55rem 1rem' }}>
                     {eq.es_granel === 1 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <span style={{ fontWeight: '500', color: 'var(--brand-primary)' }}>
@@ -922,34 +1079,42 @@ function InventarioPanel() {
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                    {eq.es_granel === 0 && eq.estado === 'prestado' && eq.prestamo_activo_id && (
-                      <>
+                  <td style={{ padding: '0.55rem 1rem' }}>
+                    <div className="row-actions">
+                      {eq.es_granel === 0 && eq.estado === 'prestado' && eq.prestamo_activo_id && (
                         <button
                           type="button"
+                          className="row-action-primary"
                           onClick={() => handleForzarDevolucion(eq.prestamo_activo_id!, eq.id)}
-                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--success-base)' }}>
+                        >
                           Devolver
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMarcarPerdido(eq.prestamo_activo_id!, eq.id)}
-                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', border: 'none', fontWeight: 'bold', background: 'var(--warning-base)', color: 'black' }}>
-                          Marcar Perdido
-                        </button>
-                      </>
-                    )}
-                    <button type="button" onClick={() => handleEditInit(eq)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--brand-primary)' }}>Editar</button>
-                    <button type="button" onClick={() => handleDelete(eq.id)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--danger-base)' }}>Eliminar</button>
+                      )}
+                      {/* name= lets the browser close any other open row menu. */}
+                      <details className="row-menu" name="admin-row-menu">
+                        <summary aria-label={`Acciones para ${eq.nombre_equipo}`}>
+                          <Icon name="more" size="1.15rem" />
+                        </summary>
+                        <div className="row-menu-list">
+                          <button type="button" onClick={(event) => { closeRowMenu(event); handleEditInit(eq); }}>
+                            Editar equipo
+                          </button>
+                          {eq.es_granel === 0 && eq.estado === 'prestado' && eq.prestamo_activo_id && (
+                            <button type="button" onClick={(event) => { closeRowMenu(event); handleMarcarPerdido(eq.prestamo_activo_id!, eq.id); }}>
+                              Marcar como perdido
+                            </button>
+                          )}
+                          <button type="button" className="danger" onClick={(event) => { closeRowMenu(event); handleDelete(eq.id); }}>
+                            Eliminar
+                          </button>
+                        </div>
+                      </details>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-
       </div>
     </section>
   );
@@ -1018,14 +1183,14 @@ function ReportesPanel() {
   };
 
   const handleDelete = async (prestamoId: number) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este registro de préstamo histórico?")) return;
-    if (!window.confirm("Esta acción es irreversible y el registro desaparecera permanentemente. ¿Estás absolutamente seguro?")) return;
+    if (!(await confirmDialog("¿Seguro que deseas eliminar este registro de préstamo histórico?"))) return;
+    if (!(await confirmDialog("Esta acción es irreversible y el registro desaparecera permanentemente. ¿Estás absolutamente seguro?"))) return;
 
     try {
       await deletePrestamo(prestamoId);
       await loadReportes();
     } catch (err) {
-      alert("Error al eliminar el registro: " + (err instanceof Error ? err.message : String(err)));
+      await alertDialog("Error al eliminar el registro: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -1041,7 +1206,7 @@ function ReportesPanel() {
       resetObservaciones();
       await loadReportes();
     } catch (err) {
-      alert("Error al guardar observaciones: " + (err instanceof Error ? err.message : String(err)));
+      await alertDialog("Error al guardar observaciones: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -1501,7 +1666,7 @@ function CategoriasPanel() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta categoría?")) return;
+    if (!(await confirmDialog("¿Seguro que deseas eliminar esta categoría?"))) return;
     try {
       await deleteCategoria(id);
       await loadCategorias();
@@ -1941,7 +2106,7 @@ function ProfesoresPanel() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm("¿Seguro que deseas eliminar este profesor?")) return;
+    if (!(await confirmDialog("¿Seguro que deseas eliminar este profesor?"))) return;
     try {
       await deleteProfesor(id);
       await loadProfesores();
@@ -2157,6 +2322,29 @@ function ConfiguracionPanel() {
     }
   };
 
+  const handleOpenBackupsFolder = async () => {
+    try {
+      setError("");
+      const folder = await openBackupsFolder();
+      setBackupMessage(`Carpeta de respaldos abierta: ${folder}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo abrir la carpeta de respaldos.");
+    }
+  };
+
+  const handleBackupIntervalChange = async (hours: string) => {
+    try {
+      setSaving(true);
+      setError("");
+      await updateSetting("backup_auto_hours", hours);
+      setSettings((current) => ({ ...current, backup_auto_hours: hours }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo guardar la frecuencia de respaldo.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleImportBackupClick = () => {
     fileInputRef.current?.click();
   };
@@ -2169,7 +2357,7 @@ function ConfiguracionPanel() {
       return;
     }
 
-    if (!window.confirm(`Se importará el respaldo "${selectedFile.name}" y reemplazará la base actual. Se creará un respaldo de seguridad antes de continuar. ¿Deseas seguir?`)) {
+    if (!(await confirmDialog(`Se importará el respaldo "${selectedFile.name}" y reemplazará la base actual. Se creará un respaldo de seguridad antes de continuar. ¿Deseas seguir?`))) {
       return;
     }
 
@@ -2190,8 +2378,8 @@ function ConfiguracionPanel() {
   };
 
   const handleDeleteHistorial = async () => {
-    if (!window.confirm("¿Deseas borrar todos los registros históricos de préstamos? Los préstamos activos no se eliminarán.")) return;
-    if (!window.confirm("Esta acción es irreversible. Solo quedarán los préstamos activos y los nuevos que se creen a partir de ahora. ¿Continuar?")) return;
+    if (!(await confirmDialog("¿Deseas borrar todos los registros históricos de préstamos? Los préstamos activos no se eliminarán."))) return;
+    if (!(await confirmDialog("Esta acción es irreversible. Solo quedarán los préstamos activos y los nuevos que se creen a partir de ahora. ¿Continuar?"))) return;
 
     try {
       setSaving(true);
@@ -2207,8 +2395,8 @@ function ConfiguracionPanel() {
   };
 
   const handleDeleteAllReportes = async () => {
-    if (!window.confirm("¿Deseas eliminar todos los reportes y registros de préstamos, incluyendo activos e históricos?")) return;
-    if (!window.confirm("Esta acción es irreversible. También liberará los equipos marcados actualmente como prestados. ¿Continuar con la eliminación total?")) return;
+    if (!(await confirmDialog("¿Deseas eliminar todos los reportes y registros de préstamos, incluyendo activos e históricos?"))) return;
+    if (!(await confirmDialog("Esta acción es irreversible. También liberará los equipos marcados actualmente como prestados. ¿Continuar con la eliminación total?"))) return;
 
     try {
       setSaving(true);
@@ -2263,16 +2451,48 @@ function ConfiguracionPanel() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
           <div>
             <h3 style={{ margin: 0 }}>Respaldos</h3>
-            <small style={{ color: "var(--text-secondary)" }}>Se guarda una copia de `prestamos.db` en la carpeta `backups` de los datos de la app. También puedes importar un respaldo `.db` desde tu equipo.</small>
+            <small style={{ color: "var(--text-secondary)" }}>Se guarda una copia de `prestamos.db` en la carpeta `backups` de los datos de la app. Usa "Abrir carpeta" para copiarlos a una USB o a Drive. También puedes importar un respaldo `.db` desde tu equipo.</small>
           </div>
           <div style={{ display: "flex", gap: "0.7rem", flexWrap: "wrap" }}>
             <button type="button" onClick={() => void handleCreateBackup()} disabled={saving} style={{ width: "auto", padding: "0.7rem 1rem" }}>
               {saving ? "Procesando..." : "Crear respaldo"}
             </button>
+            <button type="button" className="ghost" onClick={() => void handleOpenBackupsFolder()} style={{ width: "auto", padding: "0.7rem 1rem" }}>
+              Abrir carpeta
+            </button>
             <button type="button" className="ghost" onClick={handleImportBackupClick} disabled={saving} style={{ width: "auto", padding: "0.7rem 1rem" }}>
               Importar respaldo
             </button>
           </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", padding: "0.9rem", background: "var(--surface-sunken)", borderRadius: "10px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: 0 }}>
+            <input
+              type="checkbox"
+              checked={settings.backup_auto_enabled !== "false"}
+              onChange={(e) => void handleToggleSetting("backup_auto_enabled", e.target.checked)}
+              disabled={saving}
+              style={{ width: "auto" }}
+            />
+            Respaldo automático
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: 0 }}>
+            <span style={{ color: "var(--text-secondary)" }}>Frecuencia</span>
+            <select
+              value={String(parseIntervalHours(settings.backup_auto_hours))}
+              onChange={(e) => void handleBackupIntervalChange(e.target.value)}
+              disabled={saving || settings.backup_auto_enabled === "false"}
+              style={{ width: "auto", padding: "0.45rem 0.6rem" }}
+            >
+              {BACKUP_INTERVAL_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </label>
+          <small style={{ color: "var(--text-secondary)" }}>
+            Se conservan los últimos 20 respaldos automáticos. Los manuales no se borran.
+          </small>
         </div>
         <input
           ref={fileInputRef}
@@ -2287,15 +2507,16 @@ function ConfiguracionPanel() {
           <table className="admin-table">
             <thead>
               <tr style={{ background: "var(--surface-sunken)", borderBottom: "2px solid var(--border-subtle)" }}>
-                <th style={{ padding: "0.9rem", width: "32%" }}>Archivo</th>
-                <th style={{ padding: "0.9rem", width: "22%" }}>Fecha</th>
-                <th className="col-optional" style={{ padding: "0.9rem", width: "46%" }}>Ruta</th>
+                <th style={{ padding: "0.9rem", width: "30%" }}>Archivo</th>
+                <th style={{ padding: "0.9rem", width: "14%" }}>Tipo</th>
+                <th style={{ padding: "0.9rem", width: "20%" }}>Fecha</th>
+                <th className="col-optional" style={{ padding: "0.9rem", width: "36%" }}>Ruta</th>
               </tr>
             </thead>
             <tbody>
               {backups.length === 0 ? (
                 <tr>
-                  <td colSpan={3} style={{ padding: "1.2rem", textAlign: "center", color: "var(--text-secondary)" }}>
+                  <td colSpan={4} style={{ padding: "1.2rem", textAlign: "center", color: "var(--text-secondary)" }}>
                     Aún no hay respaldos creados.
                   </td>
                 </tr>
@@ -2303,6 +2524,7 @@ function ConfiguracionPanel() {
               {backups.map((backup) => (
                 <tr key={backup.backup_path} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
                   <td style={{ padding: "0.9rem", fontWeight: 600 }}>{backup.file_name}</td>
+                  <td style={{ padding: "0.9rem", color: "var(--text-secondary)" }}>{BACKUP_KIND_LABELS[backup.kind] ?? backup.kind}</td>
                   <td style={{ padding: "0.9rem" }}>{formatSqliteDateTime(new Date(backup.created_epoch * 1000).toISOString())}</td>
                   <td className="col-optional" style={{ padding: "0.9rem", color: "var(--text-secondary)" }}>{backup.backup_path}</td>
                 </tr>

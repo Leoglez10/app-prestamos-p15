@@ -55,10 +55,13 @@ export type ReportePrestamoFilters = {
   limit?: number;
 };
 
+export type BackupKind = "auto" | "manual" | "pre-restore" | "otro";
+
 export type BackupInfo = {
   file_name: string;
   backup_path: string;
   created_epoch: number;
+  kind: BackupKind;
 };
 
 export type RestoreBackupResult = {
@@ -154,6 +157,8 @@ const initialDataStatements = [
 const defaultSettingsStatements = [
   "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('kiosk_show_pendientes', 'true')",
   "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('kiosk_show_catalogo', 'true')",
+  "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('backup_auto_enabled', 'true')",
+  "INSERT OR IGNORE INTO app_settings (key, value) VALUES ('backup_auto_hours', '12')",
 ];
 
 const isTauriRuntime = (): boolean => {
@@ -1100,8 +1105,22 @@ export const deleteAllReportes = async (): Promise<void> => {
   }
 };
 
-export const createBackup = async (): Promise<BackupInfo> => {
-  return invoke<BackupInfo>("create_backup");
+export const createBackup = async (auto = false): Promise<BackupInfo> => {
+  const db = await getDb();
+  // SQLite runs in WAL mode: recent transactions live in the -wal file, not in
+  // prestamos.db. Without this checkpoint the file copy on the Rust side would
+  // silently miss them. Failing to checkpoint must not block the backup itself.
+  try {
+    await db.select("PRAGMA wal_checkpoint(TRUNCATE)");
+  } catch (error) {
+    console.warn("No se pudo consolidar el WAL antes del respaldo:", error);
+  }
+
+  return invoke<BackupInfo>("create_backup", { auto });
+};
+
+export const openBackupsFolder = async (): Promise<string> => {
+  return invoke<string>("open_backups_dir");
 };
 
 export const getBackups = async (): Promise<BackupInfo[]> => {

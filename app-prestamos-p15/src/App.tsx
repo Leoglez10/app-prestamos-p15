@@ -3,9 +3,12 @@ import Home from "./pages/Home";
 import Kiosk from "./pages/Kiosk";
 import Admin from "./pages/Admin";
 import PrestamoRapido from "./pages/PrestamoRapido";
+import { useAutoBackup } from "./hooks/useAutoBackup";
 import "./App.css";
 
 function App() {
+  useAutoBackup();
+
   return (
     <BrowserRouter>
       <Routes>

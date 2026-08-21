@@ -1,16 +1,31 @@
+use chrono::Local;
 use serde::Serialize;
 use std::{
     fs,
-    path::PathBuf,
+    path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
 };
 use tauri::{AppHandle, Manager};
+use tauri_plugin_opener::OpenerExt;
+
+/// Backups created by the scheduled job. These are the only ones pruned automatically.
+const AUTO_BACKUP_PREFIX: &str = "prestamos-auto-";
+/// Backups the user asked for explicitly. Never pruned.
+const MANUAL_BACKUP_PREFIX: &str = "prestamos-backup-";
+/// Safety copy taken right before a restore overwrites the live database. Never pruned.
+const PRE_RESTORE_BACKUP_PREFIX: &str = "prestamos-pre-restore-";
+/// How many automatic backups to keep before deleting the oldest ones.
+const AUTO_BACKUP_KEEP: usize = 20;
+/// Local timestamp format used in backup file names. Sorts chronologically as plain text.
+const BACKUP_TIMESTAMP_FORMAT: &str = "%Y-%m-%d_%H-%M-%S";
 
 #[derive(Serialize)]
 struct BackupInfo {
     file_name: String,
     backup_path: String,
     created_epoch: u64,
+    /// "auto" | "manual" | "pre-restore" | "otro"
+    kind: String,
 }
 
 #[derive(Serialize)]
@@ -39,6 +54,57 @@ fn ensure_app_data_root(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(root)
 }
 
+fn backups_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app_data_root(app)?.join("backups");
+    fs::create_dir_all(&dir)
+        .map_err(|error| format!("No se pudo preparar el directorio de respaldos: {error}"))?;
+    Ok(dir)
+}
+
+fn backup_kind(file_name: &str) -> &'static str {
+    if file_name.starts_with(AUTO_BACKUP_PREFIX) {
+        "auto"
+    } else if file_name.starts_with(PRE_RESTORE_BACKUP_PREFIX) {
+        "pre-restore"
+    } else if file_name.starts_with(MANUAL_BACKUP_PREFIX) {
+        "manual"
+    } else {
+        "otro"
+    }
+}
+
+/// Keep only the newest AUTO_BACKUP_KEEP automatic backups.
+///
+/// Manual and pre-restore backups are deliberate user actions and are never deleted here.
+/// File names embed a sortable timestamp, so sorting by name sorts by date.
+fn prune_auto_backups(dir: &Path) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+
+    let mut auto_backups: Vec<PathBuf> = entries
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.extension().and_then(|value| value.to_str()) == Some("db")
+                && path
+                    .file_name()
+                    .and_then(|value| value.to_str())
+                    .is_some_and(|name| name.starts_with(AUTO_BACKUP_PREFIX))
+        })
+        .collect();
+
+    if auto_backups.len() <= AUTO_BACKUP_KEEP {
+        return;
+    }
+
+    auto_backups.sort();
+    let excess = auto_backups.len() - AUTO_BACKUP_KEEP;
+    for path in auto_backups.iter().take(excess) {
+        let _ = fs::remove_file(path);
+    }
+}
+
 #[tauri::command]
 fn get_database_url(app: AppHandle) -> Result<String, String> {
     ensure_app_data_root(&app)?;
@@ -47,8 +113,13 @@ fn get_database_url(app: AppHandle) -> Result<String, String> {
     Ok(format!("sqlite:{normalized_path}"))
 }
 
+/// Copy the live database into the backups folder.
+///
+/// The caller must checkpoint the WAL before invoking this (see `createBackup` in
+/// `src/hooks/useInventory.ts`); otherwise recent transactions still sitting in the
+/// `-wal` file would be missing from the copy.
 #[tauri::command]
-fn create_backup(app: AppHandle) -> Result<BackupInfo, String> {
+fn create_backup(app: AppHandle, auto: Option<bool>) -> Result<BackupInfo, String> {
     let db_path = database_path(&app)?;
     if !db_path.exists() {
         return Err(format!(
@@ -56,36 +127,45 @@ fn create_backup(app: AppHandle) -> Result<BackupInfo, String> {
             db_path.display()
         ));
     }
-    let root = app_data_root(&app)?;
-    let backups_dir = root.join("backups");
-    fs::create_dir_all(&backups_dir)
-        .map_err(|error| format!("No se pudo crear el directorio de respaldos: {error}"))?;
+    let backups_dir = backups_dir(&app)?;
 
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_err(|error| format!("No se pudo calcular el timestamp del respaldo: {error}"))?
-        .as_secs();
+    let now = Local::now();
+    let prefix = if auto.unwrap_or(false) {
+        AUTO_BACKUP_PREFIX
+    } else {
+        MANUAL_BACKUP_PREFIX
+    };
 
-    let file_name = format!("prestamos-backup-{timestamp}.db");
+    let file_name = format!("{prefix}{}.db", now.format(BACKUP_TIMESTAMP_FORMAT));
     let backup_path = backups_dir.join(&file_name);
 
     fs::copy(&db_path, &backup_path)
         .map_err(|error| format!("No se pudo crear el respaldo: {error}"))?;
 
+    prune_auto_backups(&backups_dir);
+
     Ok(BackupInfo {
+        kind: backup_kind(&file_name).to_string(),
         file_name,
         backup_path: backup_path.display().to_string(),
-        created_epoch: timestamp,
+        created_epoch: now.timestamp().max(0) as u64,
     })
+}
+
+/// Open the backups folder in the system file explorer so the user can copy files out.
+#[tauri::command]
+fn open_backups_dir(app: AppHandle) -> Result<String, String> {
+    let dir = backups_dir(&app)?;
+    let dir_display = dir.display().to_string();
+    app.opener()
+        .open_path(dir_display.clone(), None::<&str>)
+        .map_err(|error| format!("No se pudo abrir la carpeta de respaldos: {error}"))?;
+    Ok(dir_display)
 }
 
 #[tauri::command]
 fn list_backups(app: AppHandle) -> Result<Vec<BackupInfo>, String> {
-    let root = app_data_root(&app)?;
-    let backups_dir = root.join("backups");
-    if !backups_dir.exists() {
-        return Ok(Vec::new());
-    }
+    let backups_dir = backups_dir(&app)?;
 
     let mut backups = Vec::new();
     let entries = fs::read_dir(&backups_dir)
@@ -109,8 +189,10 @@ fn list_backups(app: AppHandle) -> Result<Vec<BackupInfo>, String> {
             .map(|value| value.as_secs())
             .unwrap_or(0);
 
+        let file_name = entry.file_name().to_string_lossy().to_string();
         backups.push(BackupInfo {
-            file_name: entry.file_name().to_string_lossy().to_string(),
+            kind: backup_kind(&file_name).to_string(),
+            file_name,
             backup_path: path.display().to_string(),
             created_epoch,
         });
@@ -139,16 +221,18 @@ fn restore_backup_from_bytes(
     fs::create_dir_all(&root)
         .map_err(|error| format!("No se pudo preparar el directorio de datos de la app: {error}"))?;
 
-    let backups_dir = root.join("backups");
-    fs::create_dir_all(&backups_dir)
-        .map_err(|error| format!("No se pudo preparar el directorio de respaldos: {error}"))?;
+    let backups_dir = backups_dir(&app)?;
 
+    let now = Local::now();
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map_err(|error| format!("No se pudo calcular el timestamp de restauracion: {error}"))?
         .as_secs();
 
-    let safety_backup_name = format!("prestamos-pre-restore-{timestamp}.db");
+    let safety_backup_name = format!(
+        "{PRE_RESTORE_BACKUP_PREFIX}{}.db",
+        now.format(BACKUP_TIMESTAMP_FORMAT)
+    );
     let safety_backup_path = backups_dir.join(&safety_backup_name);
 
     if db_path.exists() {
@@ -192,6 +276,7 @@ pub fn run() {
             get_database_url,
             create_backup,
             list_backups,
+            open_backups_dir,
             restore_backup_from_bytes
         ])
         .run(tauri::generate_context!())

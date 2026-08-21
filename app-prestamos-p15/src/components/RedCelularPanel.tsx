@@ -49,8 +49,9 @@ export function RedCelularPanel({ adminId, adminNombre }: Props) {
   const [etiqueta, setEtiqueta] = useState("");
 
   const direccion = ip ? `http://${ip}:${PUERTO_CELULAR}` : "";
-  // El QR de vinculación apunta al canal seguro: es el único donde el navegador
-  // deja abrir la cámara. El plano queda para bajar el certificado.
+  // Todo lo que sea entrar a la página va por el canal seguro: es el único donde el
+  // navegador deja abrir la cámara. El plano queda solo para bajar el certificado,
+  // que es justo el paso que todavía no puede ir cifrado.
   const direccionSegura = ip ? `https://${ip}:${PUERTO_SEGURO}` : "";
 
   const cargarDispositivos = useCallback(async () => {
@@ -111,7 +112,14 @@ export function RedCelularPanel({ adminId, adminNombre }: Props) {
     }
   };
 
-  const qrDireccion = useMemo(() => (direccion ? construirQr(direccion) : ""), [direccion]);
+  // El QR de entrada apunta al canal seguro: sobre HTTP plano el navegador esconde
+  // el escaner en vivo y solo queda el respaldo por foto. Ver GUION_ESCANEO en
+  // src-tauri/src/celular.rs. El QR del certificado, en cambio, tiene que seguir
+  // siendo plano: es el paso que hace confiable al seguro.
+  const qrDireccion = useMemo(
+    () => (direccionSegura ? construirQr(direccionSegura) : ""),
+    [direccionSegura]
+  );
   const qrVinculacion = useMemo(
     () => (direccionSegura && tokenNuevo ? construirQr(`${direccionSegura}/?t=${tokenNuevo}`) : ""),
     [direccionSegura, tokenNuevo]
@@ -139,7 +147,7 @@ export function RedCelularPanel({ adminId, adminNombre }: Props) {
         <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
           <img
             src={qrDireccion}
-            alt={`Código QR de la dirección ${direccion}`}
+            alt={`Código QR de la dirección ${direccionSegura}`}
             style={{
               width: "150px",
               height: "150px",
@@ -154,7 +162,7 @@ export function RedCelularPanel({ adminId, adminNombre }: Props) {
             <div>
               <small style={{ color: "var(--text-secondary)" }}>Dirección actual</small>
               <div style={{ fontSize: "1.3rem", fontWeight: 700, wordBreak: "break-all" }}>
-                {direccion}
+                {direccionSegura}
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -182,7 +190,8 @@ export function RedCelularPanel({ adminId, adminNombre }: Props) {
             </div>
             <small style={{ color: "var(--text-secondary)" }}>
               Esta dirección cambia sola cada tanto, así que nunca debe imprimirse en una
-              etiqueta. Este QR siempre muestra la vigente.
+              etiqueta. Este QR siempre muestra la vigente. Si el teléfono la rechaza, le falta
+              el paso 1.
             </small>
           </div>
         </div>

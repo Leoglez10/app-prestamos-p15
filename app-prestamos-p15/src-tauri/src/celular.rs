@@ -36,6 +36,14 @@ pub struct Sesion {
     /// Loans are keyed by `codigo_profe`, not by id, so both travel in the session.
     pub codigo: String,
     pub nombre: String,
+    /// Un admin ve y devuelve los prestamos de todos, no solo los suyos: es quien
+    /// camina recogiendo equipo. Sale de `profesores.es_admin`, no de nada que el
+    /// telefono pueda decir de si mismo.
+    ///
+    /// Esto le da al telefono autoridad sobre prestamos ajenos. El PIN de
+    /// administrador sigue sin salir de la computadora, pero un telefono perdido
+    /// hay que revocarlo desde Admin.
+    pub es_admin: bool,
 }
 
 fn huella(token: &str) -> String {
@@ -96,8 +104,8 @@ pub async fn registrar_dispositivo(
 }
 
 async fn autorizar(pool: &SqlitePool, token: &str) -> Option<Sesion> {
-    let (codigo, nombre) = sqlx::query_as::<_, (String, String)>(
-        "SELECT p.codigo, p.nombre
+    let (codigo, nombre, es_admin) = sqlx::query_as::<_, (String, String, i64)>(
+        "SELECT p.codigo, p.nombre, COALESCE(p.es_admin, 0)
            FROM celular_dispositivos d
            JOIN profesores p ON p.id = d.profesor_id
           WHERE d.token_hash = ? AND d.revocado_en IS NULL
@@ -117,7 +125,11 @@ async fn autorizar(pool: &SqlitePool, token: &str) -> Option<Sesion> {
     .execute(pool)
     .await;
 
-    Some(Sesion { codigo, nombre })
+    Some(Sesion {
+        codigo,
+        nombre,
+        es_admin: es_admin == 1,
+    })
 }
 
 // --- Operaciones sobre el inventario -----------------------------------------
@@ -143,6 +155,9 @@ pub struct PrestamoActivo {
     /// hay forma de saber cual devolver.
     pub identificador: Option<String>,
     pub categoria: String,
+    /// Quien lo tiene. Solo se muestra en la vista de admin: en la de un profesor
+    /// siempre seria su propio nombre repetido en cada tarjeta.
+    pub profesor: String,
 }
 
 /// Local time in the exact shape the rest of the app writes
@@ -247,16 +262,23 @@ async fn listar_equipos(pool: &SqlitePool) -> Result<Vec<Equipo>, String> {
     })
 }
 
-async fn listar_prestamos(pool: &SqlitePool, codigo: &str) -> Result<Vec<PrestamoActivo>, String> {
-    sqlx::query_as::<_, (i64, String, String, Option<String>, String)>(
-        "SELECT p.id, i.nombre_equipo, p.fecha_salida, i.identificador, c.nombre
+async fn listar_prestamos(
+    pool: &SqlitePool,
+    sesion: &Sesion,
+) -> Result<Vec<PrestamoActivo>, String> {
+    sqlx::query_as::<_, (i64, String, String, Option<String>, String, String)>(
+        // El primer parametro es `es_admin`: cuando vale 1 la condicion del codigo
+        // se cumple sola y la lista deja de estar recortada al dueno.
+        "SELECT p.id, i.nombre_equipo, p.fecha_salida, i.identificador, c.nombre,
+                COALESCE(NULLIF(TRIM(p.nombre_profe), ''), p.codigo_profe)
            FROM prestamos p
            JOIN inventario i ON i.id = p.equipo_id
            JOIN categorias c ON c.id = i.categoria_id
-          WHERE p.codigo_profe = ? AND p.estado_prestamo = 'activo'
+          WHERE p.estado_prestamo = 'activo' AND (? = 1 OR p.codigo_profe = ?)
           ORDER BY p.fecha_salida DESC",
     )
-    .bind(codigo)
+    .bind(i64::from(sesion.es_admin))
+    .bind(&sesion.codigo)
     .fetch_all(pool)
     .await
     .map_err(|error| format!("No se pudieron leer los préstamos: {error}"))
@@ -264,12 +286,15 @@ async fn listar_prestamos(pool: &SqlitePool, codigo: &str) -> Result<Vec<Prestam
         filas
             .into_iter()
             .map(
-                |(id, nombre_equipo, fecha_salida, identificador, categoria)| PrestamoActivo {
-                    id,
-                    nombre_equipo,
-                    fecha_salida,
-                    identificador,
-                    categoria,
+                |(id, nombre_equipo, fecha_salida, identificador, categoria, profesor)| {
+                    PrestamoActivo {
+                        id,
+                        nombre_equipo,
+                        fecha_salida,
+                        identificador,
+                        categoria,
+                        profesor,
+                    }
                 },
             )
             .collect()
@@ -469,16 +494,25 @@ async fn devolver(
         "SELECT p.equipo_id, i.nombre_equipo, COALESCE(i.es_granel, 0)
            FROM prestamos p
            JOIN inventario i ON i.id = p.equipo_id
-          WHERE p.id = ? AND p.codigo_profe = ? AND p.estado_prestamo = 'activo'",
+          WHERE p.id = ? AND p.estado_prestamo = 'activo'
+            AND (? = 1 OR p.codigo_profe = ?)",
     )
     .bind(prestamo_id)
+    .bind(i64::from(sesion.es_admin))
     .bind(&sesion.codigo)
     .fetch_optional(pool)
     .await
     .map_err(|error| format!("No se pudo consultar el préstamo: {error}"))?;
 
-    let (equipo_id, nombre, es_granel) =
-        fila.ok_or_else(|| "Ese préstamo no existe o no es tuyo.".to_string())?;
+    // Un admin llega hasta cualquier prestamo, asi que para el la unica causa
+    // posible es que ya se haya devuelto.
+    let (equipo_id, nombre, es_granel) = fila.ok_or_else(|| {
+        if sesion.es_admin {
+            "Ese préstamo ya no está activo.".to_string()
+        } else {
+            "Ese préstamo no existe o no es tuyo.".to_string()
+        }
+    })?;
 
     let Some(etiqueta) = etiqueta_condicion(condicion) else {
         return Err("Elige en qué condición regresa el equipo.".to_string());
@@ -872,27 +906,44 @@ fn pagina_principal(sesion: &Sesion, prestamos: &[PrestamoActivo], aviso: Option
          </div>",
     );
 
+    // Un admin esta viendo el equipo de toda la prepa, no el suyo: el titulo tiene
+    // que decirlo o parece que la lista esta mal.
+    let (titulo_lista, sin_nada) = if sesion.es_admin {
+        ("Prestado ahora", "No hay nada prestado en este momento.")
+    } else {
+        ("Tienes prestado", "No tienes nada prestado.")
+    };
+
     cuerpo.push_str(&format!(
         "<div class=\"fila-sup\" style=\"margin:1.9rem 0 .75rem\">\
-           <h2>Tienes prestado</h2><span class=\"conteo\">{}</span></div>",
+           <h2>{}</h2><span class=\"conteo\">{}</span></div>",
+        titulo_lista,
         prestamos.len()
     ));
 
     if prestamos.is_empty() {
-        cuerpo.push_str("<p class=\"vacio\">No tienes nada prestado.</p>");
+        cuerpo.push_str(&format!("<p class=\"vacio\">{sin_nada}</p>"));
     } else {
         cuerpo.push_str("<div class=\"lista\">");
         for prestamo in prestamos {
+            // En la vista de un profesor el nombre seria el suyo en cada tarjeta.
+            let quien = if sesion.es_admin {
+                format!("<span>{}</span>", escapar(&prestamo.profesor))
+            } else {
+                String::new()
+            };
+
             cuerpo.push_str(&format!(
                 "<div class=\"tarjeta prestamo\">\
                    <div>\
                      <span class=\"titulo-obj\">{}</span>\
-                     <span class=\"meta\">{}<span>Desde {}</span></span>\
+                     <span class=\"meta\">{}{}<span>Desde {}</span></span>\
                    </div>\
                    <a class=\"boton devolver\" href=\"/devolver/{}\">Devolver</a>\
                  </div>",
                 escapar(&prestamo.nombre_equipo),
                 distintivo(&prestamo.identificador, &prestamo.categoria),
+                quien,
                 escapar(&fecha_legible(&prestamo.fecha_salida)),
                 prestamo.id
             ));
@@ -1341,6 +1392,7 @@ fn pagina_devolucion(prestamo: &PrestamoActivo) -> String {
         "<a href=\"/\">&larr; Cancelar</a>\
          <h1 style=\"margin:.7rem 0 .25rem\">Devolver</h1>\
          <p style=\"font-size:1.02rem\">{}</p>\
+         <p class=\"vacio\" style=\"margin-top:-.35rem\">A nombre de {}</p>\
          <form method=\"post\" action=\"/devolver\" style=\"display:flex;flex-direction:column;flex-grow:1\">\
            <input type=\"hidden\" name=\"prestamo_id\" value=\"{}\">\
            <h2 style=\"margin:1.7rem 0 .65rem\">¿Cómo regresa?</h2>\
@@ -1362,6 +1414,7 @@ fn pagina_devolucion(prestamo: &PrestamoActivo) -> String {
            <button type=\"submit\" class=\"confirmar\" style=\"margin-top:1.2rem\">Confirmar devolución</button>\
          </form>",
         escapar(&prestamo.nombre_equipo),
+        escapar(&prestamo.profesor),
         prestamo.id,
         opciones
     );
@@ -1383,7 +1436,7 @@ fn ruta(url: &str) -> &str {
 }
 
 fn responder_principal(request: Request, pool: &SqlitePool, sesion: &Sesion, aviso: Option<&str>) {
-    match tauri::async_runtime::block_on(listar_prestamos(pool, &sesion.codigo)) {
+    match tauri::async_runtime::block_on(listar_prestamos(pool, sesion)) {
         Ok(prestamos) => responder_html(request, 200, pagina_principal(sesion, &prestamos, aviso), None),
         Err(error) => responder_html(request, 500, pagina("Error", &escapar(&error)), None),
     }
@@ -1441,7 +1494,7 @@ fn atender_autenticado(mut request: Request, pool: &SqlitePool, sesion: Sesion) 
         }
 
         ("GET", camino) if camino.starts_with("/devolver/") => {
-            let prestamos = tauri::async_runtime::block_on(listar_prestamos(pool, &sesion.codigo));
+            let prestamos = tauri::async_runtime::block_on(listar_prestamos(pool, &sesion));
             let elegido = prestamo_de_ruta(camino).and_then(|id| {
                 prestamos
                     .as_ref()
@@ -1590,6 +1643,117 @@ mod tests {
 
         assert_eq!(uno.len(), BYTES_TOKEN * 2, "32 bytes en hexadecimal");
         assert_ne!(uno, otro, "dos tokens seguidos no pueden repetirse");
+    }
+
+    /// Base minima en memoria con dos prestamos de dos profesores distintos.
+    fn base_con_dos_prestamos() -> SqlitePool {
+        tauri::async_runtime::block_on(async {
+            let pool = SqlitePool::connect("sqlite::memory:")
+                .await
+                .expect("no se pudo abrir la base en memoria");
+
+            for sentencia in [
+                "CREATE TABLE categorias (id INTEGER PRIMARY KEY, nombre TEXT)",
+                "CREATE TABLE inventario (id INTEGER PRIMARY KEY, categoria_id INTEGER,
+                    nombre_equipo TEXT, identificador TEXT, estado TEXT, es_granel INTEGER)",
+                "CREATE TABLE prestamos (id INTEGER PRIMARY KEY, equipo_id INTEGER,
+                    codigo_profe TEXT, nombre_profe TEXT, fecha_salida TEXT,
+                    fecha_retorno TEXT, estado_prestamo TEXT, condicion_regreso TEXT,
+                    notas_regreso TEXT)",
+                "CREATE TABLE fotos_regreso (prestamo_id INTEGER PRIMARY KEY, imagen TEXT)",
+                "INSERT INTO categorias VALUES (1, 'Proyector')",
+                "INSERT INTO inventario VALUES (1, 1, 'Canon 001', 'C001', 'prestado', 0)",
+                "INSERT INTO inventario VALUES (2, 1, 'Canon 002', 'C002', 'prestado', 0)",
+                "INSERT INTO prestamos VALUES (1, 1, 'PROF1', 'Janette Aguilar',
+                    '2026-08-21 10:00:00', NULL, 'activo', NULL, NULL)",
+                "INSERT INTO prestamos VALUES (2, 2, 'ADMIN', 'Administrador P15',
+                    '2026-08-21 11:00:00', NULL, 'activo', NULL, NULL)",
+            ] {
+                sqlx::query(sentencia)
+                    .execute(&pool)
+                    .await
+                    .unwrap_or_else(|error| panic!("fallo preparando la base: {error}\n{sentencia}"));
+            }
+
+            pool
+        })
+    }
+
+    fn sesion(codigo: &str, es_admin: bool) -> Sesion {
+        Sesion {
+            codigo: codigo.to_string(),
+            nombre: codigo.to_string(),
+            es_admin,
+        }
+    }
+
+    #[test]
+    fn un_profesor_solo_ve_sus_prestamos_y_el_admin_los_ve_todos() {
+        let pool = base_con_dos_prestamos();
+
+        let suyos =
+            tauri::async_runtime::block_on(listar_prestamos(&pool, &sesion("PROF1", false)))
+                .expect("lista del profesor");
+        assert_eq!(suyos.len(), 1, "un profesor no puede ver prestamos ajenos");
+        assert_eq!(suyos[0].profesor, "Janette Aguilar");
+
+        let todos = tauri::async_runtime::block_on(listar_prestamos(&pool, &sesion("ADMIN", true)))
+            .expect("lista del admin");
+        assert_eq!(todos.len(), 2, "el admin ve el equipo de toda la prepa");
+    }
+
+    /// Este es el limite que importa: soltar el filtro de la lista no debe soltar
+    /// tambien el de la escritura.
+    #[test]
+    fn un_profesor_no_puede_devolver_el_prestamo_de_otro() {
+        let pool = base_con_dos_prestamos();
+
+        // El prestamo 2 es del admin, no de PROF1.
+        let intento = tauri::async_runtime::block_on(devolver(
+            &pool,
+            &sesion("PROF1", false),
+            2,
+            "bien",
+            "",
+            "",
+        ));
+        assert!(intento.is_err(), "un profesor devolvio algo que no era suyo");
+
+        let sigue_activo: i64 = tauri::async_runtime::block_on(
+            sqlx::query_scalar("SELECT COUNT(*) FROM prestamos WHERE id = 2 AND estado_prestamo = 'activo'")
+                .fetch_one(&pool),
+        )
+        .expect("consulta");
+        assert_eq!(sigue_activo, 1, "el prestamo no debio tocarse");
+    }
+
+    #[test]
+    fn el_admin_devuelve_a_nombre_de_cualquiera() {
+        let pool = base_con_dos_prestamos();
+
+        // El prestamo 1 es de PROF1.
+        tauri::async_runtime::block_on(devolver(
+            &pool,
+            &sesion("ADMIN", true),
+            1,
+            "bien",
+            "",
+            "",
+        ))
+        .expect("el admin debe poder devolver equipo ajeno");
+
+        let estado: String = tauri::async_runtime::block_on(
+            sqlx::query_scalar("SELECT estado_prestamo FROM prestamos WHERE id = 1")
+                .fetch_one(&pool),
+        )
+        .expect("consulta");
+        assert_eq!(estado, "devuelto");
+
+        let equipo: String = tauri::async_runtime::block_on(
+            sqlx::query_scalar("SELECT estado FROM inventario WHERE id = 1").fetch_one(&pool),
+        )
+        .expect("consulta");
+        assert_eq!(equipo, "disponible", "el equipo vuelve al catalogo");
     }
 
     #[test]

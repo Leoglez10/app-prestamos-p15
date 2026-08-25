@@ -47,6 +47,7 @@ export default function Kiosk() {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successCountdown, setSuccessCountdown] = useState(SUCCESS_AUTO_LOGOUT_SECONDS);
   const [successItems, setSuccessItems] = useState<{ nombre: string; cantidad: number }[]>([]);
+  const [justReturnedAll, setJustReturnedAll] = useState(false);
   const [hdmiPromptEquipo, setHdmiPromptEquipo] = useState<Equipo | null>(null);
   const [cartPulse, setCartPulse] = useState(0);
   const [cartExpanded, setCartExpanded] = useState(false);
@@ -120,6 +121,7 @@ export default function Kiosk() {
   const cargarPrestamos = async (codigo: string) => {
     const activos = await getPrestamosActivosProfesor(codigo);
     setMisPrestamos(activos);
+    return activos;
   };
 
   const handleLogin = async (e: FormEvent) => {
@@ -153,6 +155,7 @@ setSelectedEquipoIds([]);
       setCartExpanded(false);
       setSubmitting(false);
       setSuccessModalOpen(false);
+      setJustReturnedAll(false);
       setHdmiPromptEquipo(null);
       setReturnAllModalOpen(false);
       setCartPulse(0);
@@ -236,20 +239,32 @@ setSelectedEquipoIds([]);
   };
 
   const handleDevolucion = async (prestamoId: number, equipoId: number) => {
+    const devuelto = misPrestamos.find((p) => p.id === prestamoId);
     try {
       await devolverEquipo(prestamoId, equipoId, "", "");
       await loadEquipos(selectedCategoriaId);
       await loadAllEquipos();
-      await cargarPrestamos(loggedInProfesor!.codigo);
-      setStatusMessage("¡Devolución exitosa! Muchas gracias.");
+      const pendientes = await cargarPrestamos(loggedInProfesor!.codigo);
+      // Nothing left to return means the teacher is done. The kiosk is shared,
+      // so the exit button lights up instead of closing the session for them.
+      setJustReturnedAll(pendientes.length === 0);
+      setStatusMessage(
+        pendientes.length === 0
+          ? `Devolviste ${devuelto?.nombre_equipo ?? "el equipo"}. Ya no tienes nada pendiente.`
+          : "¡Devolución exitosa! Muchas gracias.",
+      );
     } catch (err) {
       setErrorMessage("Hubo un error al registrar tu devolución.");
     }
   };
 
-  const handleDevolverTodo = async () => {
+  const handleDevolverTodo = async (cerrarSesion: boolean) => {
     if (!loggedInProfesor || misPrestamos.length === 0) return;
+    // A second tap would try to return loans that are already closed.
+    if (submitting) return;
+    setSubmitting(true);
 
+    const resumen = misPrestamos.map((prestamo) => ({ nombre: prestamo.nombre_equipo, cantidad: 1 }));
     try {
       for (const prestamo of misPrestamos) {
         await devolverEquipo(prestamo.id, prestamo.equipo_id, "", "");
@@ -259,10 +274,17 @@ setSelectedEquipoIds([]);
       await loadAllEquipos();
       await cargarPrestamos(loggedInProfesor.codigo);
       setReturnAllModalOpen(false);
-      setStatusMessage("Todos los equipos fueron devueltos correctamente.");
+      if (cerrarSesion) {
+        handleLogout();
+        return;
+      }
+      setJustReturnedAll(true);
+      setStatusMessage(`Devolviste ${resumen.length} equipo(s). Ya no tienes nada pendiente.`);
     } catch (error) {
       const msg = typeof error === "string" ? error : error instanceof Error ? error.message : "Error desconocido";
       setErrorMessage(`No se pudieron devolver todos los equipos: ${msg}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -448,10 +470,10 @@ setSelectedEquipoIds([]);
       const stock = equipo.stock_disponible;
       const label = `${stock} ${stock === 1 ? "disponible" : "disponibles"}`;
       return stock <= 2
-        ? { border: "#f59e0b", surface: "#d97706", text: "#ffffff", label, icon: "alert" }
-        : { border: "#22c55e", surface: "#16a34a", text: "#ffffff", label, icon: "check" };
+        ? { border: "#f59e0b", surface: "rgba(217, 119, 6, 0.12)", text: "#b45309", label, icon: "alert" }
+        : { border: "#22c55e", surface: "rgba(22, 163, 74, 0.12)", text: "#15803d", label, icon: "check" };
     }
-    return { border: "#22c55e", surface: "#16a34a", text: "#ffffff", label: "Listo para llevar", icon: "check" };
+    return { border: "#22c55e", surface: "rgba(22, 163, 74, 0.12)", text: "#15803d", label: "Listo para llevar", icon: "check" };
   };
 
   const getEquipoSupportingText = (equipo: Equipo) => {
@@ -579,6 +601,30 @@ setSelectedEquipoIds([]);
           transform: translateY(-1px);
           box-shadow: 0 10px 22px rgba(153, 27, 27, 0.3);
         }
+        /* Only one action glows at a time: this one when everything is returned,
+           the confirm button when something is selected. */
+        .exit-btn-danger.logout-nudge {
+          min-height: 64px;
+          padding: 1rem 1.5rem;
+          font-size: 1.2rem;
+          font-weight: 900;
+          background: #dc2626;
+          animation: logoutNudge 1.6s ease-in-out infinite;
+        }
+        .exit-btn-danger.logout-nudge svg {
+          width: 25px;
+          height: 25px;
+        }
+        @keyframes logoutNudge {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 8px 18px rgba(185, 28, 28, 0.3), 0 0 0 0 rgba(220, 38, 38, 0.5);
+          }
+          50% {
+            transform: scale(1.03);
+            box-shadow: 0 12px 26px rgba(185, 28, 28, 0.45), 0 0 0 12px rgba(220, 38, 38, 0);
+          }
+        }
         .exit-btn:focus-visible {
           outline: 2px solid var(--brand-primary);
           outline-offset: 2px;
@@ -666,6 +712,23 @@ setSelectedEquipoIds([]);
           box-shadow: none;
           cursor: not-allowed;
         }
+        .kiosk-btn-primary.is-exit {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
+          background: #b91c1c;
+          box-shadow: 0 8px 20px rgba(185, 28, 28, 0.32);
+        }
+        .kiosk-btn-primary.is-exit:hover:not(:disabled) {
+          background: #991b1b;
+          box-shadow: 0 12px 25px rgba(153, 27, 27, 0.42);
+        }
+        .kiosk-btn-primary.is-exit svg {
+          width: 20px;
+          height: 20px;
+          flex: 0 0 auto;
+        }
         .eq-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -696,7 +759,7 @@ setSelectedEquipoIds([]);
           flex-direction: column;
           gap: 0.75rem;
           text-align: left;
-          box-shadow: 0 16px 32px rgba(15, 23, 42, 0.06);
+          box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
         }
         .eq-item.available:hover {
           border-color: rgba(37, 99, 235, 0.35);
@@ -725,23 +788,16 @@ setSelectedEquipoIds([]);
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          padding: 0.34rem 0.7rem;
+          padding: 0.22rem 0.55rem;
           border-radius: 999px;
-          font-size: 0.74rem;
-          font-weight: 900;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.16);
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.01em;
         }
         .eq-state-icon {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 1.15rem;
-          height: 1.15rem;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.28);
-          font-size: 0.78rem;
           line-height: 1;
         }
         .eq-support {
@@ -763,26 +819,22 @@ setSelectedEquipoIds([]);
           justify-content: center;
           gap: 0.4rem;
           text-align: center;
-          padding: 0.7rem 0.8rem;
-          border-radius: 12px;
-          font-size: 1rem;
-          font-weight: 800;
-          letter-spacing: 0.01em;
+          padding: 0.5rem 0.8rem;
+          border-radius: 10px;
+          font-size: 0.92rem;
+          font-weight: 700;
           background: var(--brand-primary);
           color: #fff;
-          box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
         }
         .eq-item.available:hover .eq-cta {
           filter: brightness(1.08);
         }
         .eq-cta.added {
           background: #16a34a;
-          box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
         }
         .eq-cta.off {
           background: rgba(148, 163, 184, 0.25);
           color: var(--text-secondary);
-          box-shadow: none;
         }
         .loan-card {
           display: grid;
@@ -851,7 +903,9 @@ setSelectedEquipoIds([]);
           gap: 1rem;
         }
         .success-modal-card {
-          width: min(620px, 100%);
+          width: min(760px, 100%);
+          padding: 2.4rem 2.4rem 2rem;
+          gap: 1.4rem;
           background:
             radial-gradient(circle at top left, rgba(134, 239, 172, 0.6), transparent 38%),
             radial-gradient(circle at top right, rgba(74, 222, 128, 0.35), transparent 28%),
@@ -863,12 +917,12 @@ setSelectedEquipoIds([]);
           display: grid;
           justify-items: center;
           text-align: center;
-          gap: 0.8rem;
-          padding: 0.2rem 0 0.6rem;
+          gap: 0.9rem;
+          padding: 0.2rem 0 0.4rem;
         }
         .success-badge {
-          width: 96px;
-          height: 96px;
+          width: 124px;
+          height: 124px;
           border-radius: 999px;
           display: grid;
           place-items: center;
@@ -879,20 +933,21 @@ setSelectedEquipoIds([]);
           box-shadow: 0 18px 40px rgba(34, 197, 94, 0.32);
         }
         .success-panel {
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.62);
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.72);
           border: 1px solid rgba(34, 197, 94, 0.18);
-          padding: 1rem 1.15rem;
+          padding: 1.25rem 1.35rem;
           color: #166534;
           text-align: center;
+          font-size: 1.1rem;
           line-height: 1.6;
         }
         .success-items {
           list-style: none;
-          margin: 0 0 0.9rem;
+          margin: 0 0 1rem;
           padding: 0;
           display: grid;
-          gap: 0.35rem;
+          gap: 0.45rem;
           text-align: left;
         }
         .success-items li {
@@ -900,23 +955,82 @@ setSelectedEquipoIds([]);
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
-          padding: 0.5rem 0.85rem;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.7);
-          font-size: 1rem;
+          padding: 0.8rem 1.1rem;
+          border-radius: 14px;
+          background: #fff;
+          border: 1px solid rgba(34, 197, 94, 0.16);
+          font-size: 1.3rem;
+          font-weight: 700;
+          color: #14532d;
+        }
+        .success-items li strong {
+          font-size: 1.15rem;
+          color: #16a34a;
+        }
+        /* The countdown is the only thing on screen that is still changing, so
+           it gets a number and a draining bar instead of a line of small text. */
+        .success-footer-note {
+          display: grid;
+          justify-items: center;
+          gap: 0.7rem;
+          text-align: center;
+          color: #166534;
+          font-size: 1.05rem;
           font-weight: 700;
         }
-        .success-footer-note {
-          text-align: center;
-          color: rgba(20, 83, 45, 0.8);
-          font-size: 0.92rem;
-          font-weight: 600;
+        .success-countdown-row {
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+        }
+        .success-countdown-num {
+          display: grid;
+          place-items: center;
+          min-width: 2.6rem;
+          height: 2.6rem;
+          padding: 0 0.5rem;
+          border-radius: 999px;
+          background: #16a34a;
+          color: #fff;
+          font-size: 1.4rem;
+          font-weight: 900;
+          font-variant-numeric: tabular-nums;
+        }
+        .success-drain {
+          width: 100%;
+          height: 8px;
+          border-radius: 999px;
+          background: rgba(22, 101, 52, 0.16);
+          overflow: hidden;
+        }
+        .success-drain > span {
+          display: block;
+          height: 100%;
+          border-radius: 999px;
+          background: #16a34a;
+          transform-origin: left center;
+          animation-name: successDrain;
+          animation-timing-function: linear;
+          animation-fill-mode: forwards;
+        }
+        @keyframes successDrain {
+          from { transform: scaleX(1); }
+          to { transform: scaleX(0); }
         }
         .modal-actions {
           display: flex;
           justify-content: flex-end;
+          align-items: center;
           gap: 0.8rem;
           flex-wrap: wrap;
+        }
+        /* App.css sets a global width:100% on every button, which stacks each
+           action onto its own row. Modal actions sit side by side instead. */
+        .modal-actions > button {
+          width: auto;
+        }
+        .modal-actions .modal-action-left {
+          margin-right: auto;
         }
         .modal-actions-centered {
           justify-content: center;
@@ -1259,6 +1373,23 @@ setSelectedEquipoIds([]);
           outline: none;
           border-color: rgba(37, 99, 235, 0.6);
           box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+          animation: none;
+        }
+        /* Idle glow: only while the field is empty and unfocused, so it invites
+           a search without distracting anyone who is already typing. */
+        .eq-search-input:placeholder-shown:not(:focus) {
+          border-color: rgba(37, 99, 235, 0.55);
+          animation: searchGlow 2s ease-in-out infinite;
+        }
+        @keyframes searchGlow {
+          0%, 100% {
+            border-color: rgba(37, 99, 235, 0.45);
+            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.05);
+          }
+          50% {
+            border-color: rgba(37, 99, 235, 0.85);
+            box-shadow: 0 0 0 7px rgba(37, 99, 235, 0.22);
+          }
         }
         .eq-search-clear {
           flex: 0 0 auto;
@@ -1298,6 +1429,9 @@ setSelectedEquipoIds([]);
         }
         @media (prefers-reduced-motion: reduce) {
           .confirm-nudge { animation: none; }
+          .exit-btn-danger.logout-nudge { animation: none; }
+          .success-drain > span { animation: none; }
+          .eq-search-input:placeholder-shown:not(:focus) { animation: none; }
         }
         @media (max-width: 1100px) {
           .kiosk-main {
@@ -1462,8 +1596,8 @@ setSelectedEquipoIds([]);
                   {misPrestamos.length > 1 ? (
                     <button
                       type="button"
-                      className="modal-secondary-btn"
-                      style={{ minWidth: '140px' }}
+                      className="kiosk-btn-outline"
+                      style={{ width: 'auto', minWidth: '150px', padding: '0.6rem 1.1rem' }}
                       onClick={() => setReturnAllModalOpen(true)}
                     >
                       Devolver todo
@@ -1499,13 +1633,17 @@ setSelectedEquipoIds([]);
             {/* marginTop:auto keeps this pinned to the bottom even when the
                 pendientes panel is hidden by settings. */}
             <div className="kiosk-exit-bar">
-              <button type="button" className="exit-btn exit-btn-danger" onClick={handleLogout}>
+              <button
+                type="button"
+                className={`exit-btn exit-btn-danger ${justReturnedAll && selectedEquipoIds.length === 0 ? 'logout-nudge' : ''}`}
+                onClick={handleLogout}
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
-                Cerrar sesión
+                {justReturnedAll && selectedEquipoIds.length === 0 ? 'Listo, cerrar sesión' : 'Cerrar sesión'}
               </button>
               <Link to="/" className="exit-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1809,12 +1947,16 @@ setSelectedEquipoIds([]);
                             </span>
                           </div>
                           <div>
-                            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
-                              {eq.categoria_nombre}
-                            </span>
-                                <strong style={{ fontSize: '1.45rem', color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', marginTop: '0.3rem', lineHeight: 1.2, letterSpacing: '-0.01em' }}>
-                                  {eq.nombre_equipo}
-                                </strong>
+                            <strong style={{ fontSize: '1.28rem', fontWeight: 700, color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', lineHeight: 1.25 }}>
+                              {eq.nombre_equipo}
+                            </strong>
+                            {/* The category repeats the name often enough that showing
+                                both just doubles the noise. Only show what adds info. */}
+                            {eq.categoria_nombre.trim().toLowerCase() !== eq.nombre_equipo.trim().toLowerCase() ? (
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.15rem' }}>
+                                {eq.categoria_nombre}
+                              </span>
+                            ) : null}
                           </div>
                           {!isAvail ? (
                             <div className="eq-support">{getEquipoSupportingText(eq)}</div>
@@ -1909,10 +2051,10 @@ setSelectedEquipoIds([]);
               <div className="success-badge" aria-hidden="true">
                 <Icon name="check" size="2.6rem" strokeWidth={3} />
               </div>
-              <div style={{ color: '#15803d', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', fontSize: '0.9rem' }}>
+              <div style={{ color: '#15803d', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', fontSize: '1rem' }}>
                 Prestamo creado con exito
               </div>
-              <h3 id="success-modal-title" style={{ margin: 0, fontSize: '2.3rem', color: '#14532d', lineHeight: 1.05 }}>
+              <h3 id="success-modal-title" style={{ margin: 0, fontSize: '2.9rem', color: '#14532d', lineHeight: 1.05, letterSpacing: '-0.02em' }}>
                 Registro confirmado
               </h3>
             </div>
@@ -1928,7 +2070,13 @@ setSelectedEquipoIds([]);
               <strong>Cuida bien tus equipos.</strong>
             </div>
             <div className="success-footer-note" role="status">
-              La sesion se cierra sola en {successCountdown} segundo{successCountdown === 1 ? '' : 's'}.
+              <div className="success-countdown-row">
+                <span className="success-countdown-num">{successCountdown}</span>
+                <span>La sesion se cierra sola</span>
+              </div>
+              <div className="success-drain" aria-hidden="true">
+                <span style={{ animationDuration: `${SUCCESS_AUTO_LOGOUT_SECONDS}s` }} />
+              </div>
             </div>
           </div>
         </div>
@@ -1975,18 +2123,35 @@ setSelectedEquipoIds([]);
             <div className="modal-actions">
               <button
                 type="button"
-                className="modal-secondary-btn"
+                className="modal-secondary-btn modal-action-left"
                 onClick={() => setReturnAllModalOpen(false)}
               >
                 Cancelar
               </button>
+              {/* Most teachers returning everything are done for the day, so
+                  leaving is the primary action and staying is the exception. */}
               <button
                 type="button"
-                className="kiosk-btn-primary"
-                style={{ width: 'auto', minWidth: '220px', padding: '1rem 1.7rem', fontSize: '1rem' }}
-                onClick={() => void handleDevolverTodo()}
+                className="kiosk-btn-outline"
+                style={{ padding: '1rem 1.5rem' }}
+                onClick={() => void handleDevolverTodo(false)}
               >
-                Si, devolver todo
+                Solo devolver
+              </button>
+              <button
+                type="button"
+                className="kiosk-btn-primary is-exit"
+                style={{ minWidth: '280px', padding: '1rem 1.7rem', fontSize: '1rem' }}
+                onClick={() => void handleDevolverTodo(true)}
+              >
+                {/* The door icon carries the meaning too: color alone is not a
+                    signal every teacher can read. */}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Si, devolver y cerrar sesion
               </button>
             </div>
           </div>

@@ -3,7 +3,6 @@ import Home from "./pages/Home";
 import Kiosk from "./pages/Kiosk";
 import Admin from "./pages/Admin";
 import PrestamoRapido from "./pages/PrestamoRapido";
-import Inventariado from "./pages/Inventariado";
 import { useAutoBackup } from "./hooks/useAutoBackup";
 import "./App.css";
 
@@ -17,7 +16,6 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/kiosko" element={<Kiosk />} />
         <Route path="/prestamo-rapido" element={<PrestamoRapido />} />
-        <Route path="/inventariado" element={<Inventariado />} />
       </Routes>
     </BrowserRouter>
   );

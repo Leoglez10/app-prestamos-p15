@@ -320,7 +320,9 @@ es parcial desde P2.
 
 El bucle de §3.1:
 
-- **Pantalla de toma física**: elegir ubicación → disparar N veces. Cada escaneo
+- **Toma física**: pestaña de Admin (no pantalla aparte: quien hace el recorrido
+  ya entró como administrador, y una ruta propia sería un segundo login y una
+  segunda navegación para el mismo trabajo). Elegir ubicación → disparar N veces. Cada escaneo
   muestra qué es, marca `revisado_en`/`revisado_por` y estampa `ubicacion`.
   Contador en vivo de la campaña: *"Aula 12 — 14 leídos · 312 de 2137 en total"*.
 - **Vinculación por escaneo** (el Camino B de `INVENTARIO_PATRIMONIO.md` §7): código
@@ -328,9 +330,14 @@ El bucle de §3.1:
   todo lo que el Excel no cubra, que siempre es más de lo que uno cree.
 - **Exportar a Excel** — el entregable para Patrimonio: localizado, dónde, por quién,
   y qué no apareció.
-- **Acción masiva por clasificador**: filtrar `COMPUTADORA PORTATIL` → asignar
-  categoría `Laptops` + `es_prestable = 1` a las 199 filas de un golpe. ~15 clics
-  para todo el inventario préstable.
+- **Acción masiva**: una barra sobre la tabla de inventario que actúa sobre lo
+  que ya está filtrado. Buscás `COMPUTADORA PORTATIL`, la tabla deja 199, y las
+  marcás prestables de un golpe.
+
+  > No lleva su propia lista ni sus propios filtros. La tabla ya sabe buscar por
+  > nombre, marca, modelo, ID de Patrimonio y ubicación, y filtrar por categoría
+  > y por prestable; un panel aparte sería la misma pantalla dos veces y dos
+  > maneras distintas de elegir el mismo equipo.
 
 ### 🔵 P5 — Puede esperar
 

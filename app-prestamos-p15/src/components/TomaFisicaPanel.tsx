@@ -9,28 +9,28 @@
  * disparo de la pistola se escribe en la nada y la persona no se entera hasta
  * varios equipos después.
  *
+ * Vive como pestaña de Admin y no como pantalla aparte: quien hace el recorrido
+ * ya entró como administrador, y una ruta propia significaría un segundo login y
+ * una segunda navegación para el mismo trabajo.
+ *
  * Ver `docs/PLAN_IMPORTACION_PATRIMONIO.md` §3.
  */
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
-import { LoginForm } from "../auth/LoginForm";
-import { Icon } from "../components/Icon";
+import { Icon } from "./Icon";
 import {
   buscarPorIdPatrimonial,
   exportarReporteInventario,
   getEquipos,
   getInicioCampana,
   iniciarCampanaInventario,
-  initializeInventoryDb,
   registrarRevision,
   vincularIdPatrimonial,
   type Equipo,
+  type Profesor,
 } from "../hooks/useInventory";
 import { calcularProgreso, type EquipoRevisable } from "../utils/tomaFisica";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
 import { confirmDialog } from "../utils/confirm";
-import "../App.css";
 
 type Leido = {
   equipo: Equipo;
@@ -50,8 +50,7 @@ const comoRevisable = (equipo: Equipo): EquipoRevisable => ({
   resguardante_nombre: equipo.resguardante_nombre,
 });
 
-export default function Inventariado() {
-  const { state, login } = useAuth();
+export function TomaFisicaPanel({ adminUser }: { adminUser: Profesor }) {
   const escaneoRef = useRef<HTMLInputElement>(null);
 
   const [cargando, setCargando] = useState(true);
@@ -67,8 +66,7 @@ export default function Inventariado() {
   const [desconocido, setDesconocido] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
-  const autenticado = state.status === "authenticated";
-  const quienRevisa = autenticado ? state.session.admin.nombre : "";
+  const quienRevisa = adminUser.nombre;
 
   const recargar = useCallback(async () => {
     const [filas, inicio] = await Promise.all([getEquipos(), getInicioCampana()]);
@@ -77,13 +75,12 @@ export default function Inventariado() {
   }, []);
 
   useEffect(() => {
-    if (!autenticado) return;
     let vivo = true;
 
     void (async () => {
       try {
-        await initializeInventoryDb();
-        if (vivo) await recargar();
+        await recargar();
+        if (!vivo) return;
       } catch (err) {
         if (vivo) setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -94,7 +91,7 @@ export default function Inventariado() {
     return () => {
       vivo = false;
     };
-  }, [autenticado, recargar]);
+  }, [recargar]);
 
   // El foco es la funcion critica de esta pantalla: sin el, la pistola dispara
   // al vacio. Vuelve tras cada escaneo y tras fijar la ubicacion.
@@ -196,38 +193,16 @@ export default function Inventariado() {
     }
   };
 
-  if (!autenticado) {
-    return (
-      <div className="prestamo-rapido-page">
-        <main className="prestamo-auth-main">
-          <section className="prestamo-auth-card">
-            <div className="prestamo-auth-intro">
-              <div>
-                <p className="prestamo-auth-eyebrow">Toma de inventario · P15</p>
-                <h1>Acceso administrativo</h1>
-                <p>Identifícate para registrar el recorrido.</p>
-              </div>
-            </div>
-            <LoginForm onSubmit={(codigo, pin) => login(codigo, pin)} />
-          </section>
-        </main>
-      </div>
-    );
-  }
-
   if (cargando) {
-    return <main style={{ padding: "2rem" }}>Cargando inventario…</main>;
+    return <section>Cargando inventario…</section>;
   }
 
   // Paso 1: la ubicación se elige UNA vez por recorrido, no por objeto.
   if (!ubicacionFijada) {
     return (
-      <div className="prestamo-rapido-page">
-        <header className="page-header">
-          <Link to="/" className="back-link"><Icon name="arrowLeft" /> Inicio</Link>
-        </header>
-        <main style={{ padding: "1.5rem", maxWidth: 620, margin: "0 auto" }}>
-          <h1 style={{ marginTop: 0 }}>Toma de inventario</h1>
+      <section>
+        <div style={{ maxWidth: 620 }}>
+          <h1 style={{ fontSize: "2.5rem", marginTop: 0 }}>Toma de inventario</h1>
           <p style={{ color: "var(--text-secondary)", lineHeight: 1.55 }}>
             ¿En qué área estás ahora? Se le va a poner esta ubicación a todo lo que escanees,
             hasta que la cambies.
@@ -273,15 +248,15 @@ export default function Inventariado() {
 
           {aviso && <div className="feedback success" style={{ marginTop: "1rem" }}>{aviso}</div>}
           {error && <div className="feedback error" style={{ marginTop: "1rem" }}>{error}</div>}
-        </main>
-      </div>
+        </div>
+      </section>
     );
   }
 
   // Paso 2: el bucle. Disparar, ver qué era, disparar otra vez.
   return (
-    <div className="prestamo-rapido-page">
-      <header className="page-header" style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+    <section>
+      <div className="toma-barra">
         <button
           type="button"
           className="ghost"
@@ -294,9 +269,9 @@ export default function Inventariado() {
         <span style={{ marginLeft: "auto", color: "var(--text-secondary)" }}>
           {leidos.length} aquí · {progreso.revisados}/{progreso.total} en total ({progreso.porcentaje}%)
         </span>
-      </header>
+      </div>
 
-      <main style={{ padding: "1.5rem", maxWidth: 760, margin: "0 auto" }}>
+      <div style={{ maxWidth: 760 }}>
         <form onSubmit={escanear}>
           <label htmlFor="escaneo" style={{ fontSize: "1.1rem" }}>Dispara la pistola contra la etiqueta</label>
           <input
@@ -367,7 +342,7 @@ export default function Inventariado() {
             </li>
           ))}
         </ul>
-      </main>
-    </div>
+      </div>
+    </section>
   );
 }

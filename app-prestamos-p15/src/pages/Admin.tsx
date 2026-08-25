@@ -66,6 +66,7 @@ import { Icon } from "../components/Icon";
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
+import { TomaFisicaPanel } from "../components/TomaFisicaPanel";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
@@ -3103,6 +3104,10 @@ export default function Admin() {
             <Icon name="package" size="1.25rem" />
             Inventario
           </button>
+          <button style={tabStyle(activeTab === "toma")} onClick={() => setActiveTab("toma")}>
+            <Icon name="search" size="1.25rem" />
+            Toma de inventario
+          </button>
           <button style={tabStyle(activeTab === "categorias")} onClick={() => setActiveTab("categorias")}>
             <Icon name="folder" size="1.25rem" />
             Categorías
@@ -3157,6 +3162,8 @@ export default function Admin() {
       <main className="admin-main">
 
         {activeTab === "inventario" && <InventarioPanel />}
+
+        {activeTab === "toma" && <TomaFisicaPanel adminUser={adminUser} />}
 
         {activeTab === "categorias" && <CategoriasPanel />}
 

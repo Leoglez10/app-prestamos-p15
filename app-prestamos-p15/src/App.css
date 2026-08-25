@@ -1391,3 +1391,17 @@ button.ghost {
   padding: 0.4rem 0.85rem;
   font-size: 0.9rem;
 }
+
+/* Encabezado del recorrido de toma física: la ubicación actual y el avance,
+   siempre visibles mientras se dispara. */
+.toma-barra {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-sunken);
+}

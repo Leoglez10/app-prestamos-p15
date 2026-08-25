@@ -1361,3 +1361,33 @@ button.ghost {
   color: var(--brand-primary);
   text-decoration: underline;
 }
+
+/* Barra de acción masiva del inventario.
+   Aparece pegada arriba de la tabla y solo cuando hay un filtro puesto: actúa
+   sobre lo que ya está filtrado, así no hace falta una segunda lista de equipos
+   con sus propios filtros. */
+.admin-bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  background: rgba(37, 99, 235, 0.07);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.admin-bulk-bar strong {
+  color: var(--brand-primary);
+}
+
+.admin-bulk-bar button,
+.admin-bulk-bar select {
+  width: auto;
+  margin: 0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.9rem;
+}

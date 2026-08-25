@@ -26,6 +26,7 @@ import {
   restoreBackupFromFile,
   updateCategoria,
   updateEquipo,
+  actualizarEquiposEnLote,
   updatePrestamoObservacionesAdmin,
   updateProfesor,
   getReportePrestamos,
@@ -65,7 +66,6 @@ import { Icon } from "../components/Icon";
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
-import { CuraduriaPanel } from "../components/CuraduriaPanel";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
@@ -417,6 +417,7 @@ function InventarioPanel() {
   // El inventario de la prepa son miles de filas y la tabla no vive dentro de un
   // scroll virtual: pintarlas todas congela la pagina en cada tecla del buscador.
   const [visibles, setVisibles] = useState(FILAS_POR_PAGINA);
+  const [bulkOcupado, setBulkOcupado] = useState(false);
   const [sortKey, setSortKey] = useState<"nombre" | "categoria" | "estado">("nombre");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [quickNombre, setQuickNombre] = useState("");
@@ -684,6 +685,25 @@ function InventarioPanel() {
     setVisibles(FILAS_POR_PAGINA);
   }, [searchTerm, filterCategory, filterStatus]);
 
+  const aplicarEnLote = async (cambios: { es_prestable?: number; categoria_id?: number }) => {
+    const cuantos = filteredEquipos.length;
+    const que = cambios.es_prestable === 1 ? "marcar como prestables"
+      : cambios.es_prestable === 0 ? "marcar como solo inventario"
+      : "mover de categoría";
+    if (!(await confirmDialog(`¿Seguro que quieres ${que} los ${cuantos} equipos filtrados?`))) return;
+
+    setBulkOcupado(true);
+    setError("");
+    try {
+      await actualizarEquiposEnLote(filteredEquipos.map(eq => eq.id), cambios);
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo aplicar el cambio en lote");
+    } finally {
+      setBulkOcupado(false);
+    }
+  };
+
   const toggleSort = (key: typeof sortKey) => {
     if (sortKey === key) {
       setSortDir(current => (current === "asc" ? "desc" : "asc"));
@@ -937,6 +957,32 @@ function InventarioPanel() {
           </button>
         ))}
       </div>
+
+      {/* La accion masiva vive sobre la tabla y actua sobre lo que ya filtraste:
+          la tabla sabe buscar y filtrar, y una segunda lista con sus propios
+          filtros seria la misma pantalla dos veces. Aparece solo cuando hay un
+          filtro puesto, para que nadie toque 2137 equipos sin querer. */}
+      {hasActiveFilters && filteredEquipos.length > 1 && (
+        <div className="admin-bulk-bar">
+          <span>
+            Aplicar a los <strong>{filteredEquipos.length}</strong> equipos filtrados:
+          </span>
+          <button type="button" className="ghost" disabled={bulkOcupado} onClick={() => void aplicarEnLote({ es_prestable: 1 })}>
+            Marcar prestables
+          </button>
+          <button type="button" className="ghost" disabled={bulkOcupado} onClick={() => void aplicarEnLote({ es_prestable: 0 })}>
+            Solo inventario
+          </button>
+          <select
+            value=""
+            disabled={bulkOcupado}
+            onChange={(e) => { if (e.target.value) void aplicarEnLote({ categoria_id: Number(e.target.value) }); }}
+          >
+            <option value="">Mover a categoría…</option>
+            {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+          </select>
+        </div>
+      )}
 
       {/* The register/edit form used to sit in a permanent 350px column that took
           about half the shell from the table. It is only needed while editing. */}
@@ -1389,8 +1435,6 @@ function InventarioPanel() {
       </div>
 
       <ImportarPatrimonioPanel onImportado={() => void loadData()} />
-
-      <CuraduriaPanel equipos={equipos} categorias={categorias} onCambio={() => void loadData()} />
 
       <EquipoDetalleModal
         equipo={detalleId === null ? null : equipos.find(eq => eq.id === detalleId) ?? null}

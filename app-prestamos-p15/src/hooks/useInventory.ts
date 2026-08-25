@@ -1925,35 +1925,41 @@ export const exportarReporteInventario = async (
 };
 
 /**
- * Habilita o deshabilita el prestamo de todos los equipos de un tipo.
+ * Aplica un cambio a varios equipos de una sola vez.
  *
- * De las 2137 filas del Excel solo unas 470 se prestan. Moverlas de a una es lo
- * que hace que nadie lo haga, asi que se mueven por clasificador: filtrar
- * "COMPUTADORA PORTATIL" y habilitar las 199 de un golpe.
+ * Opera sobre los ids que ya vienen filtrados en pantalla, no sobre un criterio
+ * propio: la tabla de inventario ya sabe buscar y filtrar, y repetir esa logica
+ * aca significaria dos maneras distintas de elegir los mismos equipos.
+ *
+ * Hace falta porque de las 2137 filas que entrega Patrimonio apenas unas 470 se
+ * prestan, y moverlas de a una son cientos de clics.
  */
-export const marcarPrestablePorNombre = async (
-  nombreEquipo: string,
-  esPrestable: boolean,
-  categoriaId?: number
+export const actualizarEquiposEnLote = async (
+  ids: number[],
+  cambios: { es_prestable?: number; categoria_id?: number }
 ): Promise<number> => {
-  const db = await getDb();
-  const destino = esPrestable ? 1 : 0;
+  if (ids.length === 0) return 0;
 
-  if (categoriaId !== undefined) {
-    await db.execute(
-      "UPDATE inventario SET es_prestable = ?, categoria_id = ? WHERE nombre_equipo = ?",
-      [destino, categoriaId, nombreEquipo]
-    );
-  } else {
-    await db.execute("UPDATE inventario SET es_prestable = ? WHERE nombre_equipo = ?", [
-      destino,
-      nombreEquipo,
-    ]);
+  const columnas: string[] = [];
+  const valores: Array<string | number> = [];
+  if (cambios.es_prestable !== undefined) {
+    columnas.push("es_prestable = ?");
+    valores.push(cambios.es_prestable);
   }
+  if (cambios.categoria_id !== undefined) {
+    columnas.push("categoria_id = ?");
+    valores.push(cambios.categoria_id);
+  }
+  if (columnas.length === 0) return 0;
 
-  const filas = await db.select<Array<{ total: number }>>(
-    "SELECT COUNT(*) AS total FROM inventario WHERE nombre_equipo = ?",
-    [nombreEquipo]
+  const db = await getDb();
+  // Los ids son numeros que salen de la propia base, pero igual se interpolan
+  // como parametros: nunca se concatena un valor al SQL.
+  const huecos = ids.map(() => "?").join(", ");
+  await db.execute(
+    `UPDATE inventario SET ${columnas.join(", ")} WHERE id IN (${huecos})`,
+    [...valores, ...ids]
   );
-  return filas[0]?.total ?? 0;
+
+  return ids.length;
 };

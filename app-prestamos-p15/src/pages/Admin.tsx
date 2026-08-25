@@ -64,6 +64,7 @@ import { Icon } from "../components/Icon";
 // EXPERIMENT: phone access over the LAN. See docs/QR_CELULAR.md to remove.
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
+import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
@@ -1357,6 +1358,8 @@ function InventarioPanel() {
             </tbody>
           </table>
       </div>
+
+      <ImportarPatrimonioPanel onImportado={() => void loadData()} />
 
       <EquipoDetalleModal
         equipo={detalleId === null ? null : equipos.find(eq => eq.id === detalleId) ?? null}

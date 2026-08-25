@@ -1,5 +1,6 @@
 mod celular;
 mod certificado;
+mod patrimonio;
 
 use chrono::Local;
 use serde::Serialize;
@@ -324,7 +325,8 @@ pub fn run() {
             open_backups_dir,
             restore_backup_from_bytes,
             local_ip,
-            celular_registrar_dispositivo
+            celular_registrar_dispositivo,
+            patrimonio::leer_excel_patrimonio
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

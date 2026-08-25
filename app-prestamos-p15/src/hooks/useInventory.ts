@@ -3,6 +3,13 @@ import Database from "@tauri-apps/plugin-sql";
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
 import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, type FichaEquipo } from "../utils/equipoFicha";
+import {
+  planificarImportacion,
+  type LecturaExcel,
+  type PlanImportacion,
+} from "../utils/importacionPatrimonio";
+
+export type { PlanImportacion };
 
 export type { FichaEquipo };
 
@@ -1669,4 +1676,134 @@ export const deletePrestamoRapidoAlumno = async (id: number): Promise<void> => {
   }
 
   await db.execute("DELETE FROM prestamos_rapidos_alumnos WHERE id = ?", [id]);
+};
+
+// --- Importacion del Excel de Patrimonio ------------------------------------
+//
+// Rust hace lo unico que solo Rust puede hacer: leer el .xlsx (ver
+// `src-tauri/src/patrimonio.rs`). Toda la escritura se queda aca, que es el
+// modulo dueno del esquema. Ver docs/PLAN_IMPORTACION_PATRIMONIO.md §6 P3.
+
+/**
+ * Paso 1: leer el archivo y comparar contra lo que hay. NO escribe nada.
+ */
+export const leerExcelPatrimonio = async (bytes: Uint8Array): Promise<PlanImportacion> => {
+  requireTauriRuntime();
+
+  const lectura = await invoke<LecturaExcel>("leer_excel_patrimonio", {
+    bytes: Array.from(bytes),
+  });
+
+  const [equipos, categorias] = await Promise.all([getEquipos(), getCategorias()]);
+
+  return planificarImportacion(
+    lectura,
+    equipos.map((equipo) => ({
+      id: equipo.id,
+      id_patrimonial: equipo.id_patrimonial,
+      marca: equipo.marca,
+      modelo: equipo.modelo,
+      num_serie: equipo.num_serie,
+      descripcion: equipo.descripcion,
+      resguardante_codigo: equipo.resguardante_codigo,
+      resguardante_nombre: equipo.resguardante_nombre,
+      fecha_adquisicion: equipo.fecha_adquisicion,
+    })),
+    categorias.map((categoria) => categoria.nombre)
+  );
+};
+
+export type ResultadoImportacion = {
+  altas: number;
+  actualizados: number;
+  sinCambio: number;
+  respaldo: string;
+};
+
+/**
+ * Paso 2: aplicar el plan.
+ *
+ * Antes de tocar una sola fila se fuerza un respaldo: esto escribe cientos de
+ * registros de un golpe sobre el inventario de produccion y tiene que haber
+ * marcha atras. El sistema de respaldo ya existia, se reusa tal cual.
+ */
+export const aplicarImportacionPatrimonio = async (
+  plan: PlanImportacion
+): Promise<ResultadoImportacion> => {
+  const db = await getDb();
+  const respaldo = await createBackup(false);
+
+  for (const nombre of plan.categoriasNuevas) {
+    // Las categorias que crea la importacion nacen no prestables: lo que se
+    // presta se habilita a mano, no por lo que diga el Excel.
+    const esPrestable = plan.altas.some(
+      (alta) => alta.categoria === nombre && alta.es_prestable === 1
+    );
+    await createCategoria(nombre, esPrestable);
+  }
+
+  const categorias = await getCategorias();
+  const idPorNombre = new Map(
+    categorias.map((categoria) => [categoria.nombre.trim().toLowerCase(), categoria.id])
+  );
+
+  // Todo o nada. Son miles de filas de un golpe: si revienta a la mitad, un
+  // inventario a medias es peor que uno sin importar, porque nadie sabe donde
+  // quedo. De paso SQLite deja de hacer fsync por fila.
+  await db.execute("BEGIN");
+
+  try {
+    for (const alta of plan.altas) {
+      const categoriaId = idPorNombre.get(alta.categoria.trim().toLowerCase());
+      if (categoriaId === undefined) {
+        throw new Error(`No se pudo crear la categoria "${alta.categoria}".`);
+      }
+
+      await createEquipo({
+        nombre_equipo: alta.fila.clasificador,
+        identificador: null,
+        categoria_id: categoriaId,
+        es_prestable: alta.es_prestable,
+        es_granel: 0,
+        stock_total: 1,
+        id_patrimonial: alta.fila.id_patrimonial,
+        marca: alta.fila.marca,
+        modelo: alta.fila.modelo,
+        num_serie: alta.fila.num_serie,
+        descripcion: alta.fila.descripcion,
+        resguardante_codigo: alta.fila.resguardante_codigo,
+        resguardante_nombre: alta.fila.resguardante_nombre,
+        fecha_adquisicion: alta.fila.fecha_adquisicion,
+        // La ubicacion del Excel solo sirve al dar de alta: en un equipo que ya
+        // existe manda la toma fisica de la escuela.
+        ubicacion: alta.fila.ubicacion,
+      });
+    }
+
+    // `updateEquipo` escribe SOLO las claves que recibe, asi que mandar unicamente
+    // los campos que cambiaron no puede pisar la ubicacion ni la curaduria.
+    for (const cambio of plan.cambios) {
+      await updateEquipo(cambio.id, cambio.campos);
+    }
+
+    await db.execute("COMMIT");
+  } catch (error) {
+    // Si el ROLLBACK tambien falla, el error que importa es el primero: es el que
+    // dice por que se cayo la importacion.
+    try {
+      await db.execute("ROLLBACK");
+    } catch (errorRollback) {
+      console.error("No se pudo revertir la importacion:", errorRollback);
+    }
+    throw error;
+  }
+
+  await db.select("PRAGMA wal_checkpoint(TRUNCATE)");
+
+  return {
+    altas: plan.altas.length,
+    actualizados: plan.cambios.length,
+    sinCambio: plan.sinCambio,
+    respaldo: respaldo.file_name,
+  };
 };

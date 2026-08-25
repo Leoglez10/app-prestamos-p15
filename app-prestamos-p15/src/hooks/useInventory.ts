@@ -3,6 +3,13 @@ import Database from "@tauri-apps/plugin-sql";
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
 
+export type PersonaRapida = {
+  nombre: string;
+  codigo: string;
+  tipo_persona: string;
+  ultimo_prestamo: string | null;
+};
+
 export type Profesor = {
   id: number;
   codigo: string;
@@ -95,6 +102,11 @@ export type PrestamoRapidoAlumno = {
   id_admin: number | null;
   autorizante_codigo: string | null;
   autorizante_nombre: string | null;
+  // Inventory linkage (added by prestamo-rapido-inventario). tipo_persona is
+  // 'alumno' | 'profesor'; equipo_id/prestamo_app_id are null for free-text loans.
+  tipo_persona: string;
+  equipo_id: number | null;
+  prestamo_app_id: number | null;
 };
 
 let dbPromise: Promise<Database> | null = null;
@@ -176,7 +188,10 @@ const schemaStatements = [
     fecha_salida DATETIME DEFAULT CURRENT_TIMESTAMP,
     fecha_retorno DATETIME,
     estado TEXT DEFAULT 'activo',
-    observaciones TEXT
+    observaciones TEXT,
+    tipo_persona TEXT NOT NULL DEFAULT 'alumno',
+    equipo_id INTEGER REFERENCES inventario(id) ON DELETE SET NULL,
+    prestamo_app_id INTEGER
   )`,
 ];
 
@@ -318,6 +333,17 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   }
   if (!prestamosRapidosAlumnosColumns.includes("autorizante_nombre")) {
     await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN autorizante_nombre TEXT");
+  }
+  if (!prestamosRapidosAlumnosColumns.includes("tipo_persona")) {
+    // SQLite exige un DEFAULT no nulo al agregar una columna NOT NULL; 'alumno'
+    // preserva el significado de todas las filas previas.
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN tipo_persona TEXT NOT NULL DEFAULT 'alumno'");
+  }
+  if (!prestamosRapidosAlumnosColumns.includes("equipo_id")) {
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN equipo_id INTEGER REFERENCES inventario(id) ON DELETE SET NULL");
+  }
+  if (!prestamosRapidosAlumnosColumns.includes("prestamo_app_id")) {
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN prestamo_app_id INTEGER");
   }
 
   const profesoresColumns = await getTableColumns(db, "profesores");
@@ -1304,9 +1330,31 @@ export const getPrestamosRapidosAlumnos = async (filters?: {
   return db.select<PrestamoRapidoAlumno[]>(
     `SELECT id, nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo,
             fecha_salida, fecha_retorno, estado, observaciones,
-            id_admin, autorizante_codigo, autorizante_nombre
+            id_admin, autorizante_codigo, autorizante_nombre,
+            COALESCE(tipo_persona, 'alumno') AS tipo_persona, equipo_id, prestamo_app_id
      FROM prestamos_rapidos_alumnos ${whereClause} ORDER BY fecha_salida DESC LIMIT 500`,
     params
+  );
+};
+
+/**
+ * People already seen in Prestamo Rapido, most recent first. This is the
+ * "history" side of the person autocomplete: anyone captured as free text once
+ * is offered back on the next loan without needing a table of its own, since
+ * every loan row already carries the name, the code and the person type.
+ */
+export const getPersonasRapidas = async (): Promise<PersonaRapida[]> => {
+  const db = await getDb();
+  return db.select<PersonaRapida[]>(
+    `SELECT nombre_alumno AS nombre,
+            codigo_alumno AS codigo,
+            COALESCE(tipo_persona, 'alumno') AS tipo_persona,
+            MAX(fecha_salida) AS ultimo_prestamo
+     FROM prestamos_rapidos_alumnos
+     WHERE TRIM(nombre_alumno) <> '' AND TRIM(codigo_alumno) <> ''
+     GROUP BY codigo_alumno, COALESCE(tipo_persona, 'alumno')
+     ORDER BY ultimo_prestamo DESC
+     LIMIT 400`
   );
 };
 
@@ -1320,14 +1368,15 @@ export const createPrestamoRapidoAlumno = async (input: import("../auth/types").
 
   const db = await getDb();
   const adminNombre = input.admin.nombre.trim();
+  const tipoPersona = input.tipo_persona === "profesor" ? "profesor" : "alumno";
   await db.execute(
     // fecha_salida se escribe explicita en hora local: el DEFAULT CURRENT_TIMESTAMP
     // de SQLite guarda UTC y quedaba desfasado contra fecha_retorno, que ya usa
     // getCurrentLocalDateTime(). Sin esto el tiempo transcurrido de la UI miente.
     `INSERT INTO prestamos_rapidos_alumnos
        (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones,
-        id_admin, autorizante_codigo, autorizante_nombre, fecha_salida)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        id_admin, autorizante_codigo, autorizante_nombre, fecha_salida, tipo_persona)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       input.nombre_alumno.trim(),
       input.codigo_alumno.trim(),
@@ -1338,12 +1387,150 @@ export const createPrestamoRapidoAlumno = async (input: import("../auth/types").
       input.admin.codigo.trim(),
       adminNombre,
       getCurrentLocalDateTime(),
+      tipoPersona,
+    ]
+  );
+};
+
+/**
+ * Préstamo rápido ligado a un ítem REAL del inventario.
+ *
+ * Crea la fila en `prestamos` (igual que createPrestamoRapido para un equipo)
+ * y además el registro de préstamo rápido, amarrados por prestamo_app_id /
+ * equipo_id para que devolver aquí también devuelva allá.
+ */
+export const createPrestamoRapidoDesdeInventario = async (
+  input: import("../auth/types").PrestamoRapidoInventarioCreate,
+): Promise<void> => {
+  if (!input.admin) {
+    throw new Error("createPrestamoRapidoDesdeInventario requires an authenticated admin");
+  }
+  if (!input.nombre_alumno.trim() || !input.codigo_alumno.trim()) {
+    throw new Error("Todos los campos son obligatorios.");
+  }
+
+  const db = await getDb();
+
+  // Mismas validaciones que createPrestamoRapido, para el único equipo elegido.
+  const rows = await db.select<
+    Array<{
+      id: number;
+      nombre_equipo: string;
+      estado: string;
+      es_granel: number;
+      es_prestable: number;
+      categoria_es_prestable: number;
+      stock_disponible: number;
+    }>
+  >(
+    `SELECT i.id,
+            i.nombre_equipo,
+            i.estado,
+            COALESCE(i.es_granel, 0) AS es_granel,
+            COALESCE(i.es_prestable, 1) AS es_prestable,
+            COALESCE(c.es_prestable, 1) AS categoria_es_prestable,
+            (COALESCE(i.stock_total, 1) - (
+                SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
+            )) AS stock_disponible
+     FROM inventario i
+     JOIN categorias c ON c.id = i.categoria_id
+     WHERE i.id = ?`,
+    [input.equipoId],
+  );
+
+  if (rows.length === 0) {
+    throw new Error(`El equipo con ID ${input.equipoId} no existe.`);
+  }
+  const row = rows[0];
+
+  if (row.es_prestable !== 1 || row.categoria_es_prestable !== 1) {
+    throw new Error(`El equipo "${row.nombre_equipo}" está marcado como no prestable.`);
+  }
+
+  const esGranel = row.es_granel === 1;
+  if (esGranel) {
+    if (row.stock_disponible < 1) {
+      throw new Error(`Stock insuficiente para "${row.nombre_equipo}". Disponibles: ${row.stock_disponible}`);
+    }
+  } else if (row.estado !== "disponible") {
+    throw new Error(`El equipo único "${row.nombre_equipo}" no está disponible.`);
+  }
+
+  const fechaSalida = getCurrentLocalDateTime();
+  const nombreProfe = input.nombre_alumno.trim();
+  const codigoProfe = input.codigo_alumno.trim();
+
+  await db.execute(
+    `INSERT INTO prestamos (equipo_id, codigo_profe, nombre_profe, fecha_salida, estado_prestamo, observaciones_entrega)
+     VALUES (?, ?, ?, ?, 'activo', ?)`,
+    [input.equipoId, codigoProfe, nombreProfe, fechaSalida, (input.observaciones ?? "").trim()],
+  );
+
+  // Granel no cambia estado: la disponibilidad se descuenta por préstamos activos.
+  if (!esGranel) {
+    await db.execute("UPDATE inventario SET estado = 'prestado' WHERE id = ?", [input.equipoId]);
+  }
+
+  const insertedRows = await db.select<Array<{ id: number }>>("SELECT last_insert_rowid() AS id");
+  const prestamoAppId = insertedRows.length > 0 ? insertedRows[0].id : null;
+
+  const adminNombre = input.admin.nombre.trim();
+  const tipoPersona = input.tipo_persona === "profesor" ? "profesor" : "alumno";
+  await db.execute(
+    `INSERT INTO prestamos_rapidos_alumnos
+       (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones,
+        id_admin, autorizante_codigo, autorizante_nombre, fecha_salida,
+        tipo_persona, equipo_id, prestamo_app_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      input.nombre_alumno.trim(),
+      input.codigo_alumno.trim(),
+      row.nombre_equipo,
+      adminNombre,
+      (input.observaciones ?? "").trim(),
+      input.admin.id,
+      input.admin.codigo.trim(),
+      adminNombre,
+      fechaSalida,
+      tipoPersona,
+      input.equipoId,
+      prestamoAppId,
     ]
   );
 };
 
 export const marcarPrestamoRapidoDevuelto = async (id: number): Promise<void> => {
   const db = await getDb();
+
+  // Si el registro está ligado al inventario, devolver aquí también cierra el
+  // préstamo real y libera el equipo (espejo de devolverEquipo).
+  const rows = await db.select<Array<{ prestamo_app_id: number | null; equipo_id: number | null }>>(
+    "SELECT prestamo_app_id, equipo_id FROM prestamos_rapidos_alumnos WHERE id = ? LIMIT 1",
+    [id]
+  );
+  const linked = rows[0];
+  if (linked?.prestamo_app_id != null && linked.equipo_id != null) {
+    const equipoData = await db.select<Array<{ es_granel: number }>>(
+      "SELECT es_granel FROM inventario WHERE id = ?",
+      [linked.equipo_id]
+    );
+    const esGranel = equipoData.length > 0 && equipoData[0].es_granel === 1;
+
+    const fechaCierre = getCurrentLocalDateTime();
+    await db.execute(
+      `UPDATE prestamos
+       SET estado_prestamo = 'devuelto',
+           fecha_retorno = ?,
+           condicion_regreso = '—',
+           notas_regreso = 'Devuelto vía Préstamo Rápido'
+       WHERE id = ?`,
+      [fechaCierre, linked.prestamo_app_id]
+    );
+    if (!esGranel) {
+      await db.execute("UPDATE inventario SET estado = 'disponible' WHERE id = ?", [linked.equipo_id]);
+    }
+  }
+
   const fechaRetorno = getCurrentLocalDateTime();
   await db.execute(
     "UPDATE prestamos_rapidos_alumnos SET estado = 'devuelto', fecha_retorno = ? WHERE id = ?",
@@ -1353,5 +1540,23 @@ export const marcarPrestamoRapidoDevuelto = async (id: number): Promise<void> =>
 
 export const deletePrestamoRapidoAlumno = async (id: number): Promise<void> => {
   const db = await getDb();
+
+  // Un registro ligado a un préstamo ACTIVO del inventario no se puede borrar:
+  // dejaría un equipo marcado como prestado sin forma de devolverlo desde aquí.
+  const rows = await db.select<Array<{ prestamo_app_id: number | null }>>(
+    "SELECT prestamo_app_id FROM prestamos_rapidos_alumnos WHERE id = ? LIMIT 1",
+    [id]
+  );
+  const prestamoAppId = rows[0]?.prestamo_app_id ?? null;
+  if (prestamoAppId != null) {
+    const activos = await db.select<Array<{ count: number }>>(
+      "SELECT COUNT(*) AS count FROM prestamos WHERE id = ? AND estado_prestamo = 'activo'",
+      [prestamoAppId]
+    );
+    if ((activos[0]?.count ?? 0) > 0) {
+      throw new Error("Este préstamo está ligado al inventario. Márcalo como devuelto antes de eliminarlo.");
+    }
+  }
+
   await db.execute("DELETE FROM prestamos_rapidos_alumnos WHERE id = ?", [id]);
 };

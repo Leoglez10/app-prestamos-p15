@@ -1,9 +1,16 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import logoP15 from "../../img/logo-p15.png";
 import {
+  Equipo,
+  PersonaRapida,
+  Profesor,
   PrestamoRapidoAlumno,
   createPrestamoRapidoAlumno,
+  createPrestamoRapidoDesdeInventario,
+  getEquipos,
+  getPersonasRapidas,
+  getProfesores,
   getPrestamosRapidosAlumnos,
   marcarPrestamoRapidoDevuelto,
   deletePrestamoRapidoAlumno,
@@ -18,6 +25,7 @@ import { Icon } from "../components/Icon";
 import { confirmDialog } from "../utils/confirm";
 
 type FilterEstado = "todos" | "activo" | "vencido" | "devuelto";
+type TipoPersona = "alumno" | "profesor";
 
 interface FieldError {
   field: string;
@@ -26,6 +34,13 @@ interface FieldError {
 
 /** A loan is flagged as overdue once it has been out for more than a full day. */
 const VENCIDO_MS = 24 * 60 * 60 * 1000;
+
+/** Inventory estados shown in the combobox; anything else falls back to raw text. */
+const ESTADO_INVENTARIO_LABELS: Record<string, string> = {
+  disponible: "Disponible",
+  prestado: "Prestado",
+  extraviado: "Extraviado",
+};
 
 const isVencido = (item: PrestamoRapidoAlumno, now: number): boolean => {
   if (item.estado !== "activo") return false;
@@ -57,6 +72,23 @@ export default function PrestamoRapido() {
   const [nombreEquipo, setNombreEquipo] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
+  // 'alumno' | 'profesor': relabels the person fields and is persisted per loan.
+  const [tipoPersona, setTipoPersona] = useState<TipoPersona>("alumno");
+
+  // Inventory-backed combobox for "Objeto Prestado": the full catalog loads once
+  // after DB init and filtering happens in memory (no query per keystroke).
+  // Person autocomplete: the profesores table is the real catalog, and past
+  // Prestamo Rapido rows act as the history for anyone typed as free text.
+  const [profesores, setProfesores] = useState<Profesor[]>([]);
+  const [personasRapidas, setPersonasRapidas] = useState<PersonaRapida[]>([]);
+  const [personaComboOpen, setPersonaComboOpen] = useState(false);
+  const [personaHighlight, setPersonaHighlight] = useState(-1);
+
+  const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [selectedEquipos, setSelectedEquipos] = useState<Equipo[]>([]);
+  const [comboOpen, setComboOpen] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+
   const [historial, setHistorial] = useState<PrestamoRapidoAlumno[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<FilterEstado>("activo");
@@ -80,6 +112,20 @@ export default function PrestamoRapido() {
       try {
         await initializeInventoryDb();
         await loadHistorial();
+        try {
+          setEquipos(await getEquipos());
+        } catch (err) {
+          // The catalog only feeds the autocomplete; if it fails, free-text
+          // capture must keep working.
+          console.warn("No se pudo cargar el inventario para la búsqueda", err);
+        }
+        try {
+          const [profes, personas] = await Promise.all([getProfesores(), getPersonasRapidas()]);
+          setProfesores(profes);
+          setPersonasRapidas(personas);
+        } catch (err) {
+          console.warn("No se pudo cargar el directorio de personas", err);
+        }
       } catch (error) {
         const reason = getRuntimeStorageReason();
         setErrorMessage(reason || "Error al inicializar.");
@@ -131,6 +177,7 @@ export default function PrestamoRapido() {
         item.nombre_alumno,
         item.codigo_alumno,
         item.nombre_equipo,
+        item.tipo_persona || "alumno",
         item.autorizante_nombre || item.persona_prestamo || "",
       ]
         .join(" ")
@@ -139,18 +186,131 @@ export default function PrestamoRapido() {
     });
   }, [historial, busqueda, filtroEstado, now]);
 
+  // Dynamic copy for the person fields ("Nombre del alumno/profesor", etc.).
+  const personaNoun = tipoPersona === "profesor" ? "profesor" : "alumno";
+  const nombreLabel = tipoPersona === "profesor" ? "Nombre del Profesor" : "Nombre del Alumno";
+  const codigoLabel = tipoPersona === "profesor" ? "Código del Profesor" : "Código UDG del Alumno";
+  const nombrePlaceholder = tipoPersona === "profesor" ? "Ej. Laura Méndez Ríos" : "Ej. Juan Pérez López";
+
+  // Person suggestions for the active tipo: the profesores catalog (only when
+  // registering a profesor) plus everyone seen before in Prestamo Rapido.
+  // Deduped by codigo, catalog first so the official name wins over a typo.
+  const personaPool = useMemo(() => {
+    const byCodigo = new Map<string, { nombre: string; codigo: string; fuente: "directorio" | "historial" }>();
+    if (tipoPersona === "profesor") {
+      for (const profe of profesores) {
+        byCodigo.set(profe.codigo, { nombre: profe.nombre, codigo: profe.codigo, fuente: "directorio" });
+      }
+    }
+    for (const persona of personasRapidas) {
+      if ((persona.tipo_persona || "alumno") !== tipoPersona) continue;
+      if (byCodigo.has(persona.codigo)) continue;
+      byCodigo.set(persona.codigo, { nombre: persona.nombre, codigo: persona.codigo, fuente: "historial" });
+    }
+    return [...byCodigo.values()];
+  }, [tipoPersona, profesores, personasRapidas]);
+
+  const personaResults = useMemo(() => {
+    const term = nombreAlumno.trim().toLowerCase();
+    const pool = term
+      ? personaPool.filter(
+          (persona) =>
+            persona.nombre.toLowerCase().includes(term) || persona.codigo.toLowerCase().includes(term)
+        )
+      : personaPool;
+    return pool.slice(0, 8);
+  }, [personaPool, nombreAlumno]);
+
+  const personaActiveIndex =
+    personaResults.length > 0
+      ? Math.min(Math.max(personaHighlight, 0), personaResults.length - 1)
+      : -1;
+
+  // Picking a suggestion fills both fields, so the code never has to be typed
+  // for someone who has borrowed before.
+  const selectPersona = (persona: { nombre: string; codigo: string }) => {
+    setNombreAlumno(persona.nombre);
+    setCodigoAlumno(persona.codigo);
+    setPersonaComboOpen(false);
+    setPersonaHighlight(-1);
+    setFieldErrors((prev) =>
+      prev.filter((err) => err.field !== "nombreAlumno" && err.field !== "codigoAlumno")
+    );
+    codigoAlumnoRef.current?.focus();
+  };
+
+  const handlePersonaKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && !personaComboOpen) {
+      setPersonaComboOpen(true);
+      setPersonaHighlight(-1);
+      event.preventDefault();
+      return;
+    }
+    switch (event.key) {
+      case "ArrowDown":
+        if (!personaComboOpen) return;
+        event.preventDefault();
+        setPersonaHighlight((idx) => Math.min(idx + 1, personaResults.length - 1));
+        break;
+      case "ArrowUp":
+        if (!personaComboOpen) return;
+        event.preventDefault();
+        setPersonaHighlight((idx) => Math.max(idx - 1, 0));
+        break;
+      case "Enter":
+        if (personaComboOpen && personaActiveIndex >= 0 && personaResults[personaActiveIndex]) {
+          event.preventDefault();
+          selectPersona(personaResults[personaActiveIndex]);
+        }
+        break;
+      case "Escape":
+        if (personaComboOpen) {
+          setPersonaComboOpen(false);
+          setPersonaHighlight(-1);
+        }
+        break;
+    }
+  };
+
+  // Client-side inventory search: match name, category or identifier; capped
+  // at 8 rows so the dropdown never grows with the catalog.
+  const equipoResults = useMemo(() => {
+    const term = nombreEquipo.trim().toLowerCase();
+    // Items already added to this loan are dropped from the list so the same
+    // unit cannot be picked twice.
+    const picked = new Set(selectedEquipos.map((equipo) => equipo.id));
+    const pool = equipos.filter((equipo) => {
+      if (picked.has(equipo.id)) return false;
+      if (!term) return true;
+      if (equipo.nombre_equipo.toLowerCase().includes(term)) return true;
+      if (equipo.categoria_nombre.toLowerCase().includes(term)) return true;
+      return (equipo.identificador ?? "").toLowerCase().includes(term);
+    });
+    return pool.slice(0, 8);
+  }, [equipos, nombreEquipo, selectedEquipos]);
+
+  // Highlight clamped to the live result count keeps keyboard nav valid even
+  // while the list shrinks between keystrokes.
+  const activeOptionIndex =
+    equipoResults.length > 0
+      ? Math.min(Math.max(highlightIndex, 0), equipoResults.length - 1)
+      : -1;
+
   const validateFields = (): boolean => {
     const errors: FieldError[] = [];
     if (!nombreAlumno.trim()) {
-      errors.push({ field: "nombreAlumno", message: "El nombre del alumno es obligatorio." });
+      errors.push({ field: "nombreAlumno", message: `El nombre del ${personaNoun} es obligatorio.` });
     }
     if (!codigoAlumno.trim()) {
-      errors.push({ field: "codigoAlumno", message: "El código UDG es obligatorio." });
+      errors.push({
+        field: "codigoAlumno",
+        message: tipoPersona === "profesor" ? "El código del profesor es obligatorio." : "El código UDG es obligatorio.",
+      });
     } else if (!/^\d+$/.test(codigoAlumno.trim())) {
       errors.push({ field: "codigoAlumno", message: "El código debe contener solo números." });
     }
-    if (!nombreEquipo.trim()) {
-      errors.push({ field: "nombreEquipo", message: "El objeto prestado es obligatorio." });
+    if (!nombreEquipo.trim() && selectedEquipos.length === 0) {
+      errors.push({ field: "nombreEquipo", message: "Agrega al menos un objeto prestado." });
     }
     setFieldErrors(errors);
     if (errors.length > 0) {
@@ -166,6 +326,77 @@ export default function PrestamoRapido() {
 
   const getFieldError = (field: string): string | undefined => {
     return fieldErrors.find((e) => e.field === field)?.message;
+  };
+
+  // Switching alumno/profesor keeps typed values; only the errors of the
+  // relabeled fields become stale wording and are dropped.
+  const handleTipoChange = (tipo: TipoPersona) => {
+    setTipoPersona(tipo);
+    setPersonaComboOpen(false);
+    setPersonaHighlight(-1);
+    setFieldErrors((prev) =>
+      prev.filter((err) => err.field !== "nombreAlumno" && err.field !== "codigoAlumno")
+    );
+  };
+
+  // Adding an item empties the search box so the next one can be typed right
+  // away; the list stays open to keep picking without the mouse.
+  const selectEquipo = (equipo: Equipo) => {
+    setSelectedEquipos((prev) =>
+      prev.some((item) => item.id === equipo.id) ? prev : [...prev, equipo]
+    );
+    setNombreEquipo("");
+    setComboOpen(true);
+    setHighlightIndex(-1);
+    setFieldErrors((prev) => prev.filter((err) => err.field !== "nombreEquipo"));
+    nombreEquipoRef.current?.focus();
+  };
+
+  // × on a chip: drop that item from the loan.
+  const removeEquipo = (id: number) => {
+    setSelectedEquipos((prev) => prev.filter((item) => item.id !== id));
+    nombreEquipoRef.current?.focus();
+  };
+
+  const handleEquipoInputChange = (value: string) => {
+    setNombreEquipo(value);
+    setComboOpen(true);
+    setHighlightIndex(-1);
+    setFieldErrors((prev) => prev.filter((err) => err.field !== "nombreEquipo"));
+  };
+
+  const handleEquipoKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && !comboOpen) {
+      // Arrows reopen the list from any closed state (fresh or after a pick).
+      setComboOpen(true);
+      setHighlightIndex(-1);
+      event.preventDefault();
+      return;
+    }
+    switch (event.key) {
+      case "ArrowDown":
+        if (!comboOpen) return;
+        event.preventDefault();
+        setHighlightIndex((idx) => Math.min(idx + 1, equipoResults.length - 1));
+        break;
+      case "ArrowUp":
+        if (!comboOpen) return;
+        event.preventDefault();
+        setHighlightIndex((idx) => Math.max(idx - 1, 0));
+        break;
+      case "Enter":
+        if (comboOpen && activeOptionIndex >= 0 && equipoResults[activeOptionIndex]) {
+          event.preventDefault();
+          selectEquipo(equipoResults[activeOptionIndex]);
+        }
+        break;
+      case "Escape":
+        if (comboOpen) {
+          setComboOpen(false);
+          setHighlightIndex(-1);
+        }
+        break;
+    }
   };
 
   const handleLogin = async (codigo: string, _pin: string): Promise<void> => {
@@ -191,21 +422,54 @@ export default function PrestamoRapido() {
 
     setIsSubmitting(true);
     try {
-      await createPrestamoRapidoAlumno({
-        nombre_alumno: nombreAlumno,
-        codigo_alumno: codigoAlumno,
-        nombre_equipo: nombreEquipo,
-        observaciones: observaciones,
-        admin: state.session.admin,
-      });
+      // One record per object: each one is returned (and updates inventory)
+      // on its own, so a loan of N objects is N rows sharing the person.
+      for (const equipo of selectedEquipos) {
+        // Real inventory item: creates the prestamos row AND the rapido record,
+        // linked so devoluciones keep both sides in sync.
+        await createPrestamoRapidoDesdeInventario({
+          nombre_alumno: nombreAlumno,
+          codigo_alumno: codigoAlumno,
+          nombre_equipo: equipo.nombre_equipo,
+          observaciones: observaciones,
+          admin: state.session.admin,
+          tipo_persona: tipoPersona,
+          equipoId: equipo.id,
+        });
+      }
+      if (nombreEquipo.trim()) {
+        // Free text: unchanged legacy path.
+        await createPrestamoRapidoAlumno({
+          nombre_alumno: nombreAlumno,
+          codigo_alumno: codigoAlumno,
+          nombre_equipo: nombreEquipo,
+          observaciones: observaciones,
+          admin: state.session.admin,
+          tipo_persona: tipoPersona,
+        });
+      }
       const registrado = nombreAlumno.trim();
+      const totalObjetos = selectedEquipos.length + (nombreEquipo.trim() ? 1 : 0);
       setNombreAlumno("");
       setCodigoAlumno("");
       setNombreEquipo("");
       setObservaciones("");
+      setSelectedEquipos([]);
+      setComboOpen(false);
+      setHighlightIndex(-1);
       setFieldErrors([]);
-      setSuccessMessage(`Préstamo de ${registrado} registrado.`);
+      setSuccessMessage(
+        totalObjetos === 1
+          ? `Préstamo de ${registrado} registrado.`
+          : `Préstamo de ${registrado} registrado (${totalObjetos} objetos).`
+      );
       await loadHistorial();
+      try {
+        // The person just captured must be findable on the next loan.
+        setPersonasRapidas(await getPersonasRapidas());
+      } catch {
+        // Autocomplete only; a stale list never blocks the capture.
+      }
       // Back to the first field so several loans can be captured in a row
       // without touching the mouse.
       nombreAlumnoRef.current?.focus();
@@ -221,6 +485,11 @@ export default function PrestamoRapido() {
     setCodigoAlumno("");
     setNombreEquipo("");
     setObservaciones("");
+    setSelectedEquipos([]);
+    setComboOpen(false);
+    setHighlightIndex(-1);
+    setPersonaComboOpen(false);
+    setPersonaHighlight(-1);
     setFieldErrors([]);
     setErrorMessage("");
     setSuccessMessage("");
@@ -247,7 +516,8 @@ export default function PrestamoRapido() {
       await loadHistorial();
       setSuccessMessage("Registro eliminado.");
     } catch (err) {
-      setErrorMessage("Error al eliminar.");
+      // The inventory-link guard throws actionable copy; show it verbatim.
+      setErrorMessage(err instanceof Error ? err.message : "Error al eliminar.");
     }
   };
 
@@ -321,7 +591,7 @@ export default function PrestamoRapido() {
               <Icon name="package" className="form-icon" />
               Nuevo préstamo
             </h1>
-            <p className="form-subtitle">Datos del alumno y el objeto prestado.</p>
+            <p className="form-subtitle">Datos del {personaNoun} y el objeto prestado.</p>
           </div>
 
           {errorMessage && (
@@ -339,35 +609,114 @@ export default function PrestamoRapido() {
 
           <form onSubmit={handleSubmit} noValidate aria-describedby="form-description">
             <p id="form-description" className="visually-hidden">
-              Formulario para registrar un préstamo rápido a un alumno.
-              Complete todos los campos obligatorios: nombre del alumno, código UDG y
-              objeto prestado. La identidad del administrador se registra automáticamente.
+              Formulario para registrar un préstamo rápido a una persona (alumno o profesor).
+              Complete todos los campos obligatorios: nombre, código y objeto prestado.
+              La identidad del administrador se registra automáticamente.
             </p>
+
+            <div className="form-group tipo-persona-group">
+              <span className="form-label" id="tipo-persona-label">
+                Registrar préstamo para
+              </span>
+              <div className="segmented-toggle" role="group" aria-labelledby="tipo-persona-label">
+                <button
+                  type="button"
+                  className={`segment-btn ${tipoPersona === "alumno" ? "is-active" : ""}`}
+                  aria-pressed={tipoPersona === "alumno"}
+                  onClick={() => handleTipoChange("alumno")}
+                  disabled={isSubmitting}
+                >
+                  Alumno
+                </button>
+                <button
+                  type="button"
+                  className={`segment-btn ${tipoPersona === "profesor" ? "is-active" : ""}`}
+                  aria-pressed={tipoPersona === "profesor"}
+                  onClick={() => handleTipoChange("profesor")}
+                  disabled={isSubmitting}
+                >
+                  Profesor
+                </button>
+              </div>
+            </div>
 
             <div className="form-grid">
               <div className="form-group">
                 <label htmlFor="nombreAlumno" className="form-label">
-                  Nombre del Alumno
+                  {nombreLabel}
                   <span className="required-indicator" aria-hidden="true">*</span>
                 </label>
-                <input
-                  ref={nombreAlumnoRef}
-                  id="nombreAlumno"
-                  type="text"
-                  value={nombreAlumno}
-                  onChange={(e) => {
-                    setNombreAlumno(e.target.value);
-                    setFieldErrors((prev) => prev.filter((err) => err.field !== "nombreAlumno"));
-                  }}
-                  placeholder="Ej. Juan Pérez López"
-                  className={`form-input ${getFieldError("nombreAlumno") ? "input-error" : ""}`}
-                  disabled={isSubmitting}
-                  autoComplete="name"
-                  autoFocus
-                  aria-required="true"
-                  aria-invalid={getFieldError("nombreAlumno") ? "true" : "false"}
-                  aria-describedby={getFieldError("nombreAlumno") ? "nombreAlumno-error" : undefined}
-                />
+                <div className="combo">
+                  <input
+                    ref={nombreAlumnoRef}
+                    id="nombreAlumno"
+                    type="text"
+                    role="combobox"
+                    aria-expanded={personaComboOpen}
+                    aria-controls="persona-listbox"
+                    aria-autocomplete="list"
+                    aria-activedescendant={
+                      personaComboOpen && personaActiveIndex >= 0
+                        ? `persona-opt-${personaActiveIndex}`
+                        : undefined
+                    }
+                    value={nombreAlumno}
+                    onChange={(e) => {
+                      setNombreAlumno(e.target.value);
+                      setPersonaComboOpen(true);
+                      setPersonaHighlight(-1);
+                      setFieldErrors((prev) => prev.filter((err) => err.field !== "nombreAlumno"));
+                    }}
+                    onKeyDown={handlePersonaKeyDown}
+                    onBlur={() => setPersonaComboOpen(false)}
+                    placeholder={nombrePlaceholder}
+                    className={`form-input ${getFieldError("nombreAlumno") ? "input-error" : ""}`}
+                    disabled={isSubmitting}
+                    autoComplete="off"
+                    autoFocus
+                    aria-required="true"
+                    aria-invalid={getFieldError("nombreAlumno") ? "true" : "false"}
+                    aria-describedby={getFieldError("nombreAlumno") ? "nombreAlumno-error" : undefined}
+                  />
+                  <span className="combo-glyph" aria-hidden="true">
+                    <Icon name="search" />
+                  </span>
+                  {personaComboOpen && (
+                    personaResults.length > 0 ? (
+                      <ul
+                        id="persona-listbox"
+                        role="listbox"
+                        aria-label={`Coincidencias de ${personaNoun}`}
+                        className="combo-options"
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        {personaResults.map((persona, index) => (
+                          <li
+                            key={`${persona.codigo}-${persona.fuente}`}
+                            id={`persona-opt-${index}`}
+                            role="option"
+                            aria-selected={index === personaActiveIndex}
+                            className={`combo-option ${index === personaActiveIndex ? "is-highlighted" : ""}`}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => selectPersona(persona)}
+                          >
+                            <span className="combo-option-name">{persona.nombre}</span>
+                            <span className="combo-option-meta">{persona.codigo}</span>
+                            <span
+                              className={`persona-fuente persona-fuente-${persona.fuente}`}
+                            >
+                              {persona.fuente === "directorio" ? "Directorio" : "Ya prestó antes"}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : nombreAlumno.trim() ? (
+                      <div className="combo-empty">
+                        Sin coincidencias · se guardará como {personaNoun} nuevo
+                      </div>
+                    ) : null
+                  )}
+                </div>
                 {getFieldError("nombreAlumno") && (
                   <span id="nombreAlumno-error" className="field-error" role="alert">
                     {getFieldError("nombreAlumno")}
@@ -377,7 +726,7 @@ export default function PrestamoRapido() {
 
               <div className="form-group">
                 <label htmlFor="codigoAlumno" className="form-label">
-                  Código UDG del Alumno
+                  {codigoLabel}
                   <span className="required-indicator" aria-hidden="true">*</span>
                 </label>
                 <input
@@ -411,23 +760,117 @@ export default function PrestamoRapido() {
                   Objeto Prestado
                   <span className="required-indicator" aria-hidden="true">*</span>
                 </label>
-                <input
-                  ref={nombreEquipoRef}
-                  id="nombreEquipo"
-                  type="text"
-                  value={nombreEquipo}
-                  onChange={(e) => {
-                    setNombreEquipo(e.target.value);
-                    setFieldErrors((prev) => prev.filter((err) => err.field !== "nombreEquipo"));
-                  }}
-                  placeholder="Ej. Proyector, Laptop, HDMI..."
-                  className={`form-input ${getFieldError("nombreEquipo") ? "input-error" : ""}`}
-                  disabled={isSubmitting}
-                  autoComplete="off"
-                  aria-required="true"
-                  aria-invalid={getFieldError("nombreEquipo") ? "true" : "false"}
-                  aria-describedby={getFieldError("nombreEquipo") ? "nombreEquipo-error" : undefined}
-                />
+                {selectedEquipos.length > 0 && (
+                  <ul className="equipo-chip-list" aria-label="Objetos agregados al préstamo">
+                    {selectedEquipos.map((equipo) => (
+                      <li key={equipo.id} className="equipo-selected-chip">
+                        <Icon name="checkCircle" className="equipo-chip-icon" />
+                        <span className="equipo-chip-text">{equipo.nombre_equipo}</span>
+                        <button
+                          type="button"
+                          className="equipo-chip-remove"
+                          onClick={() => removeEquipo(equipo.id)}
+                          aria-label={`Quitar ${equipo.nombre_equipo} del préstamo`}
+                        >
+                          <Icon name="x" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="combo">
+                  <input
+                    ref={nombreEquipoRef}
+                    id="nombreEquipo"
+                    type="text"
+                    role="combobox"
+                    aria-expanded={comboOpen}
+                    aria-controls="equipo-listbox"
+                    aria-autocomplete="list"
+                    aria-activedescendant={
+                      comboOpen && activeOptionIndex >= 0
+                        ? `equipo-opt-${activeOptionIndex}`
+                        : undefined
+                    }
+                    value={nombreEquipo}
+                    onChange={(e) => handleEquipoInputChange(e.target.value)}
+                    onKeyDown={handleEquipoKeyDown}
+                    onBlur={() => setComboOpen(false)}
+                    placeholder={
+                      selectedEquipos.length > 0
+                        ? "Agregar otro objeto..."
+                        : "Ej. Proyector, Laptop, HDMI..."
+                    }
+                    className={`form-input ${getFieldError("nombreEquipo") ? "input-error" : ""}`}
+                    disabled={isSubmitting}
+                    autoComplete="off"
+                    aria-required="true"
+                    aria-invalid={getFieldError("nombreEquipo") ? "true" : "false"}
+                    aria-describedby={
+                      getFieldError("nombreEquipo") || selectedEquipos.length > 0
+                        ? getFieldError("nombreEquipo")
+                          ? "nombreEquipo-error"
+                          : "nombreEquipo-hint"
+                        : undefined
+                    }
+                  />
+                  <span className="combo-glyph" aria-hidden="true">
+                    <Icon name="search" />
+                  </span>
+                  {comboOpen && (
+                    equipoResults.length > 0 ? (
+                      <ul
+                        id="equipo-listbox"
+                        role="listbox"
+                        aria-label="Coincidencias del inventario"
+                        className="combo-options"
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        {equipoResults.map((equipo, index) => (
+                          <li
+                            key={equipo.id}
+                            id={`equipo-opt-${index}`}
+                            role="option"
+                            aria-selected={index === activeOptionIndex}
+                            className={`combo-option ${index === activeOptionIndex ? "is-highlighted" : ""}`}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => selectEquipo(equipo)}
+                          >
+                            <span className="combo-option-name">{equipo.nombre_equipo}</span>
+                            <span className="combo-option-meta">
+                              {equipo.categoria_nombre}
+                              {equipo.identificador ? ` · ${equipo.identificador}` : ""}
+                            </span>
+                            {equipo.es_granel === 1 ? (
+                              <span
+                                className={`combo-option-stock ${
+                                  Math.max(equipo.stock_disponible, 0) > 0 ? "is-ok" : "is-out"
+                                }`}
+                              >
+                                {Math.max(equipo.stock_disponible, 0)} de {equipo.stock_total} disponibles
+                              </span>
+                            ) : (
+                              <span className={`estado-dot estado-${equipo.estado} ${ESTADO_INVENTARIO_LABELS[equipo.estado] ? "" : "estado-otro"}`}>
+                                {ESTADO_INVENTARIO_LABELS[equipo.estado] ?? equipo.estado}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : nombreEquipo.trim() ? (
+                      <div className="combo-empty">
+                        Sin coincidencias en el inventario · se guardará como texto libre
+                      </div>
+                    ) : null
+                  )}
+                </div>
+                {!getFieldError("nombreEquipo") && selectedEquipos.length > 0 && (
+                  <span id="nombreEquipo-hint" className="equipo-field-hint">
+                    {selectedEquipos.length === 1
+                      ? "Se registrará 1 objeto contra el inventario. La devolución lo actualizará automáticamente."
+                      : `Se registrarán ${selectedEquipos.length} objetos contra el inventario, cada uno se devuelve por separado.`}
+                  </span>
+                )}
                 {getFieldError("nombreEquipo") && (
                   <span id="nombreEquipo-error" className="field-error" role="alert">
                     {getFieldError("nombreEquipo")}
@@ -499,7 +942,7 @@ export default function PrestamoRapido() {
                   type="search"
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  placeholder="Buscar alumno, código u objeto..."
+                  placeholder="Buscar persona, código u objeto..."
                   className="search-input"
                   aria-label="Buscar en historial de préstamos"
                 />
@@ -542,7 +985,7 @@ export default function PrestamoRapido() {
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Alumno</th>
+                    <th scope="col">Persona</th>
                     <th scope="col">Objeto</th>
                     <th scope="col">Tiempo</th>
                     <th scope="col">Estado</th>
@@ -555,8 +998,11 @@ export default function PrestamoRapido() {
                     const autorizante = item.autorizante_nombre || item.persona_prestamo || "—";
                     return (
                       <tr key={item.id} className={vencido ? "row-vencido" : undefined}>
-                        <td data-label="Alumno" className="cell-primary">
+                        <td data-label="Persona" className="cell-primary">
                           <span className="cell-name">{item.nombre_alumno}</span>
+                          {item.tipo_persona === "profesor" && (
+                            <span className="tipo-badge">Profesor</span>
+                          )}
                           <span className="cell-meta">
                             {item.codigo_alumno} · autorizó {autorizante}
                           </span>
@@ -724,8 +1170,10 @@ export default function PrestamoRapido() {
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
           border: 1px solid rgba(148, 163, 184, 0.12);
           min-height: 0;
+          min-width: 0;
         }
         .form-card {
+          overflow-x: hidden;
           overflow-y: auto;
         }
         .historial-card {
@@ -895,6 +1343,263 @@ export default function PrestamoRapido() {
           flex-wrap: wrap;
           padding-top: 0.75rem;
           border-top: 1px solid var(--border-subtle);
+        }
+
+        /* --- Alumno / Profesor segmented toggle --- */
+        .tipo-persona-group {
+          margin-bottom: 0.9rem;
+        }
+        .segmented-toggle {
+          display: inline-flex;
+          gap: 4px;
+          padding: 4px;
+          border-radius: 14px;
+          background: var(--surface-sunken);
+          border: 1.5px solid var(--border-subtle);
+          width: max-content;
+        }
+        .segment-btn {
+          padding: 0.55rem 1.25rem;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          color: var(--text-secondary);
+          font-family: inherit;
+          font-size: clamp(0.85rem, 1.4vh, 0.95rem);
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.18s ease;
+        }
+        .segment-btn:hover:not(:disabled):not(.is-active) {
+          color: var(--text-primary);
+        }
+        .segment-btn:focus-visible {
+          outline: 2px solid var(--brand-primary);
+          outline-offset: 2px;
+        }
+        .segment-btn.is-active {
+          background: var(--brand-primary);
+          color: #ffffff;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+        .segment-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        /* --- Inventory combobox for "Objeto Prestado" --- */
+        .combo {
+          position: relative;
+        }
+        .combo .form-input {
+          padding-right: 2.4rem;
+        }
+        .combo-glyph {
+          position: absolute;
+          right: 0.85rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-secondary);
+          display: inline-flex;
+          pointer-events: none;
+        }
+        .combo-options {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          z-index: 30;
+          margin: 0;
+          padding: 0.35rem;
+          list-style: none;
+          background: var(--surface-default);
+          border: 1px solid var(--border-subtle);
+          border-radius: 12px;
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+          max-height: min(320px, 40vh);
+          overflow-y: auto;
+        }
+        .combo-option {
+          display: flex;
+          flex-direction: column;
+          gap: 0.1rem;
+          padding: 0.55rem 0.7rem;
+          border-radius: 10px;
+          cursor: pointer;
+        }
+        .combo-option:hover,
+        .combo-option.is-highlighted {
+          background: var(--surface-sunken);
+        }
+        .combo-option.is-highlighted .combo-option-name {
+          color: var(--brand-primary);
+        }
+        .combo-option-name {
+          font-weight: 700;
+          font-size: clamp(0.84rem, 1.4vh, 0.95rem);
+          color: var(--text-primary);
+          line-height: 1.3;
+        }
+        .combo-option-meta {
+          font-size: 0.78rem;
+          color: var(--text-secondary);
+          line-height: 1.3;
+        }
+        .combo-option-stock,
+        .estado-dot {
+          align-self: flex-start;
+          margin-top: 0.15rem;
+          font-size: 0.74rem;
+          font-weight: 700;
+        }
+        .combo-option-stock {
+          padding: 0.12rem 0.5rem;
+          border-radius: 999px;
+        }
+        .combo-option-stock.is-ok {
+          background: #dcfce7;
+          color: #166534;
+        }
+        .combo-option-stock.is-out {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+        .estado-dot {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+        }
+        .estado-dot::before {
+          content: "";
+          width: 0.5rem;
+          height: 0.5rem;
+          border-radius: 999px;
+          background: currentColor;
+          flex-shrink: 0;
+        }
+        .estado-disponible {
+          color: #15803d;
+        }
+        .estado-prestado {
+          color: #b45309;
+        }
+        .estado-extraviado {
+          color: #b91c1c;
+        }
+        .estado-otro {
+          color: var(--text-secondary);
+        }
+        /* Tells apart an official directory entry from someone remembered
+           from a previous loan. */
+        .persona-fuente {
+          align-self: flex-start;
+          margin-top: 0.15rem;
+          padding: 0.12rem 0.5rem;
+          border-radius: 999px;
+          font-size: 0.68rem;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+        .persona-fuente-directorio {
+          background: #dbeafe;
+          color: #1e40af;
+          border: 1px solid #bfdbfe;
+        }
+        .persona-fuente-historial {
+          background: var(--surface-sunken);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-subtle);
+        }
+
+        .combo-empty {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          z-index: 30;
+          padding: 0.6rem 0.75rem;
+          background: var(--surface-default);
+          border: 1px solid var(--border-subtle);
+          border-radius: 12px;
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+          font-size: clamp(0.78rem, 1.3vh, 0.86rem);
+          color: var(--text-secondary);
+        }
+
+        /* One chip per inventory item added to the loan. */
+        .equipo-chip-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          min-width: 0;
+        }
+        .equipo-selected-chip {
+          display: flex;
+          min-width: 0;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.45rem 0.65rem;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+          border: 1px solid #6ee7b7;
+          color: #065f46;
+          font-size: clamp(0.78rem, 1.3vh, 0.88rem);
+        }
+        .equipo-chip-icon {
+          flex-shrink: 0;
+          font-size: 1.05em;
+        }
+        .equipo-chip-text {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .equipo-chip-remove {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border: none;
+          border-radius: 8px;
+          background: rgba(6, 95, 70, 0.12);
+          color: #065f46;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: all 0.15s ease;
+        }
+        .equipo-chip-remove:hover {
+          background: rgba(6, 95, 70, 0.22);
+        }
+        .equipo-chip-remove:focus-visible {
+          outline: 2px solid var(--brand-primary);
+          outline-offset: 2px;
+        }
+        .equipo-field-hint {
+          font-size: clamp(0.72rem, 1.2vh, 0.82rem);
+          color: var(--text-secondary);
+        }
+
+        /* Subtle person-type pill in the historial rows. */
+        .tipo-badge {
+          display: inline-flex;
+          align-items: center;
+          align-self: flex-start;
+          width: max-content;
+          padding: 0.14rem 0.55rem;
+          border-radius: 999px;
+          font-size: 0.68rem;
+          font-weight: 800;
+          letter-spacing: 0.02em;
+          background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+          color: #5b21b6;
+          border: 1px solid #c4b5fd;
+          margin-top: 0.12rem;
         }
 
         .btn {
@@ -1356,7 +2061,10 @@ export default function PrestamoRapido() {
           .back-link,
           .hist-chip,
           .action-btn,
-          .form-input {
+          .form-input,
+          .segment-btn,
+          .equipo-chip-remove,
+          .combo-option {
             transition: none;
           }
           .alert {

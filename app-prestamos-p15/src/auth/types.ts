@@ -36,10 +36,20 @@ export type PrestamoRapidoAlumnoInput = {
   codigo_alumno: string;
   nombre_equipo: string;
   observaciones?: string;
+  // Optional so pre-existing callers (free-text loans) stay source-compatible;
+  // the data layer defaults to 'alumno' when omitted.
+  tipo_persona?: "alumno" | "profesor";
 };
 
 export type PrestamoRapidoAlumnoCreate = PrestamoRapidoAlumnoInput & {
   admin: AdminUser;
+};
+
+// Loan registered against a real inventory item (combobox selection). The
+// inventory item id is required; the display name still travels in
+// nombre_equipo but the hook overwrites it from the inventario row.
+export type PrestamoRapidoInventarioCreate = PrestamoRapidoAlumnoCreate & {
+  equipoId: number;
 };
 
 export type PrestamoRapidoAlumnoRow = PrestamoRapidoAlumnoInput & {

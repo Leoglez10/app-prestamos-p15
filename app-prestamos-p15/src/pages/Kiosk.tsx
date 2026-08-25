@@ -344,7 +344,11 @@ setSelectedEquipoIds([]);
       eq.nombre_equipo.toLowerCase().includes(term) ||
       eq.categoria_nombre.toLowerCase().includes(term) ||
       (eq.identificador ?? "").toLowerCase().includes(term) ||
-      (eq.id_patrimonial ?? "").includes(term)
+      (eq.id_patrimonial ?? "").includes(term) ||
+      // Con cientos de equipos llamados igual, la marca y el modelo son lo unico
+      // con lo que un profe puede pedir "la Dell" y encontrarla.
+      (eq.marca ?? "").toLowerCase().includes(term) ||
+      (eq.modelo ?? "").toLowerCase().includes(term)
     );
   }).sort((a, b) => {
     const aDisponible = isEquipoDisponible(a) ? 1 : 0;
@@ -1945,7 +1949,7 @@ setSelectedEquipoIds([]);
                           disabled={!isAvail}
                           style={{ borderColor: isSelected ? tone.border : undefined }}
                           aria-pressed={isAvail ? isSelected : undefined}
-                          aria-label={`${eq.nombre_equipo} de ${eq.categoria_nombre}. ${isAvail ? getEquipoSupportingText(eq) : 'No disponible'}${isSelected ? '. Ya seleccionado' : ''}`}
+                          aria-label={`${[eq.nombre_equipo, eq.marca, eq.modelo].filter(Boolean).join(' ')} de ${eq.categoria_nombre}. ${isAvail ? getEquipoSupportingText(eq) : 'No disponible'}${isSelected ? '. Ya seleccionado' : ''}`}
                         >
                           <div className="eq-card-top">
                             <span
@@ -1962,13 +1966,23 @@ setSelectedEquipoIds([]);
                             <strong style={{ fontSize: '1.28rem', fontWeight: 700, color: isAvail ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'block', lineHeight: 1.25 }}>
                               {eq.nombre_equipo}
                             </strong>
-                            {/* The category repeats the name often enough that showing
-                                both just doubles the noise. Only show what adds info. */}
-                            {eq.categoria_nombre.trim().toLowerCase() !== eq.nombre_equipo.trim().toLowerCase() ? (
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.15rem' }}>
-                                {eq.categoria_nombre}
-                              </span>
-                            ) : null}
+                            {/* Marca y modelo primero: con el inventario de Patrimonio
+                                adentro hay cientos de tarjetas que dicen lo mismo, y
+                                esto es lo unico que las separa. Si no hay, cae a la
+                                categoria, que al menos ubica. Nunca se repite el nombre. */}
+                            {(() => {
+                              const detalle = [eq.marca, eq.modelo].filter(Boolean).join(' · ');
+                              const alternativa =
+                                eq.categoria_nombre.trim().toLowerCase() !== eq.nombre_equipo.trim().toLowerCase()
+                                  ? eq.categoria_nombre
+                                  : '';
+                              const texto = detalle || alternativa;
+                              return texto ? (
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.15rem' }}>
+                                  {texto}
+                                </span>
+                              ) : null;
+                            })()}
                           </div>
                           {!isAvail ? (
                             <div className="eq-support">{getEquipoSupportingText(eq)}</div>

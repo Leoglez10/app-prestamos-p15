@@ -648,8 +648,20 @@ function InventarioPanel() {
     return matchesSearch && matchesCategory;
   });
 
+  // `prestable:` no es un estado sino una vista: con el inventario de Patrimonio
+  // adentro, la mayoria de las filas son mobiliario que nunca se presta, y sin
+  // esto no hay forma de mirar solo lo que si circula.
+  const cumpleFiltro = (eq: Equipo, valor: string) => {
+    if (!valor) return true;
+    if (valor === "prestable:1") return eq.es_prestable === 1;
+    if (valor === "prestable:0") return eq.es_prestable !== 1;
+    return eq.estado === valor;
+  };
+
   const statusChips = [
     { value: "", label: "Todos" },
+    { value: "prestable:1", label: "Prestables" },
+    { value: "prestable:0", label: "Solo inventario" },
     { value: "disponible", label: "Disponibles" },
     { value: "prestado", label: "Prestados" },
     { value: "extraviado", label: "Extraviados" },
@@ -657,13 +669,13 @@ function InventarioPanel() {
   ];
 
   const countForStatus = (value: string) =>
-    value ? baseEquipos.filter(eq => eq.estado === value).length : baseEquipos.length;
+    value ? baseEquipos.filter(eq => cumpleFiltro(eq, value)).length : baseEquipos.length;
 
   const sortValue = (eq: Equipo) =>
     sortKey === "categoria" ? eq.categoria_nombre : sortKey === "estado" ? eq.estado : eq.nombre_equipo;
 
   const filteredEquipos = baseEquipos
-    .filter(eq => (filterStatus ? eq.estado === filterStatus : true))
+    .filter(eq => cumpleFiltro(eq, filterStatus))
     .sort((a, b) => (sortDir === "asc" ? 1 : -1) * sortValue(a).localeCompare(sortValue(b), "es", { numeric: true }));
 
   // Al cambiar el filtro el conjunto es otro: seguir en la pagina 12 no tiene
@@ -738,7 +750,15 @@ function InventarioPanel() {
     const rows = visibleEquipos
       .map((eq) => {
         const columns = [
-          `<td>${html(eq.nombre_equipo)}${inventarioPdf.includeIdentifier ? `<br /><span class="muted">${html(eq.identificador || "S/N")}</span>` : ""}</td>`,
+          // Mismo criterio que la tabla: con cientos de equipos llamados igual,
+          // el identificador solo no distingue nada.
+          `<td>${html(eq.nombre_equipo)}${
+            inventarioPdf.includeIdentifier
+              ? `<br /><span class="muted">${html(
+                  [eq.marca, eq.modelo, eq.identificador, eq.id_patrimonial].filter(Boolean).join(" · ") || "S/N"
+                )}</span>`
+              : ""
+          }</td>`,
           inventarioPdf.includeCategory ? `<td>${html(eq.categoria_nombre)}</td>` : "",
           inventarioPdf.includeLoanType ? `<td>${html(eq.es_prestable === 1 ? "Prestable" : "Solo inventario")}</td>` : "",
           `<td>${html(eq.estado)}</td>`,
@@ -881,6 +901,8 @@ function InventarioPanel() {
           onChange={e => setFilterStatus(e.target.value)}
         >
           <option value="">Todos los estados</option>
+          <option value="prestable:1">Solo prestables</option>
+          <option value="prestable:0">Solo inventario</option>
           <option value="disponible">Disponible</option>
           <option value="prestado">Prestado</option>
           <option value="extraviado">Extraviado</option>
@@ -1255,17 +1277,23 @@ function InventarioPanel() {
                     <button type="button" className="row-link" onClick={() => setDetalleId(eq.id)}>
                       {eq.nombre_equipo}
                     </button>
-                    {eq.es_granel === 0 ? (
+                    {/* Con el inventario de Patrimonio adentro hay cientos de filas
+                        llamadas igual ("COMPUTADORA PORTATIL"). La marca, el modelo y
+                        el ID de la etiqueta son lo unico que distingue una de otra. */}
+                    <br />
+                    <small style={{ color: 'var(--text-secondary)' }}>
+                      {eq.es_granel === 1
+                        ? 'Granel'
+                        : [eq.marca, eq.modelo, eq.identificador].filter(Boolean).join(' · ') || 'Sin datos'}
+                    </small>
+                    {eq.id_patrimonial ? (
                       <>
                         <br />
-                        <small style={{ color: 'var(--text-secondary)' }}>{eq.identificador || 'S/N'}</small>
+                        <small style={{ color: 'var(--text-secondary)', letterSpacing: '.04em' }}>
+                          <code>{eq.id_patrimonial}</code>
+                        </small>
                       </>
-                    ) : (
-                      <>
-                        <br />
-                        <small style={{ color: 'var(--text-secondary)' }}>Granel</small>
-                      </>
-                    )}
+                    ) : null}
                   </td>
                   <td className="col-optional" style={{ padding: '0.55rem 1rem' }}>{eq.categoria_nombre}</td>
                   <td style={{ padding: '0.55rem 1rem' }}>

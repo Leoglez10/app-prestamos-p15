@@ -14,6 +14,12 @@ técnicas que ya se tomaron.
 > (punto 6) ni la generación de etiquetas de código de barras (punto 5). Ambos
 > dependen del esquema final de `inventario`, y cada columna que se agregue después
 > obliga a rehacer el trabajo.
+>
+> **Actualización 2026-08-21 — parcialmente desbloqueado.** La UdeG ya tiene
+> etiquetado casi todo el inventario con un código de barras propio, y ese número
+> resuelve la pregunta de cuál es la llave única por objeto. El análisis completo
+> está en [`docs/INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md). Sigue
+> pendiente definir el resto de los campos (marca, modelo, ubicación).
 
 ---
 
@@ -128,15 +134,17 @@ Marcar cada uno como **entra** / **no entra**, y si entra, si es obligatorio:
 | Proveedor | ? | ? | ¿Hace falta o alcanza con el historial de compra en papel? |
 | Estado físico | ? | ? | ¿Texto libre o lista cerrada (bueno / regular / dañado)? |
 | Ubicación / aula | ? | ? | ¿Un objeto tiene ubicación fija o cambia? |
-| Número de inventario oficial de la prepa | ? | ? | Si la escuela ya etiqueta sus bienes, conviene guardarlo |
+| Número de inventario oficial de la prepa | **SÍ** | No (nullable) | **RESUELTO.** Es el ID de la etiqueta de Patrimonio de la UdeG. Entra como `inventario.id_patrimonial TEXT UNIQUE`. Ver [`docs/INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md). |
 | Observaciones | ? | ? | Texto libre |
 
 ### Preguntas que hay que responder antes de decidir
 
 1. ¿Cuáles de estos campos **realmente se van a llenar**? Un campo que queda vacío
    en el 90% de los registros es ruido en el formulario y en los reportes.
-2. ¿El número de serie es **único** por objeto? Eso define si se usa como código
-   de barras o si hay que generar un identificador propio.
+2. ~~¿El número de serie es **único** por objeto? Eso define si se usa como código
+   de barras o si hay que generar un identificador propio.~~ **RESUELTO:** no hace
+   falta la serie. El ID de la etiqueta de Patrimonio ya es único por objeto y ya
+   está impreso y pegado.
 3. ¿Hay objetos que se manejan **por cantidad** en vez de por unidad (cables,
    adaptadores)? Esos no tienen número de serie individual y el modelo tiene que
    contemplarlo.
@@ -168,15 +176,30 @@ del manual) para agregar un prefijo, por ejemplo `#`. Eso permite distinguir un
 escaneo de alguien tecleando a mano, y capturarlo globalmente sin necesidad de
 que el input tenga el foco.
 
-**El trabajo real no es el software, es el trabajo físico:** hay que imprimir y
-pegar una etiqueta con código de barras en cada objeto del inventario. Eso es lo
-que va a tomar tiempo, no la programación. Conviene generar las etiquetas desde
-la propia app (una vista imprimible con el `identificador` de cada equipo) para no
+> **Actualización 2026-08-21.** El párrafo de abajo ya no aplica a la mayor parte
+> del inventario: la UdeG **ya tiene etiquetado** casi todo con código de barras
+> propio. No hay que imprimir ni pegar nada en esos equipos, solo aprender a leer
+> lo que ya está puesto. El detalle completo, en
+> [`docs/INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md).
+>
+> El trabajo físico se reduce a los objetos que Patrimonio nunca etiquetó (cables,
+> adaptadores, controles, plumones), que llevan el QR propio `P15-<id>`.
+>
+> Y el paso 2 de la lista de arriba es aún más barato de lo que dice: el buscador
+> del kiosko (`src/pages/Kiosk.tsx`) ya filtra por identificador y ya agrega el
+> primer resultado con `Enter`. Basta con sumar `id_patrimonial` a ese filtro.
+
+~~**El trabajo real no es el software, es el trabajo físico:** hay que imprimir y
+pegar una etiqueta con código de barras en cada objeto del inventario.~~ Conviene
+igual generar las etiquetas desde la propia app (una vista imprimible con el
+`identificador` de cada equipo) para los objetos sin etiqueta oficial, y no
 depender de un programa externo.
 
-Recomendación de compra: cualquier lector **USB HID de códigos 1D (Code 128)** de
-gama baja sirve. No hace falta Bluetooth, ni 2D/QR, ni inalámbrico, salvo que se
-quiera escanear lejos de la computadora.
+Recomendación de compra: cualquier lector **USB HID de códigos 1D** de gama baja
+sirve. No hace falta Bluetooth, ni 2D/QR, ni inalámbrico, salvo que se quiera
+escanear lejos de la computadora. **Antes de comprar hay que confirmar la
+simbología** que usa la etiqueta de la UdeG (Code 39 o Code 128); casi cualquier
+lector lee ambas, pero conviene verificarlo en la ficha del producto.
 
 ---
 
@@ -198,6 +221,20 @@ cual.
 **Regla que no se debe romper:** la app define **una plantilla fija** de columnas y
 el usuario llena esa plantilla. Aceptar "cualquier Excel" significa mantener
 mapeos de columnas para siempre y arreglar importaciones rotas de por vida.
+
+> **Excepción acotada (2026-08-21).** La escuela dice tener un inventario en Excel
+> hecho por Patrimonio. Ese archivo llega con **su** formato, no con nuestra
+> plantilla. Se acepta un mapeo fijo para esa única fuente conocida: lo que la
+> regla previene es mantener mapeos arbitrarios para "cualquier Excel", no un
+> formato institucional estable.
+>
+> **No se debe escribir este importador hasta tener el archivo real a la vista.**
+> El grueso del trabajo son las columnas reales, los encabezados a media hoja y
+> las celdas combinadas; a ciegas se rehace completo.
+>
+> Mientras tanto hay un camino que no depende de nadie: la **vinculación por
+> escaneo** (escanear un código desconocido y elegir a qué equipo pertenece).
+> Ver [`docs/INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md) §7.
 
 La importación debe además:
 

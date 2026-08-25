@@ -7,6 +7,13 @@ arrepentimos.
 
 Contexto largo del proyecto: `docs/SERVIDOR.md` y `docs/ROADMAP.md` §8.
 
+> **El QR `P15-<id>` ya no es la única etiqueta.** Desde el 2026-08-21 se sabe que
+> la UdeG tiene etiquetado casi todo el inventario con su propio código de barras
+> 1D, y la app va a leer esos códigos en vez de reetiquetar todo. El QR propio
+> queda para los objetos que Patrimonio nunca etiquetó. Eso obliga a cambiar el
+> lector del celular (jsQR no lee 1D). Ver
+> [`docs/INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md).
+
 ---
 
 ## 1. Lo que se midió en la red de la prepa

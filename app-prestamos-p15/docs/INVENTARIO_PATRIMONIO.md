@@ -1,7 +1,23 @@
 # Etiquetas de Patrimonio (UdeG) e inventario
 
-Estado: **análisis cerrado, sin una línea de código escrita.** Este documento
-recoge lo que se decidió el 2026-08-21 al descubrir que la Universidad ya tiene
+> ### ⚠️ Estado actualizado el 2026-08-25 — leer antes que nada
+>
+> El análisis de abajo sigue siendo válido **salvo en tres puntos**, superados por
+> [`PLAN_IMPORTACION_PATRIMONIO.md`](PLAN_IMPORTACION_PATRIMONIO.md):
+>
+> 1. **§5 y §7 (el celular y zxing) ya no aplican.** Se borró el camino de
+>    etiquetas QR `P15-<id>` y el escáner del teléfono. Queda un solo tipo de
+>    código: el de barras 1D de la UdeG, leído con pistola USB. `zxing-wasm` salió
+>    del roadmap. Ver §7 del plan.
+> 2. **§7 Camino A ya no está bloqueado.** El Excel llegó: 2137 filas × 16
+>    columnas. El plan trae el análisis columna por columna.
+> 3. **La app dejó de ser solo préstamos**: pasa a ser el inventario de la
+>    escuela, conservando los préstamos.
+>
+> Lo que **sigue vigente**: no se reetiqueta nada (§2), `id_patrimonial TEXT`
+> como llave (§4) — **ya implementado**, y el dato pendiente de §8.
+
+Estado: análisis del 2026-08-21, al descubrir que la Universidad ya tiene
 etiquetado casi todo el inventario de la prepa.
 
 Es el documento que desbloquea los puntos 4, 5 y 6 de `docs/ROADMAP.md`, que

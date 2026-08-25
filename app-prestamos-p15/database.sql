@@ -12,12 +12,29 @@ CREATE TABLE IF NOT EXISTS inventario (
     categoria_id INTEGER,
     nombre_equipo TEXT NOT NULL,
     identificador TEXT, -- Serie o Aula
+    -- Ficha de Patrimonio. Todas TEXT y nullable a proposito: el granel nunca
+    -- paso por Patrimonio y no va a tener ninguna.
+    -- Ver docs/INVENTARIO_PATRIMONIO.md y docs/PLAN_IMPORTACION_PATRIMONIO.md.
+    id_patrimonial TEXT,      -- el numero del codigo de barras de la etiqueta UdeG
+    marca TEXT,
+    modelo TEXT,
+    num_serie TEXT,           -- informativo: el Excel trae 11 duplicados, no es llave
+    descripcion TEXT,         -- specs en texto libre (procesador, memoria, medidas)
+    resguardante_codigo TEXT, -- codigo de empleado de quien responde por el bien
+    resguardante_nombre TEXT, -- NO se dan de alta en `profesores`: no es login
+    fecha_adquisicion TEXT,   -- ISO 'YYYY-MM-DD'
+    ubicacion TEXT,           -- la llena la toma fisica, no el Excel
     estado TEXT DEFAULT 'disponible', -- 'disponible', 'prestado', 'extraviado', 'mantenimiento'
     es_prestable INTEGER NOT NULL DEFAULT 1,
     es_granel INTEGER NOT NULL DEFAULT 0,
     stock_total INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (categoria_id) REFERENCES categorias(id)
 );
+
+-- Lo que hace que reimportar el Excel de Patrimonio actualice en vez de duplicar.
+-- Los NULL no chocan entre si en un indice unico de SQLite, asi que el granel cabe.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_inventario_id_patrimonial
+    ON inventario (id_patrimonial);
 
 CREATE TABLE IF NOT EXISTS profesores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

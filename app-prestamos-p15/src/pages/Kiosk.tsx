@@ -18,6 +18,7 @@ import {
   getSettings,
 } from "../hooks/useInventory";
 import { formatSqliteLoanDate } from "../utils/datetime";
+import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
 import { Icon, type IconName } from "../components/Icon";
 
 /** Seconds the success modal stays open before closing the teacher's session. */
@@ -326,13 +327,24 @@ setSelectedEquipoIds([]);
   // teachers were missing items because the search only covered the active category.
   const equipoSearchSource = equipoSearchTermNormalized ? allEquipos : equipos;
 
-  const filteredEquipos = equipoSearchSource.filter((eq) => {
+  // La pistola de codigos de barras teclea el ID de la etiqueta de Patrimonio y
+  // manda Enter. Ese ID tiene que ganarle al filtro por texto: con miles de
+  // equipos, buscar '3382871' como subcadena puede pegarle al identificador de
+  // otro equipo que contenga esos digitos, y como Enter agrega el primer
+  // resultado, se prestaria el equipo equivocado.
+  const codigoEscaneado = normalizarCodigoPatrimonial(equipoSearchTerm);
+  const coincidenciaExacta = codigoEscaneado
+    ? equipoSearchSource.filter((eq) => eq.id_patrimonial === codigoEscaneado)
+    : [];
+
+  const filteredEquipos = coincidenciaExacta.length === 1 ? coincidenciaExacta : equipoSearchSource.filter((eq) => {
     const term = equipoSearchTermNormalized;
     if (!term) return true;
     return (
       eq.nombre_equipo.toLowerCase().includes(term) ||
       eq.categoria_nombre.toLowerCase().includes(term) ||
-      (eq.identificador ?? "").toLowerCase().includes(term)
+      (eq.identificador ?? "").toLowerCase().includes(term) ||
+      (eq.id_patrimonial ?? "").includes(term)
     );
   }).sort((a, b) => {
     const aDisponible = isEquipoDisponible(a) ? 1 : 0;
@@ -1739,7 +1751,7 @@ setSelectedEquipoIds([]);
                         value={equipoSearchTerm}
                         onChange={(e) => setEquipoSearchTerm(e.target.value)}
                         onFocus={() => setCartExpanded(false)}
-                        placeholder="Buscar en todas las áreas por nombre, categoría o identificador… (Enter agrega el primero)"
+                        placeholder="Escanea el código de barras o busca por nombre, categoría o identificador… (Enter agrega el primero)"
                         aria-label="Buscar equipo"
                         onKeyDown={(e) => {
                           if (e.key !== "Enter") return;

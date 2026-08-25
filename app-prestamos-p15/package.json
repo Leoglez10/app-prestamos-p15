@@ -9,8 +9,11 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "test:backup": "node --test src/utils/backupSchedule.test.ts",
-    "test:etiquetas": "node --test src/utils/etiquetaQr.test.ts",
-    "test:identificadores": "node --test src/utils/identificadores.test.ts"
+    "test:patrimonio": "node --test src/utils/codigoPatrimonial.test.ts",
+    "test:identificadores": "node --test src/utils/identificadores.test.ts",
+    "test:ficha": "node --test src/utils/equipoFicha.test.ts",
+    "test:importacion": "node --test src/utils/importacionPatrimonio.test.ts",
+    "test": "node --test src/utils/*.test.ts"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

@@ -2,6 +2,9 @@ import Database from "@tauri-apps/plugin-sql";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
+import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, type FichaEquipo } from "../utils/equipoFicha";
+
+export type { FichaEquipo };
 
 export type PersonaRapida = {
   nombre: string;
@@ -29,6 +32,19 @@ export type Equipo = {
   id: number;
   nombre_equipo: string;
   identificador: string | null;
+  // Ficha de Patrimonio. `id_patrimonial` es el numero del codigo de barras de la
+  // etiqueta de la UdeG. Todas nullable a proposito: el granel nunca paso por
+  // Patrimonio. Ver docs/INVENTARIO_PATRIMONIO.md.
+  id_patrimonial: string | null;
+  marca: string | null;
+  modelo: string | null;
+  num_serie: string | null;
+  descripcion: string | null;
+  resguardante_codigo: string | null;
+  resguardante_nombre: string | null;
+  fecha_adquisicion: string | null;
+  // La llena la toma fisica, no el Excel.
+  ubicacion: string | null;
   estado: string;
   es_prestable: number;
   categoria_es_prestable?: number;
@@ -309,6 +325,26 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   }
 
   const inventarioColumns = await getTableColumns(db, "inventario");
+  // Ficha de Patrimonio. Todas TEXT y nullable: el granel nunca paso por
+  // Patrimonio y no va a tener ninguna. Ver docs/PLAN_IMPORTACION_PATRIMONIO.md §4.
+  //
+  // `ubicacion` no la llena el Excel (solo 150 filas de 2137 la traen): la produce
+  // la toma fisica caminando con la pistola.
+  for (const columna of [
+    "id_patrimonial",
+    "marca",
+    "modelo",
+    "num_serie",
+    "descripcion",
+    "resguardante_codigo",
+    "resguardante_nombre",
+    "fecha_adquisicion",
+    "ubicacion",
+  ]) {
+    if (!inventarioColumns.includes(columna)) {
+      await db.execute(`ALTER TABLE inventario ADD COLUMN ${columna} TEXT`);
+    }
+  }
   if (!inventarioColumns.includes("es_granel")) {
     await db.execute("ALTER TABLE inventario ADD COLUMN es_granel INTEGER DEFAULT 0");
   }
@@ -353,6 +389,13 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   if (!profesoresColumns.includes("admin_pin")) {
     await db.execute("ALTER TABLE profesores ADD COLUMN admin_pin TEXT");
   }
+
+  // Lo que hace que reimportar el Excel de Patrimonio actualice en vez de
+  // duplicar. En SQLite los NULL no chocan entre si dentro de un indice unico,
+  // asi que el granel (sin id patrimonial) convive sin problema.
+  await db.execute(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_inventario_id_patrimonial ON inventario (id_patrimonial)"
+  );
 
   await db.execute("UPDATE prestamos SET estado_prestamo = 'activo' WHERE estado_prestamo IS NULL OR TRIM(estado_prestamo) = ''");
   await db.execute("UPDATE prestamos SET fecha_salida = CURRENT_TIMESTAMP WHERE fecha_salida IS NULL OR TRIM(fecha_salida) = ''");
@@ -712,6 +755,10 @@ export const deleteProfesor = async (id: number): Promise<void> => {
   await db.execute("DELETE FROM profesores WHERE id = ?", [id]);
 };
 
+// Columnas de ficha, en un solo lugar para no repetirlas en cada variante de la
+// consulta. Los nombres son fijos, no vienen de afuera.
+const SELECT_FICHA_EQUIPO = COLUMNAS_FICHA_EQUIPO.map((columna) => `i.${columna}`).join(", ");
+
 export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]> => {
   const db = await getDb();
   const responsableActivoSql = `
@@ -758,6 +805,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
         `SELECT i.id, i.nombre_equipo, i.identificador, i.estado, i.categoria_id, c.nombre AS categoria_nombre,
                 COALESCE(c.es_prestable, 1) AS categoria_es_prestable,
                 COALESCE(i.es_prestable, 1) AS es_prestable,
+                ${SELECT_FICHA_EQUIPO},
                 COALESCE(i.es_granel, 0) AS es_granel, COALESCE(i.stock_total, 1) AS stock_total,
                 (COALESCE(i.stock_total, 1) - (
                     SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
@@ -796,6 +844,15 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       // Agregar valores por defecto para que coincida con tipo Equipo
       return result.map(r => ({
         ...r,
+        id_patrimonial: null,
+        marca: null,
+        modelo: null,
+        num_serie: null,
+        descripcion: null,
+        resguardante_codigo: null,
+        resguardante_nombre: null,
+        fecha_adquisicion: null,
+        ubicacion: null,
         categoria_es_prestable: 1,
         es_prestable: 1,
         es_granel: 0,
@@ -810,6 +867,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       `SELECT i.id, i.nombre_equipo, i.identificador, i.estado, i.categoria_id, c.nombre AS categoria_nombre,
               COALESCE(c.es_prestable, 1) AS categoria_es_prestable,
               COALESCE(i.es_prestable, 1) AS es_prestable,
+              ${SELECT_FICHA_EQUIPO},
               COALESCE(i.es_granel, 0) AS es_granel, COALESCE(i.stock_total, 1) AS stock_total,
               (COALESCE(i.stock_total, 1) - (
                   SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
@@ -852,6 +910,15 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
     // Agregar valores por defecto para que coincida con tipo Equipo
     return result.map(r => ({
       ...r,
+      id_patrimonial: null,
+      marca: null,
+      modelo: null,
+      num_serie: null,
+      descripcion: null,
+      resguardante_codigo: null,
+      resguardante_nombre: null,
+      fecha_adquisicion: null,
+      ubicacion: null,
       categoria_es_prestable: 1,
       es_prestable: 1,
       es_granel: 0,
@@ -957,7 +1024,22 @@ export const createPrestamoRapido = async ({
   }
 };
 
-export type CreateEquipoInput = {
+/**
+ * El indice unico de `id_patrimonial` es lo que evita que el mismo objeto entre
+ * dos veces, pero escupe un error de SQLite en crudo. Escribir dos veces la
+ * misma etiqueta es un error de captura normal, asi que se traduce.
+ */
+const traducirErrorDeEquipo = (error: unknown, idPatrimonial: string | null): Error => {
+  const mensaje = error instanceof Error ? error.message : String(error);
+
+  if (idPatrimonial && mensaje.includes("UNIQUE constraint failed: inventario.id_patrimonial")) {
+    return new Error(`El ID de Patrimonio ${idPatrimonial} ya esta registrado en otro equipo.`);
+  }
+
+  return error instanceof Error ? error : new Error(mensaje);
+};
+
+export type CreateEquipoInput = FichaEquipo & {
   nombre_equipo: string;
   identificador: string | null;
   categoria_id: number;
@@ -968,10 +1050,18 @@ export type CreateEquipoInput = {
 
 export const createEquipo = async (input: CreateEquipoInput): Promise<void> => {
   const db = await getDb();
-  await db.execute(
-    "INSERT INTO inventario (nombre_equipo, identificador, categoria_id, estado, es_prestable, es_granel, stock_total) VALUES (?, ?, ?, 'disponible', ?, ?, ?)",
-    [input.nombre_equipo.trim(), input.identificador ? input.identificador.trim() : null, input.categoria_id, input.es_prestable, input.es_granel, input.stock_total]
-  );
+  // `estado` no viene del formulario: un equipo nuevo siempre nace disponible.
+  const cambios: Record<string, string | number | null> = { ...cambiosDeEquipo(input), estado: "disponible" };
+  const columnas = Object.keys(cambios);
+
+  try {
+    await db.execute(
+      `INSERT INTO inventario (${columnas.join(", ")}) VALUES (${columnas.map(() => "?").join(", ")})`,
+      columnas.map((columna) => cambios[columna])
+    );
+  } catch (error) {
+    throw traducirErrorDeEquipo(error, (cambios.id_patrimonial as string | null) ?? null);
+  }
 };
 
 export const deleteEquipo = async (equipoId: number): Promise<void> => {
@@ -980,22 +1070,42 @@ export const deleteEquipo = async (equipoId: number): Promise<void> => {
   await db.execute("DELETE FROM inventario WHERE id = ?", [equipoId]);
 };
 
-export type UpdateEquipoInput = {
-  nombre_equipo: string;
-  identificador: string | null;
-  categoria_id: number;
-  estado: string;
-  es_prestable: number;
-  es_granel: number;
-  stock_total: number;
+/**
+ * Todo opcional a proposito: `updateEquipo` escribe SOLO las claves presentes.
+ *
+ * Antes reescribia la fila entera, y eso convertia cada columna nueva en una
+ * trampa: cualquier pantalla que no conociera el campo lo borraba al guardar. Ya
+ * habia pasado con `id_patrimonial` desde el panel de categorias. Con `undefined`
+ * distinto de `null`, no saber de un campo es no tocarlo, y borrarlo a proposito
+ * sigue siendo posible mandando `null`.
+ */
+export type UpdateEquipoInput = FichaEquipo & {
+  nombre_equipo?: string;
+  identificador?: string | null;
+  categoria_id?: number;
+  estado?: string;
+  es_prestable?: number;
+  es_granel?: number;
+  stock_total?: number;
 };
 
 export const updateEquipo = async (id: number, input: UpdateEquipoInput): Promise<void> => {
   const db = await getDb();
-  await db.execute(
-    "UPDATE inventario SET nombre_equipo = ?, identificador = ?, categoria_id = ?, estado = ?, es_prestable = ?, es_granel = ?, stock_total = ? WHERE id = ?",
-    [input.nombre_equipo.trim(), input.identificador ? input.identificador.trim() : null, input.categoria_id, input.estado, input.es_prestable, input.es_granel, input.stock_total, id]
-  );
+  const cambios = cambiosDeEquipo(input);
+
+  // Los nombres de columna salen de las listas blancas de `equipoFicha.ts`, nunca
+  // del objeto que llega: no hay forma de inyectar SQL por aca.
+  const columnas = Object.keys(cambios);
+  if (columnas.length === 0) return;
+
+  try {
+    await db.execute(
+      `UPDATE inventario SET ${columnas.map((columna) => `${columna} = ?`).join(", ")} WHERE id = ?`,
+      [...columnas.map((columna) => cambios[columna]), id]
+    );
+  } catch (error) {
+    throw traducirErrorDeEquipo(error, (cambios.id_patrimonial as string | null) ?? null);
+  }
 };
 
 export type PrestamoActivo = {

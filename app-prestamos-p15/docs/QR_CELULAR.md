@@ -7,12 +7,25 @@ arrepentimos.
 
 Contexto largo del proyecto: `docs/SERVIDOR.md` y `docs/ROADMAP.md` §8.
 
-> **El QR `P15-<id>` ya no es la única etiqueta.** Desde el 2026-08-21 se sabe que
-> la UdeG tiene etiquetado casi todo el inventario con su propio código de barras
-> 1D, y la app va a leer esos códigos en vez de reetiquetar todo. El QR propio
-> queda para los objetos que Patrimonio nunca etiquetó. Eso obliga a cambiar el
-> lector del celular (jsQR no lee 1D). Ver
-> [`docs/INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md).
+> ### ⚠️ El escáner del celular se borró el 2026-08-25
+>
+> **El QR de acceso de este documento sigue vivo y es lo que se describe abajo:**
+> el que se muestra en Admin → Configuración para abrir la app en el teléfono y
+> vincular el dispositivo. Ese no se tocó, y por eso `qrcode-generator` sigue
+> instalada.
+>
+> **Lo que sí murió es la etiqueta de equipo `P15-<id>` y el lector que la leía.**
+> Nunca se imprimió una sola etiqueta y no se va a imprimir: el inventario ya
+> viene etiquetado por la UdeG con código de barras 1D, y se lee con una pistola
+> USB. Quedó un solo tipo de código en todo el sistema.
+>
+> **Todo lo que este documento diga sobre `jsQR`, `/jsqr.js`, `GUION_ESCANEO`,
+> `src-tauri/assets/jsqr.js` o el visor de cámara ya no existe en el código** —
+> vale como historia de diseño, no como referencia. La ficha `GET /equipo/<id>`
+> sí sobrevive: ahora se llega desde la lista de inventario del teléfono.
+>
+> Ver [`PLAN_IMPORTACION_PATRIMONIO.md`](PLAN_IMPORTACION_PATRIMONIO.md) §7 y
+> [`INVENTARIO_PATRIMONIO.md`](INVENTARIO_PATRIMONIO.md).
 
 ---
 

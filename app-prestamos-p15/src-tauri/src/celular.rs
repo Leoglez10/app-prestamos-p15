@@ -715,24 +715,6 @@ fn pagina_con_clase(titulo: &str, cuerpo: &str, clase: &str) -> String {
               border-radius: 12px; padding: 13px; font-family: inherit; font-size: 1rem;
               color: var(--tinta); background: var(--superficie); resize: none; }}
 
-  /* El visor se come la pantalla: apuntar con una mano pide un blanco grande. */
-  body.escaneando {{ background: var(--tinta); color: #fff; }}
-  body.escaneando main {{ padding: 16px; }}
-  #marco {{ position: relative; flex-grow: 1; margin: 0 0 1rem;
-            border-radius: 20px; overflow: hidden; background: #1E293B; }}
-  #marco video {{ display: block; width: 100%; height: 100%; object-fit: cover; }}
-  #mira {{ position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-           width: min(72vw, 260px); aspect-ratio: 1; }}
-  #mira i {{ position: absolute; width: 44px; height: 44px; border: 4px solid var(--marca); }}
-  #mira i:nth-child(1) {{ left:0; top:0; border-right:0; border-bottom:0; border-radius:14px 0 0 0; }}
-  #mira i:nth-child(2) {{ right:0; top:0; border-left:0; border-bottom:0; border-radius:0 14px 0 0; }}
-  #mira i:nth-child(3) {{ left:0; bottom:0; border-right:0; border-top:0; border-radius:0 0 0 14px; }}
-  #mira i:nth-child(4) {{ right:0; bottom:0; border-left:0; border-top:0; border-radius:0 0 14px 0; }}
-  .pie-visor {{ position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 20px 26px;
-                background: linear-gradient(to top, rgba(15,23,42,.92), transparent);
-                text-align: center; }}
-  .pie-visor strong {{ display: block; font-size: 1.06rem; }}
-  .pie-visor span {{ font-size: .88rem; color: #94A3B8; }}
 </style>
 </head>
 <body class="{clase}"><main>{cuerpo}</main></body>
@@ -885,27 +867,6 @@ fn pagina_principal(sesion: &Sesion, prestamos: &[PrestamoActivo], aviso: Option
         ));
     }
 
-    // El escaneo es la accion principal, asi que se lleva el blanco mas grande.
-    cuerpo.push_str(
-        "<button type=\"button\" id=\"abrir\" class=\"principal\" hidden><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8V5a2 2 0 0 1 2-2h3\"/><path d=\"M16 3h3a2 2 0 0 1 2 2v3\"/><path d=\"M21 16v3a2 2 0 0 1-2 2h-3\"/><path d=\"M8 21H5a2 2 0 0 1-2-2v-3\"/><path d=\"M7 12h10\"/></svg>Escanear etiqueta</button>\
-         <label class=\"boton principal\" id=\"respaldo\" hidden><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 8V5a2 2 0 0 1 2-2h3\"/><path d=\"M16 3h3a2 2 0 0 1 2 2v3\"/><path d=\"M21 16v3a2 2 0 0 1-2 2h-3\"/><path d=\"M8 21H5a2 2 0 0 1-2-2v-3\"/><path d=\"M7 12h10\"/></svg>Escanear etiqueta\
-           <input type=\"file\" accept=\"image/*\" capture=\"environment\" id=\"foto\" hidden>\
-         </label>\
-         <p id=\"leido\" class=\"vacio\" style=\"margin-top:.7rem\"></p>\
-         <p id=\"sinCamara\" hidden class=\"vacio\" style=\"margin-top:.7rem;font-size:.88rem\">\
-           Para escanear con la cámara, instala una vez el \
-           <a href=\"/ca.crt\">certificado de la prepa</a> y entra por la dirección segura.\
-         </p>\
-         <div id=\"marco\" hidden>\
-           <video id=\"video\" playsinline muted></video>\
-           <div id=\"mira\"><i></i><i></i><i></i><i></i></div>\
-           <div class=\"pie-visor\">\
-             <strong>Apunta a la etiqueta</strong>\
-             <span>Se registra sola en cuanto la reconozca.</span>\
-           </div>\
-         </div>",
-    );
-
     // Un admin esta viendo el equipo de toda la prepa, no el suyo: el titulo tiene
     // que decirlo o parece que la lista esta mal.
     let (titulo_lista, sin_nada) = if sesion.es_admin {
@@ -958,8 +919,6 @@ fn pagina_principal(sesion: &Sesion, prestamos: &[PrestamoActivo], aviso: Option
          </a>",
     );
 
-    cuerpo.push_str(GUION_ESCANEO);
-
     pagina("Préstamos P15", &cuerpo)
 }
 
@@ -998,8 +957,11 @@ fn pagina_equipos(equipos: &[Equipo]) -> String {
             "<span class=\"vacio\">No disponible</span>".to_string()
         };
 
+        // El nombre lleva a la ficha del equipo. Antes solo se llegaba ahi
+        // escaneando el QR; sin escaner, la lista es la unica puerta.
         cuerpo.push_str(&format!(
-            "<div class=\"fila\"><div><strong>{}</strong><small>{}</small></div>{}</div>",
+            "<div class=\"fila\"><div><a href=\"/equipo/{}\"><strong>{}</strong></a><small>{}</small></div>{}</div>",
+            equipo.id,
             escapar(&equipo.nombre),
             escapar(&detalle),
             accion
@@ -1009,160 +971,6 @@ fn pagina_equipos(equipos: &[Equipo]) -> String {
     pagina("Equipos", &cuerpo)
 }
 
-// --- Lectura de etiquetas -----------------------------------------------------
-//
-// `getUserMedia` exige contexto seguro y esto es HTTP plano, asi que la camara en
-// vivo esta vedada. Un `<input type="file" capture>` no pide permiso de camara ni
-// contexto seguro: abre la camara nativa y devuelve una foto, que se decodifica
-// con jsQR. Ver docs/QR_CELULAR.md.
-
-/// jsQR vendorizado en `assets/`, no traido de npm en tiempo de build: asi
-/// `cargo build` no depende de que exista `node_modules`.
-const JSQR: &str = include_str!("../assets/jsqr.js");
-
-const GUION_ESCANEO: &str = r##"
-<script src="/jsqr.js"></script>
-<script>
-(() => {
-  const aviso = document.getElementById('leido');
-  const botonAbrir = document.getElementById('abrir');
-  const marco = document.getElementById('marco');
-  const video = document.getElementById('video');
-  const respaldo = document.getElementById('respaldo');
-  const entrada = document.getElementById('foto');
-  const sinCamara = document.getElementById('sinCamara');
-
-  // El prefijo 'P15-' y su longitud vienen de `PREFIJO` en
-  // src/utils/etiquetaQr.ts, que es quien imprime las etiquetas.
-  const interpretar = (texto) => {
-    const limpio = (texto || '').trim().toUpperCase();
-    if (!limpio.startsWith('P15-')) return null;
-    const id = Number(limpio.slice(4));
-    return Number.isInteger(id) && id > 0 ? id : null;
-  };
-
-  const irAlEquipo = (id) => { window.location.href = '/equipo/' + id; };
-
-  // jsQR asume codigo oscuro sobre fondo claro. 'attemptBoth' agrega la pasada
-  // invertida, que salva las etiquetas fotografiadas a contraluz.
-  const leer = (datos, ancho, alto) =>
-    jsQR(datos, ancho, alto, { inversionAttempts: 'attemptBoth' });
-
-  // --- Camara en vivo: solo existe en contexto seguro (HTTPS) ---------------
-  const hayCamara = window.isSecureContext
-    && navigator.mediaDevices
-    && typeof navigator.mediaDevices.getUserMedia === 'function';
-
-  if (hayCamara) {
-    botonAbrir.hidden = false;
-
-    const lienzo = document.createElement('canvas');
-    const contexto = lienzo.getContext('2d', { willReadFrequently: true });
-    let corriendo = false;
-
-    const revisarCuadro = () => {
-      if (!corriendo) return;
-
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        // Se lee a resolucion reducida: alcanza de sobra para un QR y deja el
-        // bucle fluido en un telefono modesto.
-        const escala = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
-        lienzo.width = Math.round(video.videoWidth * escala);
-        lienzo.height = Math.round(video.videoHeight * escala);
-        contexto.drawImage(video, 0, 0, lienzo.width, lienzo.height);
-
-        const pixeles = contexto.getImageData(0, 0, lienzo.width, lienzo.height);
-        const leido = leer(pixeles.data, lienzo.width, lienzo.height);
-        const id = leido && interpretar(leido.data);
-
-        if (id) {
-          corriendo = false;
-          video.srcObject.getTracks().forEach((pista) => pista.stop());
-          aviso.textContent = 'Etiqueta leída.';
-          irAlEquipo(id);
-          return;
-        }
-      }
-
-      requestAnimationFrame(revisarCuadro);
-    };
-
-    botonAbrir.addEventListener('click', async () => {
-      try {
-        aviso.textContent = 'Pidiendo permiso de cámara...';
-        const flujo = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
-          audio: false
-        });
-
-        video.srcObject = flujo;
-        await video.play();
-
-        botonAbrir.hidden = true;
-        marco.hidden = false;
-        // Con el visor abierto la pantalla se vuelve el visor: fondo oscuro y el
-        // resto de la interfaz fuera del camino.
-        document.body.classList.add('escaneando');
-        document.querySelectorAll('main > *:not(#marco):not(#leido)')
-          .forEach((elemento) => { elemento.hidden = true; });
-        aviso.textContent = '';
-        corriendo = true;
-        requestAnimationFrame(revisarCuadro);
-      } catch (error) {
-        // Permiso denegado o camara ocupada: la foto sigue sirviendo.
-        aviso.textContent = 'No se pudo abrir la cámara: ' + error.message;
-        respaldo.hidden = false;
-      }
-    });
-  } else {
-    // Sobre HTTP plano el navegador bloquea la camara sin preguntar.
-    respaldo.hidden = false;
-    sinCamara.hidden = false;
-  }
-
-  // --- Respaldo por foto ----------------------------------------------------
-  entrada.addEventListener('change', async () => {
-    const archivo = entrada.files && entrada.files[0];
-    if (!archivo) return;
-
-    aviso.textContent = 'Leyendo la foto...';
-
-    try {
-      const mapa = await createImageBitmap(archivo);
-      const lienzo = document.createElement('canvas');
-      const contexto = lienzo.getContext('2d', { willReadFrequently: true });
-
-      // Se prueban varios tamanos: si la etiqueta salio chica dentro de la foto,
-      // reducir demasiado borra el codigo, y a tamano completo jsQR tarda mucho.
-      for (const ladoMaximo of [1600, 1000, 2400]) {
-        const escala = Math.min(1, ladoMaximo / Math.max(mapa.width, mapa.height));
-        lienzo.width = Math.round(mapa.width * escala);
-        lienzo.height = Math.round(mapa.height * escala);
-        contexto.drawImage(mapa, 0, 0, lienzo.width, lienzo.height);
-
-        const pixeles = contexto.getImageData(0, 0, lienzo.width, lienzo.height);
-        const leido = leer(pixeles.data, lienzo.width, lienzo.height);
-        const id = leido && interpretar(leido.data);
-
-        if (id) {
-          irAlEquipo(id);
-          return;
-        }
-
-        if (leido) {
-          aviso.textContent = 'Ese código no es una etiqueta de la prepa.';
-          return;
-        }
-      }
-
-      aviso.textContent = 'No se vio ningún código. Acércate más y evita el reflejo.';
-    } catch (error) {
-      aviso.textContent = 'No se pudo leer la foto: ' + error.message;
-    }
-  });
-})();
-</script>
-"##;
 
 async fn equipo_por_id(pool: &SqlitePool, equipo_id: i64) -> Result<Option<Equipo>, String> {
     sqlx::query_as::<_, (i64, String, Option<String>, String, i64, i64, i64)>(
@@ -1483,14 +1291,6 @@ fn atender_autenticado(mut request: Request, pool: &SqlitePool, sesion: Sesion) 
             };
 
             responder_principal(request, pool, &sesion, Some(&aviso));
-        }
-
-        ("GET", "/jsqr.js") => {
-            let respuesta = Response::from_string(JSQR)
-                .with_header(header("Content-Type", "application/javascript; charset=utf-8"))
-                // Es un archivo fijo: que el telefono lo baje una sola vez.
-                .with_header(header("Cache-Control", "public, max-age=31536000, immutable"));
-            let _ = request.respond(respuesta);
         }
 
         ("GET", camino) if camino.starts_with("/devolver/") => {

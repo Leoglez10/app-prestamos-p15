@@ -1,19 +1,17 @@
 /**
  * Detail view for one inventory row.
  *
- * A row with `es_granel = 0` is one physical object: its `id` is its identity,
- * its QR label is `P15-<id>`, and `prestamos.equipo_id` already records who took
- * that exact unit. That per-unit trace is the whole reason to register five
- * remotes as five rows instead of one bulk row of five.
+ * A row with `es_granel = 0` is one physical object: its `id_patrimonial` is the
+ * ID printed on the UdeG barcode label stuck to it, and `prestamos.equipo_id`
+ * already records who took that exact unit. That per-unit trace is the whole
+ * reason to register five remotes as five rows instead of one bulk row of five.
  *
- * A bulk row has no per-unit trace by design — the units are interchangeable, so
- * the modal says so out loud instead of pretending the single QR identifies one.
+ * A bulk row has no per-unit trace by design — the units are interchangeable,
+ * and bulk stock never went through Patrimonio, so it has no label at all. The
+ * modal says so out loud instead of pretending otherwise.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
-import { construirHoja, qrComoImagen } from "./EtiquetasQrPanel";
-import { codigoDeEquipo } from "../utils/etiquetaQr";
-import { printHtmlDocument } from "../utils/print";
 import { formatSqliteDateTime } from "../utils/datetime";
 import { getHistorialEquipo, type Equipo, type HistorialEquipo } from "../hooks/useInventory";
 
@@ -41,10 +39,6 @@ export function EquipoDetalleModal({ equipo, onClose, onEditar }: Props) {
   const [error, setError] = useState("");
 
   const equipoId = equipo?.id ?? null;
-  const codigo = equipoId === null ? "" : codigoDeEquipo(equipoId);
-
-  // Drawing the QR is not free and the code only changes with the row.
-  const qr = useMemo(() => (codigo ? qrComoImagen(codigo) : ""), [codigo]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -67,11 +61,6 @@ export function EquipoDetalleModal({ equipo, onClose, onEditar }: Props) {
       .finally(() => { if (!cancelado) setCargando(false); });
     return () => { cancelado = true; };
   }, [equipoId]);
-
-  const imprimirEtiqueta = () => {
-    if (!equipo) return;
-    printHtmlDocument(`Etiqueta ${codigo}`, construirHoja([equipo]));
-  };
 
   return (
     <dialog ref={dialogRef} className="admin-dialog is-wide" onClose={onClose}>
@@ -118,22 +107,49 @@ export function EquipoDetalleModal({ equipo, onClose, onEditar }: Props) {
               ) : null}
             </div>
 
-            <div className="stack" style={{ gap: "0.6rem", justifyItems: "start" }}>
-              <img
-                src={qr}
-                alt={`Código QR ${codigo}`}
-                style={{ width: "150px", height: "150px", imageRendering: "pixelated", background: "white", borderRadius: "8px", padding: "6px" }}
-              />
-              <code style={{ letterSpacing: ".04em" }}>{codigo}</code>
+            <div className="stack" style={{ gap: "0.9rem" }}>
+              <Dato label="ID de Patrimonio (UdeG)">
+                {equipo.id_patrimonial ? (
+                  <code style={{ letterSpacing: ".08em", fontSize: "1.15rem" }}>{equipo.id_patrimonial}</code>
+                ) : (
+                  <span style={{ color: "var(--text-secondary)" }}>Sin etiqueta de Patrimonio</span>
+                )}
+              </Dato>
               {equipo.es_granel === 1 ? (
                 <small style={{ color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  Este código identifica la fila completa, no una unidad. Para saber cuál se llevó
-                  cada quien, registra las unidades por separado.
+                  El granel no pasó por Patrimonio y no lleva etiqueta: esta fila cuenta unidades
+                  intercambiables. Para saber cuál se llevó cada quien, regístralas por separado.
                 </small>
               ) : null}
-              <button type="button" className="ghost" onClick={imprimirEtiqueta} style={{ width: "auto", padding: "0.55rem 0.9rem" }}>
-                Imprimir etiqueta
-              </button>
+              {/* Los campos vacíos no se pintan: la mayoría del inventario solo
+                  tendrá algunos, y una lista de guiones no dice nada. */}
+              {equipo.marca || equipo.modelo ? (
+                <Dato label="Marca y modelo">
+                  {[equipo.marca, equipo.modelo].filter(Boolean).join(" · ")}
+                </Dato>
+              ) : null}
+              {equipo.num_serie ? (
+                <Dato label="Número de serie"><code>{equipo.num_serie}</code></Dato>
+              ) : null}
+              {equipo.ubicacion ? <Dato label="Ubicación">{equipo.ubicacion}</Dato> : null}
+              {equipo.resguardante_nombre || equipo.resguardante_codigo ? (
+                <Dato label="Resguardante">
+                  {equipo.resguardante_nombre || "—"}
+                  {equipo.resguardante_codigo ? (
+                    <small style={{ display: "block", color: "var(--text-secondary)" }}>
+                      {equipo.resguardante_codigo}
+                    </small>
+                  ) : null}
+                </Dato>
+              ) : null}
+              {equipo.fecha_adquisicion ? (
+                <Dato label="Fecha de adquisición">{equipo.fecha_adquisicion}</Dato>
+              ) : null}
+              {equipo.descripcion ? (
+                <Dato label="Descripción">
+                  <span style={{ color: "var(--text-secondary)", lineHeight: 1.5 }}>{equipo.descripcion}</span>
+                </Dato>
+              ) : null}
             </div>
           </div>
 

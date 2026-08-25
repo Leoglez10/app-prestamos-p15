@@ -43,10 +43,26 @@ import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSche
 import { formatSqliteDateTime } from "../utils/datetime";
 import { generarIdentificadores } from "../utils/identificadores";
 import { html, buildPrintDocument, printHtmlDocument } from "../utils/print";
+import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
+
+// Cuantas filas de inventario se pintan de un jalon. Ver `visibles`.
+const FILAS_POR_PAGINA = 100;
+
+// Los campos de la ficha de Patrimonio viven juntos en un solo estado: son ocho
+// campos de texto que se llenan y se limpian siempre en bloque.
+const FICHA_VACIA = {
+  marca: "",
+  modelo: "",
+  num_serie: "",
+  descripcion: "",
+  resguardante_codigo: "",
+  resguardante_nombre: "",
+  fecha_adquisicion: "",
+  ubicacion: "",
+};
 import { Icon } from "../components/Icon";
 // EXPERIMENT: phone access over the LAN. See docs/QR_CELULAR.md to remove.
 import { RedCelularPanel } from "../components/RedCelularPanel";
-import { EtiquetasQrPanel } from "../components/EtiquetasQrPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
@@ -383,6 +399,8 @@ function InventarioPanel() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [nombre, setNombre] = useState("");
   const [identificador, setIdentificador] = useState("");
+  const [idPatrimonial, setIdPatrimonial] = useState("");
+  const [ficha, setFicha] = useState(FICHA_VACIA);
   const [categoriaId, setCategoriaId] = useState("");
   const [estadoEdit, setEstadoEdit] = useState("disponible");
   const [esPrestable, setEsPrestable] = useState(true);
@@ -394,6 +412,9 @@ function InventarioPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  // El inventario de la prepa son miles de filas y la tabla no vive dentro de un
+  // scroll virtual: pintarlas todas congela la pagina en cada tecla del buscador.
+  const [visibles, setVisibles] = useState(FILAS_POR_PAGINA);
   const [sortKey, setSortKey] = useState<"nombre" | "categoria" | "estado">("nombre");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [quickNombre, setQuickNombre] = useState("");
@@ -447,6 +468,8 @@ function InventarioPanel() {
         await updateEquipo(editingId, {
           nombre_equipo: nombre,
           identificador: identificador || null,
+          id_patrimonial: idPatrimonial || null,
+          ...ficha,
           categoria_id: Number(categoriaId),
           estado: estadoEdit,
           es_prestable: esPrestable ? 1 : 0,
@@ -457,18 +480,33 @@ function InventarioPanel() {
         await createEquipo({
           nombre_equipo: nombre,
           identificador: identificador || null,
+          // El granel nunca pasó por Patrimonio: no tiene etiqueta que leer.
+          id_patrimonial: null,
+          ...ficha,
           categoria_id: Number(categoriaId),
           es_prestable: esPrestable ? 1 : 0,
           es_granel: 1,
           stock_total: Number(stockTotal) || 1
         });
       } else {
-        // Una fila por unidad: es lo que le da a cada objeto su propio QR y su
-        // propio historial. Ver src/utils/identificadores.ts.
+        // Una fila por unidad: es lo que le da a cada objeto su propia etiqueta y
+        // su propio historial. Ver src/utils/identificadores.ts.
+        //
+        // El ID de Patrimonio y el número de serie NO se autonumeran como el
+        // identificador: son propios de cada objeto físico y no son correlativos.
+        // Repartir el mismo valor entre N unidades sería inventar el dato, así que
+        // solo se asignan cuando el alta es de una sola unidad.
+        //
+        // El resto de la ficha sí se comparte: cinco laptops iguales compradas
+        // juntas tienen la misma marca, modelo, fecha, resguardante y ubicación.
+        const unaSolaUnidad = identificadoresPrevistos.length === 1;
         for (const codigo of identificadoresPrevistos) {
           await createEquipo({
             nombre_equipo: nombre,
             identificador: codigo,
+            ...ficha,
+            id_patrimonial: unaSolaUnidad ? idPatrimonial || null : null,
+            num_serie: unaSolaUnidad ? ficha.num_serie || null : null,
             categoria_id: Number(categoriaId),
             es_prestable: esPrestable ? 1 : 0,
             es_granel: 0,
@@ -488,6 +526,17 @@ function InventarioPanel() {
     setEditingId(eq.id);
     setNombre(eq.nombre_equipo);
     setIdentificador(eq.identificador || "");
+    setIdPatrimonial(eq.id_patrimonial || "");
+    setFicha({
+      marca: eq.marca ?? "",
+      modelo: eq.modelo ?? "",
+      num_serie: eq.num_serie ?? "",
+      descripcion: eq.descripcion ?? "",
+      resguardante_codigo: eq.resguardante_codigo ?? "",
+      resguardante_nombre: eq.resguardante_nombre ?? "",
+      fecha_adquisicion: eq.fecha_adquisicion ?? "",
+      ubicacion: eq.ubicacion ?? "",
+    });
     setCategoriaId(eq.categoria_id.toString());
     setEstadoEdit(eq.estado);
     setEsPrestable(eq.es_prestable === 1);
@@ -501,6 +550,8 @@ function InventarioPanel() {
     setEditingId(null);
     setNombre("");
     setIdentificador("");
+    setIdPatrimonial("");
+    setFicha(FICHA_VACIA);
     setCategoriaId("");
     setEstadoEdit("disponible");
     setEsPrestable(true);
@@ -524,6 +575,7 @@ function InventarioPanel() {
       await createEquipo({
         nombre_equipo: quickNombre.trim(),
         identificador: null,
+        id_patrimonial: null,
         categoria_id: Number(quickCategoria),
         es_prestable: 1,
         es_granel: 0,
@@ -569,9 +621,27 @@ function InventarioPanel() {
   // Search and category are applied before the status chips so each chip count
   // describes the current view; applying the status here too would make every
   // chip except the active one read 0.
-  const baseEquipos = equipos.filter(eq => {
-    const matchesSearch = eq.nombre_equipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (eq.identificador && eq.identificador.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Escanear en Admin tiene que ganarle al filtro por texto, igual que en el
+  // kiosko: buscar el ID como subcadena puede pegarle al identificador de otro
+  // equipo que contenga esos dígitos. Ver src/utils/codigoPatrimonial.ts.
+  const codigoEscaneado = normalizarCodigoPatrimonial(searchTerm);
+  const coincidenciaExacta = codigoEscaneado
+    ? equipos.filter(eq => eq.id_patrimonial === codigoEscaneado)
+    : [];
+
+  const baseEquipos = coincidenciaExacta.length === 1 ? coincidenciaExacta : equipos.filter(eq => {
+    const termino = searchTerm.trim().toLowerCase();
+    // Marca, modelo y serie entran al buscador: con miles de filas llamadas
+    // "COMPUTADORA", el modelo es lo único que distingue una de otra.
+    const matchesSearch = !termino || [
+      eq.nombre_equipo,
+      eq.identificador,
+      eq.id_patrimonial,
+      eq.marca,
+      eq.modelo,
+      eq.num_serie,
+      eq.ubicacion,
+    ].some(campo => (campo ?? "").toLowerCase().includes(termino));
     const matchesCategory = filterCategory ? eq.categoria_id.toString() === filterCategory : true;
     return matchesSearch && matchesCategory;
   });
@@ -593,6 +663,12 @@ function InventarioPanel() {
   const filteredEquipos = baseEquipos
     .filter(eq => (filterStatus ? eq.estado === filterStatus : true))
     .sort((a, b) => (sortDir === "asc" ? 1 : -1) * sortValue(a).localeCompare(sortValue(b), "es", { numeric: true }));
+
+  // Al cambiar el filtro el conjunto es otro: seguir en la pagina 12 no tiene
+  // sentido y ademas esconderia los primeros resultados.
+  useEffect(() => {
+    setVisibles(FILAS_POR_PAGINA);
+  }, [searchTerm, filterCategory, filterStatus]);
 
   const toggleSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -768,8 +844,6 @@ function InventarioPanel() {
       />
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginBottom: '0.75rem' }}>
-        {/* EXPERIMENT: etiquetas QR por equipo. Ver docs/QR_CELULAR.md para quitarlo. */}
-        <EtiquetasQrPanel equipos={filteredEquipos} />
         <button
           type="button"
           onClick={handleNuevoEquipo}
@@ -929,6 +1003,73 @@ function InventarioPanel() {
                   <small style={{ color: 'var(--text-secondary)' }}>Opcional, útil para control interno del equipo.</small>
                 </div>
               )}
+              {/* El ID de Patrimonio es único por objeto y no es correlativo, así
+                  que el alta múltiple no puede repartirlo entre las unidades. */}
+              {!esGranel && (editingId !== null || identificadoresPrevistos.length === 1) && (
+                <div>
+                  <label>ID de Patrimonio (UdeG)</label>
+                  <input
+                    value={idPatrimonial}
+                    onChange={e => setIdPatrimonial(e.target.value)}
+                    placeholder="Ej. 3382871"
+                    inputMode="numeric"
+                    autoComplete="off"
+                  />
+                  <small style={{ color: 'var(--text-secondary)' }}>
+                    El número del código de barras de la etiqueta blanca de la Universidad.
+                    Puedes escanearlo con la pistola sobre este campo.
+                  </small>
+                </div>
+              )}
+
+              {/* Plegado: el alta común es nombre + categoría. Estos ocho campos
+                  los llena la importación del Excel, no la mano, salvo correcciones. */}
+              <details className="ficha-patrimonio">
+                <summary style={{ cursor: 'pointer', fontWeight: 700, padding: '0.5rem 0' }}>
+                  Ficha del equipo (marca, modelo, resguardante…)
+                </summary>
+                <div style={{ display: 'grid', gap: '0.8rem', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', marginTop: '0.6rem' }}>
+                  <div>
+                    <label>Marca</label>
+                    <input value={ficha.marca} onChange={e => setFicha(f => ({ ...f, marca: e.target.value }))} placeholder="Ej. DELL" />
+                  </div>
+                  <div>
+                    <label>Modelo</label>
+                    <input value={ficha.modelo} onChange={e => setFicha(f => ({ ...f, modelo: e.target.value }))} placeholder="Ej. OPTIPLEX" />
+                  </div>
+                  {(editingId !== null || identificadoresPrevistos.length === 1) && (
+                    <div>
+                      <label>Número de serie</label>
+                      <input value={ficha.num_serie} onChange={e => setFicha(f => ({ ...f, num_serie: e.target.value }))} placeholder="Ej. MXL3322DP2" />
+                    </div>
+                  )}
+                  <div>
+                    <label>Ubicación</label>
+                    <input value={ficha.ubicacion} onChange={e => setFicha(f => ({ ...f, ubicacion: e.target.value }))} placeholder="Ej. Aula 12" />
+                  </div>
+                  <div>
+                    <label>Código del resguardante</label>
+                    <input value={ficha.resguardante_codigo} onChange={e => setFicha(f => ({ ...f, resguardante_codigo: e.target.value }))} placeholder="Ej. 2800829" inputMode="numeric" />
+                  </div>
+                  <div>
+                    <label>Nombre del resguardante</label>
+                    <input value={ficha.resguardante_nombre} onChange={e => setFicha(f => ({ ...f, resguardante_nombre: e.target.value }))} placeholder="Quien responde por el bien" />
+                  </div>
+                  <div>
+                    <label>Fecha de adquisición</label>
+                    <input type="date" value={ficha.fecha_adquisicion} onChange={e => setFicha(f => ({ ...f, fecha_adquisicion: e.target.value }))} />
+                  </div>
+                </div>
+                <div style={{ marginTop: '0.8rem' }}>
+                  <label>Descripción</label>
+                  <textarea
+                    value={ficha.descripcion}
+                    onChange={e => setFicha(f => ({ ...f, descripcion: e.target.value }))}
+                    placeholder="Características: procesador, memoria, medidas…"
+                    rows={2}
+                  />
+                </div>
+              </details>
               {!esGranel && !editingId && (
                 <div>
                   <label>¿Cuántas unidades?</label>
@@ -940,7 +1081,7 @@ function InventarioPanel() {
                     onChange={e => setCantidadUnidades(e.target.value)}
                   />
                   <small style={{ color: 'var(--text-secondary)' }}>
-                    Cada unidad se registra por separado, con su propio QR e historial.
+                    Cada unidad se registra por separado, con su propio historial.
                   </small>
                   {identificadoresPrevistos.length > 1 && (
                     <div style={{ marginTop: '0.5rem', padding: '0.55rem 0.7rem', borderRadius: '12px', background: 'rgba(37, 99, 235, 0.07)', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
@@ -1106,7 +1247,7 @@ function InventarioPanel() {
                   </td>
                 </tr>
               ) : null}
-              {filteredEquipos.map(eq => (
+              {filteredEquipos.slice(0, visibles).map(eq => (
                 <tr key={eq.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: editingId === eq.id ? 'var(--surface-sunken)' : 'transparent' }}>
                   <td style={{ padding: '0.55rem 1rem' }}>
                     <button type="button" className="row-link" onClick={() => setDetalleId(eq.id)}>
@@ -1196,6 +1337,23 @@ function InventarioPanel() {
                   </td>
                 </tr>
               ))}
+              {filteredEquipos.length > visibles && (
+                <tr>
+                  <td colSpan={5} style={{ padding: '1.1rem', textAlign: 'center' }}>
+                    <div style={{ color: 'var(--text-secondary)', marginBottom: '0.6rem' }}>
+                      Mostrando {visibles} de {filteredEquipos.length} equipos
+                    </div>
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => setVisibles(actual => actual + FILAS_POR_PAGINA)}
+                      style={{ width: 'auto', padding: '0.6rem 1.2rem' }}
+                    >
+                      Mostrar {Math.min(FILAS_POR_PAGINA, filteredEquipos.length - visibles)} más
+                    </button>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
       </div>
@@ -1856,6 +2014,8 @@ function CategoriasPanel() {
     e.preventDefault();
     if (!editingId || !editingEquipoId || !equipoNombre.trim()) return;
 
+    // Este panel no toca la ficha de Patrimonio, y no hace falta arrastrarla:
+    // `updateEquipo` solo escribe las claves que recibe.
     try {
       await updateEquipo(editingEquipoId, {
         nombre_equipo: equipoNombre,

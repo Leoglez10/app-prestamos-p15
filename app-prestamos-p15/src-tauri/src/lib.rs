@@ -1,6 +1,7 @@
 mod celular;
 mod certificado;
 mod patrimonio;
+mod transaccion;
 
 use chrono::Local;
 use serde::Serialize;
@@ -354,6 +355,7 @@ pub fn run() {
             local_ip,
             celular_registrar_dispositivo,
             patrimonio::leer_excel_patrimonio,
+            transaccion::ejecutar_transaccion,
             guardar_reporte_inventario
         ])
         .run(tauri::generate_context!())

@@ -264,6 +264,29 @@ const requireTauriRuntime = (): void => {
   throw new Error(runtimeStorageReason);
 };
 
+/**
+ * Una sentencia SQL con sus parametros, lista para `ejecutar_transaccion`.
+ */
+type SentenciaSql = { sql: string; params: Array<string | number | null> };
+
+/**
+ * Corre varias sentencias en UNA transaccion real.
+ *
+ * No se puede hacer con `db.execute("BEGIN")`: el pool de tauri-plugin-sql tiene
+ * 10 conexiones y cada `execute` toma una cualquiera, asi que el BEGIN queda en
+ * una conexion y las escrituras salen por otras. Cuando el pool reusa la de la
+ * transaccion, esa se queda con el lock de escritura hasta el COMMIT y el resto
+ * revienta con "database is locked" (SQLite codigo 5).
+ * El lado Rust vive en `src-tauri/src/transaccion.rs`.
+ */
+const ejecutarEnTransaccion = async (sentencias: SentenciaSql[]): Promise<void> => {
+  if (sentencias.length === 0) return;
+  // Fuerza que la base este abierta y migrada antes de pedirle el pool a Rust.
+  await getDb();
+  const db = await resolveDatabaseUrl();
+  await invoke("ejecutar_transaccion", { db, sentencias });
+};
+
 const enforceConnectionPragmas = async (db: Database): Promise<void> => {
   await db.execute("PRAGMA foreign_keys = ON");
   await db.execute("PRAGMA journal_mode = WAL");
@@ -1075,19 +1098,29 @@ export type CreateEquipoInput = FichaEquipo & {
   stock_total: number;
 };
 
-export const createEquipo = async (input: CreateEquipoInput): Promise<void> => {
-  const db = await getDb();
+/**
+ * El INSERT de un equipo, sin ejecutarlo. La importacion de Patrimonio necesita
+ * la sentencia suelta para meter miles de ellas en una sola transaccion.
+ */
+const sentenciaCrearEquipo = (input: CreateEquipoInput): SentenciaSql => {
   // `estado` no viene del formulario: un equipo nuevo siempre nace disponible.
   const cambios: Record<string, string | number | null> = { ...cambiosDeEquipo(input), estado: "disponible" };
   const columnas = Object.keys(cambios);
 
+  return {
+    sql: `INSERT INTO inventario (${columnas.join(", ")}) VALUES (${columnas.map(() => "?").join(", ")})`,
+    params: columnas.map((columna) => cambios[columna]),
+  };
+};
+
+export const createEquipo = async (input: CreateEquipoInput): Promise<void> => {
+  const db = await getDb();
+  const { sql, params } = sentenciaCrearEquipo(input);
+
   try {
-    await db.execute(
-      `INSERT INTO inventario (${columnas.join(", ")}) VALUES (${columnas.map(() => "?").join(", ")})`,
-      columnas.map((columna) => cambios[columna])
-    );
+    await db.execute(sql, params);
   } catch (error) {
-    throw traducirErrorDeEquipo(error, (cambios.id_patrimonial as string | null) ?? null);
+    throw traducirErrorDeEquipo(error, input.id_patrimonial ?? null);
   }
 };
 
@@ -1116,22 +1149,33 @@ export type UpdateEquipoInput = FichaEquipo & {
   stock_total?: number;
 };
 
-export const updateEquipo = async (id: number, input: UpdateEquipoInput): Promise<void> => {
-  const db = await getDb();
+/** El UPDATE de un equipo, sin ejecutarlo. `null` si no hay nada que cambiar. */
+const sentenciaActualizarEquipo = (
+  id: number,
+  input: UpdateEquipoInput
+): SentenciaSql | null => {
   const cambios = cambiosDeEquipo(input);
 
   // Los nombres de columna salen de las listas blancas de `equipoFicha.ts`, nunca
   // del objeto que llega: no hay forma de inyectar SQL por aca.
   const columnas = Object.keys(cambios);
-  if (columnas.length === 0) return;
+  if (columnas.length === 0) return null;
+
+  return {
+    sql: `UPDATE inventario SET ${columnas.map((columna) => `${columna} = ?`).join(", ")} WHERE id = ?`,
+    params: [...columnas.map((columna) => cambios[columna]), id],
+  };
+};
+
+export const updateEquipo = async (id: number, input: UpdateEquipoInput): Promise<void> => {
+  const db = await getDb();
+  const sentencia = sentenciaActualizarEquipo(id, input);
+  if (!sentencia) return;
 
   try {
-    await db.execute(
-      `UPDATE inventario SET ${columnas.map((columna) => `${columna} = ?`).join(", ")} WHERE id = ?`,
-      [...columnas.map((columna) => cambios[columna]), id]
-    );
+    await db.execute(sentencia.sql, sentencia.params);
   } catch (error) {
-    throw traducirErrorDeEquipo(error, (cambios.id_patrimonial as string | null) ?? null);
+    throw traducirErrorDeEquipo(error, input.id_patrimonial ?? null);
   }
 };
 
@@ -1390,17 +1434,10 @@ export const deleteHistorialPrestamos = async (): Promise<void> => {
 };
 
 export const deleteAllReportes = async (): Promise<void> => {
-  const db = await getDb();
-
-  try {
-    await db.execute("BEGIN IMMEDIATE TRANSACTION");
-    await db.execute("DELETE FROM prestamos");
-    await db.execute("UPDATE inventario SET estado = 'disponible' WHERE estado = 'prestado'");
-    await db.execute("COMMIT");
-  } catch (error) {
-    await db.execute("ROLLBACK").catch(() => undefined);
-    throw error;
-  }
+  await ejecutarEnTransaccion([
+    { sql: "DELETE FROM prestamos", params: [] },
+    { sql: "UPDATE inventario SET estado = 'disponible' WHERE estado = 'prestado'", params: [] },
+  ]);
 };
 
 export const createBackup = async (auto = false): Promise<BackupInfo> => {
@@ -1770,16 +1807,16 @@ export const aplicarImportacionPatrimonio = async (
   // Todo o nada. Son miles de filas de un golpe: si revienta a la mitad, un
   // inventario a medias es peor que uno sin importar, porque nadie sabe donde
   // quedo. De paso SQLite deja de hacer fsync por fila.
-  await db.execute("BEGIN");
+  const sentencias: SentenciaSql[] = [];
 
-  try {
-    for (const alta of plan.altas) {
-      const categoriaId = idPorNombre.get(alta.categoria.trim().toLowerCase());
-      if (categoriaId === undefined) {
-        throw new Error(`No se pudo crear la categoria "${alta.categoria}".`);
-      }
+  for (const alta of plan.altas) {
+    const categoriaId = idPorNombre.get(alta.categoria.trim().toLowerCase());
+    if (categoriaId === undefined) {
+      throw new Error(`No se pudo crear la categoria "${alta.categoria}".`);
+    }
 
-      await createEquipo({
+    sentencias.push(
+      sentenciaCrearEquipo({
         nombre_equipo: alta.fila.clasificador,
         identificador: null,
         categoria_id: categoriaId,
@@ -1797,25 +1834,28 @@ export const aplicarImportacionPatrimonio = async (
         // La ubicacion del Excel solo sirve al dar de alta: en un equipo que ya
         // existe manda la toma fisica de la escuela.
         ubicacion: alta.fila.ubicacion,
-      });
-    }
+      })
+    );
+  }
 
-    // `updateEquipo` escribe SOLO las claves que recibe, asi que mandar unicamente
-    // los campos que cambiaron no puede pisar la ubicacion ni la curaduria.
-    for (const cambio of plan.cambios) {
-      await updateEquipo(cambio.id, cambio.campos);
-    }
+  // `sentenciaActualizarEquipo` escribe SOLO las claves que recibe, asi que mandar
+  // unicamente los campos que cambiaron no puede pisar la ubicacion ni la curaduria.
+  for (const cambio of plan.cambios) {
+    const sentencia = sentenciaActualizarEquipo(cambio.id, cambio.campos);
+    if (sentencia) sentencias.push(sentencia);
+  }
 
-    await db.execute("COMMIT");
+  try {
+    await ejecutarEnTransaccion(sentencias);
   } catch (error) {
-    // Si el ROLLBACK tambien falla, el error que importa es el primero: es el que
-    // dice por que se cayo la importacion.
-    try {
-      await db.execute("ROLLBACK");
-    } catch (errorRollback) {
-      console.error("No se pudo revertir la importacion:", errorRollback);
+    // Rust ya hizo ROLLBACK al soltar la transaccion: no queda nada a medias.
+    const mensaje = error instanceof Error ? error.message : String(error);
+    if (mensaje.includes("UNIQUE constraint failed: inventario.id_patrimonial")) {
+      throw new Error(
+        "El Excel trae un ID de Patrimonio que ya esta registrado en otro equipo. No se importo nada."
+      );
     }
-    throw error;
+    throw error instanceof Error ? error : new Error(mensaje);
   }
 
   await db.select("PRAGMA wal_checkpoint(TRUNCATE)");

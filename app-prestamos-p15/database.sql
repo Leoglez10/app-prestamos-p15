@@ -24,6 +24,12 @@ CREATE TABLE IF NOT EXISTS inventario (
     resguardante_nombre TEXT, -- NO se dan de alta en `profesores`: no es login
     fecha_adquisicion TEXT,   -- ISO 'YYYY-MM-DD'
     ubicacion TEXT,           -- la llena la toma fisica, no el Excel
+    -- Toma fisica. Solo las escribe `registrarRevision`: quedan fuera de la
+    -- lista blanca de `equipoFicha.ts`, asi ni la importacion ni el formulario
+    -- de Admin pueden pisarlas. La fecha de corte de la campana vive en
+    -- app_settings ('inventario_campana_inicio').
+    revisado_en TEXT,
+    revisado_por TEXT,
     estado TEXT DEFAULT 'disponible', -- 'disponible', 'prestado', 'extraviado', 'mantenimiento'
     es_prestable INTEGER NOT NULL DEFAULT 1,
     es_granel INTEGER NOT NULL DEFAULT 0,

@@ -2,6 +2,7 @@ import Database from "@tauri-apps/plugin-sql";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
+import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
 import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, type FichaEquipo } from "../utils/equipoFicha";
 import {
   planificarImportacion,
@@ -10,6 +11,13 @@ import {
 } from "../utils/importacionPatrimonio";
 
 export type { PlanImportacion };
+import {
+  construirReporteCsv,
+  nombreDelReporte,
+  type EquipoRevisable,
+} from "../utils/tomaFisica";
+
+export type { EquipoRevisable };
 
 export type { FichaEquipo };
 
@@ -50,8 +58,10 @@ export type Equipo = {
   resguardante_codigo: string | null;
   resguardante_nombre: string | null;
   fecha_adquisicion: string | null;
-  // La llena la toma fisica, no el Excel.
+  // Las llena la toma fisica, no el Excel.
   ubicacion: string | null;
+  revisado_en: string | null;
+  revisado_por: string | null;
   estado: string;
   es_prestable: number;
   categoria_es_prestable?: number;
@@ -347,6 +357,11 @@ const prepareDatabase = async (db: Database): Promise<void> => {
     "resguardante_nombre",
     "fecha_adquisicion",
     "ubicacion",
+    // Toma fisica. NO entran en COLUMNAS_FICHA_EQUIPO a proposito: solo las
+    // escribe `registrarRevision`, asi ni la importacion ni el formulario de
+    // Admin pueden pisarlas por accidente.
+    "revisado_en",
+    "revisado_por",
   ]) {
     if (!inventarioColumns.includes(columna)) {
       await db.execute(`ALTER TABLE inventario ADD COLUMN ${columna} TEXT`);
@@ -765,6 +780,7 @@ export const deleteProfesor = async (id: number): Promise<void> => {
 // Columnas de ficha, en un solo lugar para no repetirlas en cada variante de la
 // consulta. Los nombres son fijos, no vienen de afuera.
 const SELECT_FICHA_EQUIPO = COLUMNAS_FICHA_EQUIPO.map((columna) => `i.${columna}`).join(", ");
+const SELECT_REVISION_EQUIPO = "i.revisado_en, i.revisado_por";
 
 export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]> => {
   const db = await getDb();
@@ -812,7 +828,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
         `SELECT i.id, i.nombre_equipo, i.identificador, i.estado, i.categoria_id, c.nombre AS categoria_nombre,
                 COALESCE(c.es_prestable, 1) AS categoria_es_prestable,
                 COALESCE(i.es_prestable, 1) AS es_prestable,
-                ${SELECT_FICHA_EQUIPO},
+                ${SELECT_FICHA_EQUIPO}, ${SELECT_REVISION_EQUIPO},
                 COALESCE(i.es_granel, 0) AS es_granel, COALESCE(i.stock_total, 1) AS stock_total,
                 (COALESCE(i.stock_total, 1) - (
                     SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
@@ -860,6 +876,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
         resguardante_nombre: null,
         fecha_adquisicion: null,
         ubicacion: null,
+        revisado_en: null,
+        revisado_por: null,
         categoria_es_prestable: 1,
         es_prestable: 1,
         es_granel: 0,
@@ -874,7 +892,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       `SELECT i.id, i.nombre_equipo, i.identificador, i.estado, i.categoria_id, c.nombre AS categoria_nombre,
               COALESCE(c.es_prestable, 1) AS categoria_es_prestable,
               COALESCE(i.es_prestable, 1) AS es_prestable,
-              ${SELECT_FICHA_EQUIPO},
+              ${SELECT_FICHA_EQUIPO}, ${SELECT_REVISION_EQUIPO},
               COALESCE(i.es_granel, 0) AS es_granel, COALESCE(i.stock_total, 1) AS stock_total,
               (COALESCE(i.stock_total, 1) - (
                   SELECT COUNT(*) FROM prestamos p2 WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
@@ -926,6 +944,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       resguardante_nombre: null,
       fecha_adquisicion: null,
       ubicacion: null,
+      revisado_en: null,
+      revisado_por: null,
       categoria_es_prestable: 1,
       es_prestable: 1,
       es_granel: 0,
@@ -1806,4 +1826,134 @@ export const aplicarImportacionPatrimonio = async (
     sinCambio: plan.sinCambio,
     respaldo: respaldo.file_name,
   };
+};
+
+// --- Toma fisica de inventario ----------------------------------------------
+//
+// El bucle: elegir ubicacion una vez, disparar la pistola N veces. Cada escaneo
+// resuelve el objeto, lo marca visto y le estampa la ubicacion actual.
+// Ver docs/PLAN_IMPORTACION_PATRIMONIO.md §3.1.
+
+const CLAVE_CAMPANA = "inventario_campana_inicio";
+
+/** Cuando arranco la campana actual, o null si nunca se inicio ninguna. */
+export const getInicioCampana = async (): Promise<string | null> => {
+  const settings = await getSettings();
+  return settings[CLAVE_CAMPANA] ?? null;
+};
+
+/**
+ * Arranca una campana nueva. No borra nada: lo anterior sigue en `revisado_en`,
+ * y lo unico que cambia es la fecha de corte contra la que se compara.
+ */
+export const iniciarCampanaInventario = async (): Promise<string> => {
+  const inicio = getCurrentLocalDateTime();
+  await updateSetting(CLAVE_CAMPANA, inicio);
+  return inicio;
+};
+
+/**
+ * Resuelve un disparo de la pistola.
+ *
+ * Devuelve `null` si el codigo no esta en el inventario: ahi es donde entra la
+ * vinculacion a mano, que es como se puebla lo que el Excel no cubrio.
+ */
+export const buscarPorIdPatrimonial = async (codigo: string): Promise<Equipo | null> => {
+  const normalizado = normalizarCodigoPatrimonial(codigo);
+  if (!normalizado) return null;
+
+  const db = await getDb();
+  const filas = await db.select<Array<{ id: number }>>(
+    "SELECT id FROM inventario WHERE id_patrimonial = ? LIMIT 1",
+    [normalizado]
+  );
+  if (filas.length === 0) return null;
+
+  const equipos = await getEquipos();
+  return equipos.find((equipo) => equipo.id === filas[0].id) ?? null;
+};
+
+/**
+ * Marca un equipo como visto, y de paso le estampa donde estaba.
+ *
+ * La ubicacion se escribe aca y no en la importacion: es el dato que produce
+ * caminar el edificio, y es lo unico que la reimportacion del Excel no puede
+ * pisar.
+ */
+export const registrarRevision = async (
+  equipoId: number,
+  ubicacion: string,
+  revisadoPor: string
+): Promise<void> => {
+  const db = await getDb();
+  const cuando = getCurrentLocalDateTime();
+  const donde = ubicacion.trim();
+
+  await db.execute(
+    `UPDATE inventario
+     SET revisado_en = ?, revisado_por = ?, ubicacion = COALESCE(NULLIF(?, ''), ubicacion)
+     WHERE id = ?`,
+    [cuando, revisadoPor.trim(), donde, equipoId]
+  );
+};
+
+/**
+ * Liga un codigo escaneado a un equipo que ya existe pero no tenia etiqueta.
+ *
+ * Es el camino que no depende de que Patrimonio entregue nada: se puebla
+ * caminando, y sigue sirviendo para todo lo que el Excel no cubra.
+ */
+export const vincularIdPatrimonial = async (equipoId: number, codigo: string): Promise<void> => {
+  const normalizado = normalizarCodigoPatrimonial(codigo);
+  if (!normalizado) {
+    throw new Error("El codigo escaneado no tiene ningun numero.");
+  }
+  await updateEquipo(equipoId, { id_patrimonial: normalizado });
+};
+
+/** Guarda el reporte para Patrimonio y devuelve la ruta donde quedo. */
+export const exportarReporteInventario = async (
+  equipos: EquipoRevisable[],
+  inicioCampana: string | null
+): Promise<string> => {
+  requireTauriRuntime();
+
+  return invoke<string>("guardar_reporte_inventario", {
+    nombre: nombreDelReporte(new Date()),
+    contenido: construirReporteCsv(equipos, inicioCampana),
+  });
+};
+
+/**
+ * Habilita o deshabilita el prestamo de todos los equipos de un tipo.
+ *
+ * De las 2137 filas del Excel solo unas 470 se prestan. Moverlas de a una es lo
+ * que hace que nadie lo haga, asi que se mueven por clasificador: filtrar
+ * "COMPUTADORA PORTATIL" y habilitar las 199 de un golpe.
+ */
+export const marcarPrestablePorNombre = async (
+  nombreEquipo: string,
+  esPrestable: boolean,
+  categoriaId?: number
+): Promise<number> => {
+  const db = await getDb();
+  const destino = esPrestable ? 1 : 0;
+
+  if (categoriaId !== undefined) {
+    await db.execute(
+      "UPDATE inventario SET es_prestable = ?, categoria_id = ? WHERE nombre_equipo = ?",
+      [destino, categoriaId, nombreEquipo]
+    );
+  } else {
+    await db.execute("UPDATE inventario SET es_prestable = ? WHERE nombre_equipo = ?", [
+      destino,
+      nombreEquipo,
+    ]);
+  }
+
+  const filas = await db.select<Array<{ total: number }>>(
+    "SELECT COUNT(*) AS total FROM inventario WHERE nombre_equipo = ?",
+    [nombreEquipo]
+  );
+  return filas[0]?.total ?? 0;
 };

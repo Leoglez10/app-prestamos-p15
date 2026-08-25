@@ -1,6 +1,6 @@
 # Plan: de app de préstamos a app de inventario
 
-Estado: **P1, P2 y P3 implementados. P4 y P5 pendientes.** Fecha: 2026-08-25.
+Estado: **P1 a P4 implementados. Queda P5.** Fecha: 2026-08-25.
 
 ## El cambio de alcance
 
@@ -157,10 +157,10 @@ no un extra.
 Nueve columnas nuevas en `inventario`, todas nullable, por el mismo patrón
 `PRAGMA table_info` que ya usa `prepareDatabase()` en `src/hooks/useInventory.ts`.
 
-> **`revisado_en` y `revisado_por` se movieron a P4.** Nada las escribe hasta que
-> exista la pantalla de toma física, y el patrón de migración es idempotente:
-> agregarlas entonces cuesta exactamente lo mismo que agregarlas hoy. `ubicacion`
-> sí entra ahora porque el formulario de Admin ya la edita.
+> **`revisado_en` y `revisado_por` llegaron en P4**, junto con la pantalla que
+> las escribe. Quedan deliberadamente **fuera** de la lista blanca de
+> `equipoFicha.ts`: solo las toca `registrarRevision`, así ni la importación ni
+> el formulario de Admin pueden pisarlas por accidente.
 
 ```sql
 -- Identidad y ficha (del Excel)
@@ -175,7 +175,8 @@ ALTER TABLE inventario ADD COLUMN fecha_adquisicion   TEXT;
 
 -- Toma física (la produce la app, no el Excel)
 ALTER TABLE inventario ADD COLUMN ubicacion           TEXT;
--- revisado_en / revisado_por: en P4, junto con la pantalla que los escribe.
+ALTER TABLE inventario ADD COLUMN revisado_en         TEXT;
+ALTER TABLE inventario ADD COLUMN revisado_por        TEXT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_inventario_id_patrimonial
   ON inventario (id_patrimonial);
@@ -315,7 +316,7 @@ La lógica de qué se escribe vive pura y probada en
 `src/utils/importacionPatrimonio.ts` (10 tests), y se apoya en que `updateEquipo`
 es parcial desde P2.
 
-### 🟢 P4 — Modo inventariado — *este es el producto*
+### ✅ P4 — Modo inventariado — **IMPLEMENTADO** (2026-08-25)
 
 El bucle de §3.1:
 

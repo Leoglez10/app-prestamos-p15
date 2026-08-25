@@ -65,6 +65,7 @@ import { Icon } from "../components/Icon";
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
+import { CuraduriaPanel } from "../components/CuraduriaPanel";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
@@ -1360,6 +1361,8 @@ function InventarioPanel() {
       </div>
 
       <ImportarPatrimonioPanel onImportado={() => void loadData()} />
+
+      <CuraduriaPanel equipos={equipos} categorias={categorias} onCambio={() => void loadData()} />
 
       <EquipoDetalleModal
         equipo={detalleId === null ? null : equipos.find(eq => eq.id === detalleId) ?? null}

@@ -156,6 +156,33 @@ fn create_backup(app: AppHandle, auto: Option<bool>) -> Result<BackupInfo, Strin
     })
 }
 
+/// Guarda el reporte de la toma fisica y abre la carpeta, para que el usuario
+/// pueda mandarselo a Patrimonio.
+///
+/// Va junto a los respaldos y no en Descargas: es la carpeta que el usuario ya
+/// conoce de esta app, y `open_backups_dir` ya le enseño el camino.
+#[tauri::command]
+fn guardar_reporte_inventario(app: AppHandle, nombre: String, contenido: String) -> Result<String, String> {
+    // El nombre lo arma la app, pero igual se recorta a su ultimo componente:
+    // un `..` o una barra escribirian fuera de la carpeta.
+    let nombre_seguro = Path::new(&nombre)
+        .file_name()
+        .and_then(|parte| parte.to_str())
+        .ok_or_else(|| "Nombre de archivo invalido.".to_string())?;
+
+    let dir = app_data_root(&app)?.join("reportes");
+    fs::create_dir_all(&dir)
+        .map_err(|error| format!("No se pudo preparar el directorio de reportes: {error}"))?;
+
+    let destino = dir.join(nombre_seguro);
+    fs::write(&destino, contenido)
+        .map_err(|error| format!("No se pudo escribir el reporte: {error}"))?;
+
+    let _ = app.opener().open_path(dir.display().to_string(), None::<&str>);
+
+    Ok(destino.display().to_string())
+}
+
 /// Open the backups folder in the system file explorer so the user can copy files out.
 #[tauri::command]
 fn open_backups_dir(app: AppHandle) -> Result<String, String> {
@@ -326,7 +353,8 @@ pub fn run() {
             restore_backup_from_bytes,
             local_ip,
             celular_registrar_dispositivo,
-            patrimonio::leer_excel_patrimonio
+            patrimonio::leer_excel_patrimonio,
+            guardar_reporte_inventario
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

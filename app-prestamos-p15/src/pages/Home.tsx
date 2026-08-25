@@ -239,6 +239,17 @@ export default function Home() {
           </span>
           <span className="home-card-arrow"><IconArrow /></span>
         </Link>
+
+        <Link to="/inventariado" className="home-card home-card-secondary">
+          <span className="home-card-icon"><IconBox /></span>
+          <span className="home-card-body">
+            <span className="home-card-title">Toma de inventario</span>
+            <span className="home-card-text">
+              Recorre con la pistola de código de barras y registra qué apareció y dónde.
+            </span>
+          </span>
+          <span className="home-card-arrow"><IconArrow /></span>
+        </Link>
       </nav>
 
       {stats && (

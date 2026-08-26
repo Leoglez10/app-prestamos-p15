@@ -150,6 +150,23 @@ qué no apareció.
 Por eso **exportar sube de prioridad**: es el entregable de una toma de inventario,
 no un extra.
 
+#### `Localizado` tiene tres estados, no dos
+
+La primera versión mandaba `S` para lo revisado y `N` para todo lo demás. Eso
+convertía "todavía no llegué a esa aula" en "este equipo no aparece", firmado por
+quien recorre. Un reporte que afirma pérdidas que nadie comprobó no sirve.
+
+| Valor | Qué significa | De dónde sale |
+| --- | --- | --- |
+| `S` | Apareció | `revisado_en` dentro de la campaña |
+| `N` | Se buscó y no estaba | `no_localizado_en` dentro de la campaña |
+| *(vacío)* | Nadie recorrió esa área todavía | ninguna de las dos |
+
+`Revisado` y `Revisó` acompañan al valor: llevan la fecha y el nombre de quien
+confirmó la presencia **o** de quien afirmó la ausencia. Encontrar un equipo
+limpia su marca de no localizado — lo hace `registrarRevision`, así que vale para
+todos los caminos que ven un equipo.
+
 ---
 
 ## 4. Qué cambia en la base
@@ -177,6 +194,8 @@ ALTER TABLE inventario ADD COLUMN fecha_adquisicion   TEXT;
 ALTER TABLE inventario ADD COLUMN ubicacion           TEXT;
 ALTER TABLE inventario ADD COLUMN revisado_en         TEXT;
 ALTER TABLE inventario ADD COLUMN revisado_por        TEXT;
+ALTER TABLE inventario ADD COLUMN no_localizado_en    TEXT;
+ALTER TABLE inventario ADD COLUMN no_localizado_por   TEXT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_inventario_id_patrimonial
   ON inventario (id_patrimonial);

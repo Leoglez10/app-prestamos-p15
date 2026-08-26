@@ -3,7 +3,7 @@ import Database from "@tauri-apps/plugin-sql";
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
-import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, type FichaEquipo } from "../utils/equipoFicha";
+import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, esPrestableEfectivo, type FichaEquipo } from "../utils/equipoFicha";
 import {
   planificarImportacion,
   type LecturaExcel,
@@ -62,6 +62,10 @@ export type Equipo = {
   ubicacion: string | null;
   revisado_en: string | null;
   revisado_por: string | null;
+  // "Lo busque y no aparecio", que NO es lo mismo que "todavia no lo busque".
+  // Ver docs/PLAN_IMPORTACION_PATRIMONIO.md §3 y la columna Localizado del CSV.
+  no_localizado_en: string | null;
+  no_localizado_por: string | null;
   estado: string;
   es_prestable: number;
   categoria_es_prestable?: number;
@@ -74,7 +78,6 @@ export type Equipo = {
   prestamo_activo_profe?: string | null;
   prestamo_activo_fecha?: string | null;
 };
-
 type PrestamoRapidoInput = {
   equipoIds: number[];
   profesorCodigo: string;
@@ -385,6 +388,8 @@ const prepareDatabase = async (db: Database): Promise<void> => {
     // Admin pueden pisarlas por accidente.
     "revisado_en",
     "revisado_por",
+    "no_localizado_en",
+    "no_localizado_por",
   ]) {
     if (!inventarioColumns.includes(columna)) {
       await db.execute(`ALTER TABLE inventario ADD COLUMN ${columna} TEXT`);
@@ -803,7 +808,8 @@ export const deleteProfesor = async (id: number): Promise<void> => {
 // Columnas de ficha, en un solo lugar para no repetirlas en cada variante de la
 // consulta. Los nombres son fijos, no vienen de afuera.
 const SELECT_FICHA_EQUIPO = COLUMNAS_FICHA_EQUIPO.map((columna) => `i.${columna}`).join(", ");
-const SELECT_REVISION_EQUIPO = "i.revisado_en, i.revisado_por";
+const SELECT_REVISION_EQUIPO =
+  "i.revisado_en, i.revisado_por, i.no_localizado_en, i.no_localizado_por";
 
 export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]> => {
   const db = await getDb();
@@ -901,6 +907,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
         ubicacion: null,
         revisado_en: null,
         revisado_por: null,
+        no_localizado_en: null,
+        no_localizado_por: null,
         categoria_es_prestable: 1,
         es_prestable: 1,
         es_granel: 0,
@@ -969,6 +977,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       ubicacion: null,
       revisado_en: null,
       revisado_por: null,
+      no_localizado_en: null,
+      no_localizado_por: null,
       categoria_es_prestable: 1,
       es_prestable: 1,
       es_granel: 0,
@@ -1032,7 +1042,7 @@ export const createPrestamoRapido = async ({
       throw new Error(`El equipo con ID ${numId} no existe.`);
     }
 
-    if (row.es_prestable !== 1 || row.categoria_es_prestable !== 1) {
+    if (!esPrestableEfectivo(row)) {
       throw new Error(`El equipo con ID ${numId} está marcado como no prestable.`);
     }
 
@@ -1462,6 +1472,29 @@ export const getBackups = async (): Promise<BackupInfo[]> => {
   return invoke<BackupInfo[]>("list_backups");
 };
 
+/**
+ * Restaura un respaldo que ya vive en la carpeta de respaldos de la app.
+ *
+ * Es el mismo camino que `restoreBackupFromFile`, sin pedirle al usuario que
+ * busque el archivo: la ruta sale de `getBackups()`. Rust valida que la ruta
+ * caiga dentro de la carpeta de respaldos antes de tocar nada.
+ */
+export const restoreBackupFromPath = async (backupPath: string): Promise<RestoreBackupResult> => {
+  await closeInventoryDb();
+
+  try {
+    const result = await invoke<RestoreBackupResult>("restore_backup_from_path", {
+      backupPath,
+    });
+
+    await initializeInventoryDb();
+    return result;
+  } catch (error) {
+    dbPromise = null;
+    throw error;
+  }
+};
+
 export const restoreBackupFromFile = async (file: File): Promise<RestoreBackupResult> => {
   const bytes = Array.from(new Uint8Array(await file.arrayBuffer()));
   await closeInventoryDb();
@@ -1617,7 +1650,7 @@ export const createPrestamoRapidoDesdeInventario = async (
   }
   const row = rows[0];
 
-  if (row.es_prestable !== 1 || row.categoria_es_prestable !== 1) {
+  if (!esPrestableEfectivo(row)) {
     throw new Error(`El equipo "${row.nombre_equipo}" está marcado como no prestable.`);
   }
 
@@ -1791,12 +1824,8 @@ export const aplicarImportacionPatrimonio = async (
   const respaldo = await createBackup(false);
 
   for (const nombre of plan.categoriasNuevas) {
-    // Las categorias que crea la importacion nacen no prestables: lo que se
-    // presta se habilita a mano, no por lo que diga el Excel.
-    const esPrestable = plan.altas.some(
-      (alta) => alta.categoria === nombre && alta.es_prestable === 1
-    );
-    await createCategoria(nombre, esPrestable);
+    // El Excel puede organizar por categoria, pero nunca decide que se presta.
+    await createCategoria(nombre, false);
   }
 
   const categorias = await getCategorias();
@@ -1929,12 +1958,89 @@ export const registrarRevision = async (
   const cuando = getCurrentLocalDateTime();
   const donde = ubicacion.trim();
 
+  // Encontrarlo borra el "no aparecio": la marca es una afirmacion sobre el
+  // presente, y el equipo esta ahi. Se limpia aca y no en quien llama porque
+  // TODO camino que ve un equipo pasa por esta funcion.
   await db.execute(
     `UPDATE inventario
-     SET revisado_en = ?, revisado_por = ?, ubicacion = COALESCE(NULLIF(?, ''), ubicacion)
+     SET revisado_en = ?, revisado_por = ?, ubicacion = COALESCE(NULLIF(?, ''), ubicacion),
+         no_localizado_en = NULL, no_localizado_por = NULL
      WHERE id = ?`,
     [cuando, revisadoPor.trim(), donde, equipoId]
   );
+};
+
+/**
+ * Deja escrito que se busco el equipo y no aparecio.
+ *
+ * Es una afirmacion con nombre y fecha, no un hueco: hasta ahora el CSV mandaba
+ * `N` tanto para "lo busque y no esta" como para "todavia no llegue a esa aula",
+ * y quien firma el reporte es quien recorre. Se decide parado en el aula, que es
+ * el unico momento en que la persona todavia se acuerda.
+ */
+export const marcarNoLocalizado = async (equipoId: number, quien: string): Promise<void> => {
+  const db = await getDb();
+  await db.execute(
+    "UPDATE inventario SET no_localizado_en = ?, no_localizado_por = ? WHERE id = ?",
+    [getCurrentLocalDateTime(), quien.trim(), equipoId]
+  );
+};
+
+/** Vuelve atras un "no aparecio": lo deja pendiente otra vez, sin afirmar nada. */
+export const limpiarNoLocalizado = async (equipoId: number): Promise<void> => {
+  const db = await getDb();
+  await db.execute(
+    "UPDATE inventario SET no_localizado_en = NULL, no_localizado_por = NULL WHERE id = ?",
+    [equipoId]
+  );
+};
+
+/**
+ * Deshace el ultimo disparo devolviendo las tres columnas a como estaban.
+ *
+ * Hace falta porque la pistola dispara contra lo que se le ponga enfrente: la
+ * etiqueta de al lado, el equipo del pasillo. Sin esto, un disparo equivocado
+ * queda escrito en la base y el reporte le miente a Patrimonio.
+ *
+ * Los valores previos los guarda quien llama: son los que ya venian en el
+ * `Equipo` que se leyo antes de escribir, asi que no hace falta ninguna tabla
+ * de historial para poder volver atras un paso.
+ *
+ * No restaura la marca de `no_localizado`: si el disparo la habia limpiado, el
+ * equipo queda pendiente y no "no localizado". Se deja asi a proposito — quien
+ * deshace acaba de disparar contra la etiqueta equivocada, y afirmar de nuevo
+ * una perdida en su nombre seria peor que dejarlo sin decidir.
+ */
+export const revertirRevision = async (
+  equipoId: number,
+  previo: { revisado_en: string | null; revisado_por: string | null; ubicacion: string | null }
+): Promise<void> => {
+  const db = await getDb();
+  await db.execute(
+    "UPDATE inventario SET revisado_en = ?, revisado_por = ?, ubicacion = ? WHERE id = ?",
+    [previo.revisado_en, previo.revisado_por, previo.ubicacion, equipoId]
+  );
+};
+
+/**
+ * Las areas por las que ya se paso, la mas reciente primero.
+ *
+ * Son siempre las mismas cinco o seis aulas: tecleadas a mano cada recorrido
+ * son cientos de pulsaciones y un nombre distinto cada vez ("Aula 12", "aula
+ * 12", "Aula12"), que es lo que rompe el conteo por area.
+ */
+export const getUbicacionesRecientes = async (limite = 6): Promise<string[]> => {
+  const db = await getDb();
+  const filas = await db.select<Array<{ ubicacion: string }>>(
+    `SELECT ubicacion, MAX(revisado_en) AS visto
+       FROM inventario
+      WHERE ubicacion IS NOT NULL AND TRIM(ubicacion) <> '' AND revisado_en IS NOT NULL
+      GROUP BY ubicacion
+      ORDER BY visto DESC
+      LIMIT ?`,
+    [limite]
+  );
+  return filas.map((fila) => fila.ubicacion);
 };
 
 /**
@@ -1964,42 +2070,3 @@ export const exportarReporteInventario = async (
   });
 };
 
-/**
- * Aplica un cambio a varios equipos de una sola vez.
- *
- * Opera sobre los ids que ya vienen filtrados en pantalla, no sobre un criterio
- * propio: la tabla de inventario ya sabe buscar y filtrar, y repetir esa logica
- * aca significaria dos maneras distintas de elegir los mismos equipos.
- *
- * Hace falta porque de las 2137 filas que entrega Patrimonio apenas unas 470 se
- * prestan, y moverlas de a una son cientos de clics.
- */
-export const actualizarEquiposEnLote = async (
-  ids: number[],
-  cambios: { es_prestable?: number; categoria_id?: number }
-): Promise<number> => {
-  if (ids.length === 0) return 0;
-
-  const columnas: string[] = [];
-  const valores: Array<string | number> = [];
-  if (cambios.es_prestable !== undefined) {
-    columnas.push("es_prestable = ?");
-    valores.push(cambios.es_prestable);
-  }
-  if (cambios.categoria_id !== undefined) {
-    columnas.push("categoria_id = ?");
-    valores.push(cambios.categoria_id);
-  }
-  if (columnas.length === 0) return 0;
-
-  const db = await getDb();
-  // Los ids son numeros que salen de la propia base, pero igual se interpolan
-  // como parametros: nunca se concatena un valor al SQL.
-  const huecos = ids.map(() => "?").join(", ");
-  await db.execute(
-    `UPDATE inventario SET ${columnas.join(", ")} WHERE id IN (${huecos})`,
-    [...valores, ...ids]
-  );
-
-  return ids.length;
-};

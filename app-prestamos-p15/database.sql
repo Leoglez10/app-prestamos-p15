@@ -30,6 +30,11 @@ CREATE TABLE IF NOT EXISTS inventario (
     -- app_settings ('inventario_campana_inicio').
     revisado_en TEXT,
     revisado_por TEXT,
+    -- "Se busco y no aparecio", firmado. NO es lo mismo que `revisado_en IS
+    -- NULL`, que solo dice que nadie llego todavia a esa area. La columna
+    -- Localizado del reporte sale de las dos: S / N / vacio.
+    no_localizado_en TEXT,
+    no_localizado_por TEXT,
     estado TEXT DEFAULT 'disponible', -- 'disponible', 'prestado', 'extraviado', 'mantenimiento'
     es_prestable INTEGER NOT NULL DEFAULT 1,
     es_granel INTEGER NOT NULL DEFAULT 0,

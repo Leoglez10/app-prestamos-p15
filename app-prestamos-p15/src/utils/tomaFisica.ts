@@ -19,6 +19,8 @@ export type EquipoRevisable = {
   ubicacion: string | null;
   revisado_en: string | null;
   revisado_por: string | null;
+  no_localizado_en: string | null;
+  no_localizado_por: string | null;
   marca: string | null;
   modelo: string | null;
   num_serie: string | null;
@@ -29,6 +31,8 @@ export type ProgresoCampana = {
   total: number;
   revisados: number;
   pendientes: number;
+  /** Se buscaron y no aparecieron. Salen de `pendientes`: ya se decidió sobre ellos. */
+  noLocalizados: number;
   /** Equipos sin etiqueta de Patrimonio: no se pueden escanear, hay que buscarlos a mano. */
   sinEtiqueta: number;
   porcentaje: number;
@@ -45,6 +49,21 @@ export const fueRevisado = (equipo: EquipoRevisable, inicioCampana: string | nul
   return equipo.revisado_en >= inicioCampana;
 };
 
+/**
+ * Igual que `fueRevisado`, pero para la afirmación contraria.
+ *
+ * También se compara contra la fecha de corte: que algo no apareciera el año
+ * pasado no dice nada de dónde está hoy.
+ */
+export const fueNoLocalizado = (
+  equipo: EquipoRevisable,
+  inicioCampana: string | null
+): boolean => {
+  if (!equipo.no_localizado_en) return false;
+  if (!inicioCampana) return true;
+  return equipo.no_localizado_en >= inicioCampana;
+};
+
 export const calcularProgreso = (
   equipos: EquipoRevisable[],
   inicioCampana: string | null
@@ -52,11 +71,16 @@ export const calcularProgreso = (
   const total = equipos.length;
   const revisados = equipos.filter((equipo) => fueRevisado(equipo, inicioCampana)).length;
   const sinEtiqueta = equipos.filter((equipo) => !equipo.id_patrimonial).length;
+  // Un equipo revisado gana sobre la marca vieja: si aparecio, aparecio.
+  const noLocalizados = equipos.filter(
+    (equipo) => !fueRevisado(equipo, inicioCampana) && fueNoLocalizado(equipo, inicioCampana)
+  ).length;
 
   return {
     total,
     revisados,
-    pendientes: total - revisados,
+    pendientes: total - revisados - noLocalizados,
+    noLocalizados,
     sinEtiqueta,
     porcentaje: total === 0 ? 0 : Math.round((revisados / total) * 100),
   };
@@ -98,6 +122,15 @@ export const construirReporteCsv = (
 ): string => {
   const filas = equipos.map((equipo) => {
     const revisado = fueRevisado(equipo, inicioCampana);
+    const perdido = !revisado && fueNoLocalizado(equipo, inicioCampana);
+
+    // Tres estados, no dos. `S` apareció, `N` se buscó y no estaba, vacío es que
+    // nadie llegó todavía a esa área. Antes todo lo no revisado salía como `N`,
+    // o sea que el reporte afirmaba pérdidas que nadie había comprobado.
+    const localizado = revisado ? "S" : perdido ? "N" : "";
+    const cuando = revisado ? equipo.revisado_en : perdido ? equipo.no_localizado_en : null;
+    const quien = revisado ? equipo.revisado_por : perdido ? equipo.no_localizado_por : null;
+
     return [
       equipo.id_patrimonial,
       equipo.nombre_equipo,
@@ -106,9 +139,9 @@ export const construirReporteCsv = (
       equipo.num_serie,
       equipo.resguardante_nombre,
       equipo.ubicacion,
-      revisado ? "S" : "N",
-      revisado ? equipo.revisado_en : null,
-      revisado ? equipo.revisado_por : null,
+      localizado,
+      cuando,
+      quien,
     ]
       .map(campoCsv)
       .join(";");
@@ -123,4 +156,52 @@ export const nombreDelReporte = (ahora: Date): string => {
     ahora.getDate()
   ).padStart(2, "0")}`;
   return `reporte-inventario-${iso}.csv`;
+};
+
+/**
+ * Lo que Patrimonio dice que vive en esta área y todavía no se vio en esta
+ * campaña.
+ *
+ * Es la única señal de que un aula está terminada: sin ella se dispara hasta
+ * que uno se cansa. No hace falta ninguna columna nueva porque
+ * `registrarRevision` conserva `ubicacion` entre campañas — el dato de dónde
+ * estaba cada equipo sobrevive al corte.
+ */
+export const pendientesDeArea = (
+  equipos: EquipoRevisable[],
+  ubicacion: string,
+  inicioCampana: string | null
+): EquipoRevisable[] => {
+  const area = ubicacion.trim().toLocaleLowerCase();
+  if (!area) return [];
+
+  return equipos.filter(
+    (equipo) =>
+      (equipo.ubicacion ?? "").trim().toLocaleLowerCase() === area &&
+      !fueRevisado(equipo, inicioCampana) &&
+      !fueNoLocalizado(equipo, inicioCampana)
+  );
+};
+
+/** Las tres cosas que puede significar un disparo contra una etiqueta conocida. */
+export type ResultadoDisparo = "repetido" | "movido" | "nuevo";
+
+/**
+ * Clasifica un disparo ANTES de escribirlo.
+ *
+ * `movido` sale de comparar la ubicación guardada contra la actual, y hoy se
+ * pierde en silencio: `registrarRevision` pisa la columna sin que nadie mire lo
+ * que había. Es el dato que más le importa a Patrimonio — un equipo que
+ * cambió de aula sin que nadie lo reportara.
+ */
+export const clasificarDisparo = (
+  equipo: EquipoRevisable,
+  ubicacionActual: string,
+  yaLeidos: ReadonlyArray<number>
+): ResultadoDisparo => {
+  if (yaLeidos.includes(equipo.id)) return "repetido";
+
+  const antes = (equipo.ubicacion ?? "").trim().toLocaleLowerCase();
+  const ahora = ubicacionActual.trim().toLocaleLowerCase();
+  return antes && ahora && antes !== ahora ? "movido" : "nuevo";
 };

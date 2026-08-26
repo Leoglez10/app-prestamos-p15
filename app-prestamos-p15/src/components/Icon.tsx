@@ -38,6 +38,9 @@ const ICONS = {
   smile: <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM8.5 14.5a5 5 0 0 0 7 0M9 9.4v.2M15 9.4v.2" />,
   more: <path d="M6 12h.01M12 12h.01M18 12h.01" />,
   chevronDown: <path d="m6 9 6 6 6-6" />,
+  mapPin: <path d="M20 10.5c0 5.2-8 11.5-8 11.5s-8-6.3-8-11.5a8 8 0 1 1 16 0zM14.5 10a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />,
+  barcode: <path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 8v8M10.5 8v8M14 8v8M17 8v8" />,
+  arrowRight: <path d="M4 12h15M14 7l5 5-5 5" />,
   dot: <circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none" />,
 } satisfies Record<string, ReactNode>;
 

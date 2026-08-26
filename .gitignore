@@ -46,3 +46,35 @@ src-tauri/target-codex-*
 .admin-snap.yml
 .playwright-mcp/
 *.cache.json
+
+# CodeGraph index (regenerable cache, ~34 MB)
+.codegraph/
+
+# HyperFrames video-authoring skills: agent tooling, not app code.
+# ~22 MB of vendored assets (mp4, fonts). Reinstall from skills-lock.json.
+app-prestamos-p15/.agents/skills/captions-overlay/
+app-prestamos-p15/.agents/skills/changelog-video/
+app-prestamos-p15/.agents/skills/cut-the-curve/
+app-prestamos-p15/.agents/skills/embedded-captions/
+app-prestamos-p15/.agents/skills/faceless-explainer/
+app-prestamos-p15/.agents/skills/figma/
+app-prestamos-p15/.agents/skills/general-video/
+app-prestamos-p15/.agents/skills/hyperframes/
+app-prestamos-p15/.agents/skills/hyperframes-animation/
+app-prestamos-p15/.agents/skills/hyperframes-audio/
+app-prestamos-p15/.agents/skills/hyperframes-cli/
+app-prestamos-p15/.agents/skills/hyperframes-core/
+app-prestamos-p15/.agents/skills/hyperframes-creative/
+app-prestamos-p15/.agents/skills/hyperframes-keyframes/
+app-prestamos-p15/.agents/skills/hyperframes-registry/
+app-prestamos-p15/.agents/skills/media-use/
+app-prestamos-p15/.agents/skills/motion-doctrine/
+app-prestamos-p15/.agents/skills/motion-graphics/
+app-prestamos-p15/.agents/skills/music-to-video/
+app-prestamos-p15/.agents/skills/oversized-cursor/
+app-prestamos-p15/.agents/skills/pr-to-video/
+app-prestamos-p15/.agents/skills/product-launch-video/
+app-prestamos-p15/.agents/skills/remotion-to-hyperframes/
+app-prestamos-p15/.agents/skills/seam-craft/
+app-prestamos-p15/.agents/skills/slideshow/
+app-prestamos-p15/.agents/skills/talking-head-recut/

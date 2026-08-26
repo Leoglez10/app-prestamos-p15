@@ -1,24 +1,35 @@
 <div align="center">
 
-# 🏫 App Prestamos P15
+<img src="app-prestamos-p15/img/logo-p15.png" alt="Logo Preparatoria 15" width="150"/>
+
+# App Prestamos P15
 
 ### Control de inventario y préstamos de equipo audiovisual para la Preparatoria 15 (UDG)
 
-<p align="center">
-  <img src="app-prestamos-p15/img/logo-p15.png" alt="Logo Preparatoria 15" width="180"/>
-</p>
-
-[![Estado](https://img.shields.io/badge/estado-activo-success)]()
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.1.1-blue)]()
+[![CI — Build Windows Installer](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.3.0-blue)]()
 [![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-blue)]()
 [![Licencia](https://img.shields.io/badge/usos-Educativo-orange)]()
-[![Autor](https://img.shields.io/badge/autor-Leonardo%20Gonzalez-purple)]()
+[![Autor](https://img.shields.io/badge/autor-Leonardo%20Gonzalez-purple)](https://github.com/Leoglez10)
+
+![Tauri](https://img.shields.io/badge/Tauri-v2-24C8DB?logo=tauri&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-local-003B57?logo=sqlite&logoColor=white)
+![Offline](https://img.shields.io/badge/100%25-offline-success)
 
 </div>
 
 ---
 
 > **Este README está escrito para CUALQUIER persona**: profesor, administrador, becario o alguien que nunca programó. Si eres programador, salta a la sección [Para programadores](#-para-programadores-configurar-y-compilar).
+
+> 🚀 **¿Tienes prisa?**
+> 1. Instala la app → [Instalación en 7 pasos](#-instalación-para-usuarios-finales-no-programadores)
+> 2. Entra al Admin y cambia el PIN de fábrica → [Credenciales por defecto](#-credenciales-por-defecto-cambiar)
+> 3. Activa el respaldo automático → [Respaldo automático](#-respaldo-automático-recomendado-activarlo)
+>
+> El resto es opcional: [cómo usarla paso a paso](#-cómo-usar-la-app-paso-a-paso), [importar el Excel oficial](#-importar-excel-de-patrimonio) o [contar inventario físico](#-toma-de-inventario-físico).
 
 ---
 
@@ -29,14 +40,20 @@
 3. [Vista rápida](#-vista-rápida-qué-puede-hacer)
 4. [Instalación para usuarios finales](#-instalación-para-usuarios-finales-no-programadores)
 5. [Cómo usar la app paso a paso](#-cómo-usar-la-app-paso-a-paso)
-6. [Dónde están guardadas las cosas](#-dónde-están-guardadas-las-cosas)
-7. [Respaldo y recuperación](#-respaldo-y-recuperación-importante)
-8. [Mantenimiento](#-mantenimiento)
-9. [GitHub para principiantes](#-github-para-principiantes)
-10. [Para programadores](#-para-programadores-configurar-y-compilar)
-11. [Estructura del proyecto](#-estructura-del-proyecto-dónde-está-cada-cosa)
-12. [Dudas frecuentes](#-dudas-frecuentes)
-13. [Créditos](#-créditos)
+6. [Importar Excel de Patrimonio](#-importar-excel-de-patrimonio)
+7. [Toma de inventario físico](#-toma-de-inventario-físico)
+8. [Dónde están guardadas las cosas](#-dónde-están-guardadas-las-cosas)
+9. [Respaldo y recuperación](#-respaldo-y-recuperación-importante)
+10. [Mantenimiento](#-mantenimiento)
+11. [GitHub para principiantes](#-github-para-principiantes)
+12. [Para programadores](#-para-programadores-configurar-y-compilar)
+13. [Estructura del proyecto](#-estructura-del-proyecto-dónde-está-cada-cosa)
+14. [Dudas frecuentes](#-dudas-frecuentes)
+15. [Cómo contribuir](#-cómo-contribuir)
+16. [Versionado](#-versionado)
+17. [Documentación relacionada](#-documentación-relacionada)
+18. [Licencia y uso](#️-licencia-y-uso)
+19. [Créditos](#-créditos)
 
 ---
 
@@ -94,6 +111,12 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 - ✅ Préstamo a profesor (kiosko) y a alumno (préstamo rápido)
 - ✅ Manejo de **equipos únicos** (1 laptop = 1 registro) y **a granel** (10 adaptadores en 1 fila)
 - ✅ Estados: `disponible`, `prestado`, `extraviado`, `mantenimiento`
+- ✅ Sugerencia automática de **HDMI** al prestar una laptop
+- ✅ Lectura de **códigos de barras** en kiosko y en la toma de inventario
+- ✅ Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
+- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo y reporte
+- ✅ **Respaldo automático** configurable (frecuencia; conserva los últimos 20)
+- ✅ Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
 - ✅ Reportes imprimibles en PDF (vía "imprimir" del navegador interno)
 - ✅ Respaldo y restauración de la base de datos **desde dentro de la app**
 - ✅ Sesión de admin con expiración de 8 horas
@@ -111,7 +134,7 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 ### Pasos
 
-1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.1.1_x64-setup.exe`). Hay dos formas:
+1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.3.0_x64-setup.exe`). Hay dos formas:
    - **A) Desde GitHub (recomendado).** Entra a <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más reciente, y en la sección **Assets** descarga el archivo `.exe` (_x64-setup.exe_) o `.msi`.
    - **B) Copia manual** (USB, carpeta compartida, etc.) — alguien que ya tenga el instalador te lo pasa.
 2. **Cópialo a la computadora** destino si lo descargaste en otra máquina.
@@ -134,7 +157,7 @@ La app viene con un administrador precargado (solo para empezar):
 | Código | `223992647` |
 | PIN | `#admin*p15#` |
 
-> ⚠️ **La primera vez que entres al Admin, cambia el PIN del administrador.** No dejes el PIN de fábrica.
+> ⚠️ **La primera vez que entres al Admin, cambia el PIN del administrador.** Aun así, la versión actual conserva la combinación de fábrica como acceso de recuperación para el código `223992647`; cambiar el PIN guardado NO desactiva ese fallback. Usa la app únicamente en el entorno interno previsto y corrige `loginAdmin` antes de tratarla como un sistema endurecido para producción.
 
 ---
 
@@ -144,19 +167,26 @@ La app viene con un administrador precargado (solo para empezar):
 
 1. Abre la app. Verás 3 tarjetas grandes.
 2. Haz clic en **"Soy Profesor"**.
-3. Escribe tu **código UDG** (por ejemplo `223992647`) → Enter.
-4. Verás el catálogo de equipos disponibles.
-5. Elige el equipo y confirma.
-6. El sistema **marca el equipo como prestado** y registra la fecha/hora.
-7. Para **devolverlo**: vuelve a entrar al kiosko con tu código, ve a la sección "Préstamos activos" y marca la devolución.
+3. Escribe tu **código UDG** (por ejemplo `223992647`) → Enter. No necesitas contraseña.
+4. Verás el catálogo: filtra con los **chips de categoría** o busca por nombre, marca, modelo o ID patrimonial.
+   - Si tienes lector/cámara de código de barras: escanea y el equipo exacto aparece primero.
+5. Toca el equipo para agregarlo al **carrito** (puedes pedir varios; los equipos a granel muestran cuántos quedan).
+   - 💡 Si pides una **laptop**, la app te sugiere agregar un **HDMI** disponible con un clic.
+6. Opcionalmente escribe **notas de entrega** → **Confirmar**.
+7. El sistema marca el equipo como prestado y registra fecha/hora. Aparece el modal de éxito y **la sesión se cierra sola en 3 segundos** (es una terminal compartida).
+8. Para **devolver**: entra de nuevo con tu código, ve a tus préstamos activos y devuelve uno por uno o toca **"Devolver todo"**.
 
 ### Flujo 2: Préstamo a un alumno (Préstamo Rápido)
 
 1. En la pantalla de inicio, clic en **"Préstamo Rápido"**.
 2. El admin entra con su **código** (sin PIN — esto es intencional, queda auditoría de quién autorizó).
-3. Llena el formulario: nombre del alumno, código del alumno, equipo.
+3. Llena el formulario: tipo (alumno o profesor), nombre/código, equipo (del inventario o texto libre) y notas.
 4. El sistema guarda automáticamente **quién autorizó** (tu nombre y código de admin).
-5. Cuando el alumno regrese el equipo, márcalo como devuelto.
+5. En el **historial** de abajo puedes buscar y filtrar por estado:
+   - `activo` — aún no se devuelve
+   - `vencido` — activo por **más de 24 horas**
+   - `devuelto` — cerrado
+6. Cuando el alumno regrese el equipo, márcalo como **devuelto** (o elimina el registro si fue un error).
 
 > 📋 Esto sirve para **incidencias rápidas** donde un alumno necesita un equipo y no pasa por el kiosko del profesor.
 
@@ -165,16 +195,73 @@ La app viene con un administrador precargado (solo para empezar):
 1. En la pantalla de inicio, clic en **"Administrador"**.
 2. Escribe tu **código** y tu **PIN**.
 3. Tienes pestañas:
-   - **Inventario** → dar de alta, editar, marcar como perdido/mantenimiento
-   - **Categorías** → crear/editar categorías (Laptops, Adaptadores, Proyectores…)
-   - **Profesores** → dar de alta profesores que pueden usar el kiosko
-   - **Reportes** → filtrar por fecha / estado / profesor e imprimir en PDF
-   - **Configuración** → ajustes del kiosko, respaldo, restauración
+   - **Inventario** → dar de alta, editar, ver detalle; menú de fila (⋮): forzar devolución, marcar perdido, eliminar; diseñar/imprimir PDF del inventario; panel de importación del Excel de Patrimonio
+   - **Toma de inventario** → campañas de conteo físico con lector de códigos ([ver sección completa](#-toma-de-inventario-físico))
+   - **Categorías** → crear/editar categorías y decidir si son **Prestable** o *Solo inventario*
+   - **Profesores** → dar de alta profesores que pueden usar el kiosko, marcar admins + PIN
+   - **Reportes** → filtrar por fecha / estado / categoría e imprimir en PDF; observaciones de entrega/devolución
+   - **Configuración** → ajustes del kiosko, respaldos automáticos y manuales, restauración
+
+> 💡 **Concepto clave — Prestable vs Solo inventario:** un equipo *prestable* aparece en el kiosko para pedirse; uno *solo inventario* solo existe para llevar el conteo (un proyector del salón fijo, por ejemplo). Lo decides tú por categoría o por equipo: **la importación del Excel nunca activa préstamos por su cuenta**.
 
 ### Flujo 4: Cerrar sesión
 
 - En **Préstamo Rápido** y **Admin** hay un botón de **Cerrar sesión** arriba. Úsalo antes de irte.
 - En **Préstamo Rápido** la sesión se cierra automáticamente a las **8 horas**.
+
+---
+
+## 📥 Importar Excel de Patrimonio
+
+La app puede cargar el inventario oficial desde el **Excel de Patrimonio** sin teclear equipo por equipo.
+
+### Dónde está
+
+**Admin** ▸ pestaña **Inventario** ▸ panel de importación al final de la página.
+
+### Cómo funciona
+
+1. Elige el archivo `.xlsx` oficial.
+2. La app muestra un **plan previo ANTES de tocar nada**: cuántos equipos son nuevos, cuántos se actualizarían, cuántos no cambian, qué categorías nuevas aparecerían y avisos importantes.
+3. Si el plan te convence, presiona **Aplicar**.
+4. Antes de escribir cualquier dato, la app crea un **respaldo automático** de tu base.
+
+### Reglas que debes conocer
+
+| Regla | Detalle |
+|---|---|
+| 🔒 Nada se sobreescribe a ciegas | Equipos existentes conservan su nombre, categoría y ubicación |
+| 🚫 Lo importado NO es prestable | Todo equipo/categoría nuevo entra como **"solo inventario"** — el Excel organiza, pero **la escuela decide qué se presta** |
+| ✅ Activar préstamo después | Ve a **Categorías**, toca "Prestable" en la categoría (o equipo por equipo) y listo |
+| ↩️ Se puede deshacer | Configuración → Respaldos → **Restaurar** el respaldo automático que se creó al aplicar |
+
+> ⚠️ **¿Importaste y nadie puede pedir nada?** No es un error: es intencional. Activa "Prestable" en las categorías que quieras prestar.
+
+📚 Detalles técnicos del formato y la importación: [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) · [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md)
+
+---
+
+## 📋 Toma de inventario físico
+
+Sirve para **cuadrar lo que hay físicamente en los estantes contra lo que dice la app**, usando un lector de códigos de barras. Está en **Admin** ▸ pestaña **Toma de inventario**.
+
+### Paso a paso
+
+1. Elige el **área** a contar (usa las ubicaciones recientes o escribe una nueva).
+2. **"Iniciar campaña nueva"** → reinicia todo el área a *pendiente* (pide doble confirmación).
+3. **Escanea** equipo por equipo. Cada disparo da feedback inmediato con sonido y tarjeta:
+   - 🟢 **Nuevo aquí** — estaba pendiente, ya está contado
+   - 🔵 **Movido** — existe pero su ubicación registrada era otra
+   - 🟡 **Repetido** — ya lo escaneaste en esta campaña
+4. Cada escaneo marca automáticamente el equipo como **revisado** en esa ubicación.
+5. ¿Te equivocaste? Botón **deshacer último escaneo**. ¿Apareció un código que no reconoce la app? Puedes **vincularlo a un equipo existente**.
+6. La columna **"Deberían estar aquí"** lista lo que falta contar: cuando se vacía, terminaste el área.
+7. Exporta el **reporte** de la campaña.
+
+### Tips
+
+- Haz una campaña **por área**; no intentes contar todo en una sola pasada.
+- La campaña reinicia pendientes al iniciarla: hazla en un momento tranquilo y termina el área completa.
 
 ---
 
@@ -232,10 +319,18 @@ La app incluye **respaldo nativo** desde dentro del programa:
 2. Ve a `%AppData%\com.p15.prestamos\`.
 3. Copia `prestamos.db` a un lugar seguro (USB, otra computadora, Google Drive).
 
+### Respaldo automático (recomendado activarlo)
+
+1. **Admin** → Configuración → sección Respaldos.
+2. Activa el respaldo automático y define cada cuánto (la app lo hace sola, sin que nadie se acuerde).
+3. La app conserva los **últimos 20 respaldos automáticos** en `backups\`.
+
+> 💡 Además, cualquier importación del Excel de Patrimonio crea un respaldo automático justo antes de aplicar cambios.
+
 ### Restaurar
 
-1. Entra al **Admin** → Configuración → **"Restaurar respaldo"**.
-2. Elige el archivo `.db` que quieras restaurar.
+1. Entra al **Admin** → Configuración → sección Respaldos.
+2. En la tabla de respaldos, cada fila tiene su botón **"Restaurar"** (un clic y listo). También puedes usar **"Importar respaldo"** para traer un archivo `.db` externo (por ejemplo, de un USB).
 3. El sistema valida el archivo, hace un respaldo de seguridad por si acaso, sobreescribe la base actual y limpia los archivos auxiliares WAL/SHM.
 4. Reinicia la app.
 
@@ -258,9 +353,11 @@ Más info en `docs/sqlite-backup-restore-guide.md`.
 
 | Cada… | Tarea |
 |---|---|
-| **Diario** | Al cerrar el día, el admin crea un respaldo (Configuración → Crear respaldo). |
+| **Diario** | Al cerrar el día, el admin crea un respaldo (Configuración → Crear respaldo) — o mejor: activa el **respaldo automático** y olvídate. |
 | **Semanal** | Revisar préstamos activos muy antiguos (¿un equipo prestado hace 3 semanas?). |
 | **Mensual** | Exportar un reporte del mes para tu archivo (Reportes → filtrar por mes → Imprimir PDF). |
+| **Mensual** | Correr una campaña de [toma de inventario](#-toma-de-inventario-físico) por área para cuadrar lo físico vs la app. |
+| **Antes de importar Excel** | Verifica que tengas respaldo reciente (la importación crea uno automático, pero revisa la fecha). |
 | **Trimestral** | Copiar la carpeta `%AppData%\com.p15.prestamos\` a un USB y guardarlo fuera de la oficina. |
 | **Anual** | Archivar el historial del año y limpiar préstamos muy antiguos. |
 
@@ -280,8 +377,8 @@ Más info en `docs/sqlite-backup-restore-guide.md`.
 | Pantalla azul "Windows SmartScreen" | Sin certificado de firma | Más información → Ejecutar de todas formas |
 | La app abre en blanco | Falta WebView2 | Instalar <https://developer.microsoft.com/microsoft-edge/webview2/> |
 | Se cierra sola al inicio | Falla SQLite / DB corrupta | Restaurar respaldo desde Configuración o copiar `prestamos.db` de un backup |
-| Olvidé el PIN del admin | — | Hay un backdoor con código `223992647`; si pierdes acceso total, usa el respaldo más antiguo donde tenías acceso y cambia el PIN |
-| Borrowé equipos y después borré la carpeta | Perdiste los datos | Si tienes respaldo en USB, recupéralo. Si no, se pierden. **Respalden siempre.** |
+| Olvidé el PIN del admin | PIN personalizado perdido | Entra con el código `223992647` y el PIN de fábrica, después define uno nuevo. Este fallback permanece activo por diseño en la versión actual. |
+| Se borró la carpeta de datos | Se pierde el historial | Si tienes respaldo en USB u otra computadora, restáuralo. Si no, se pierde. **Respalda siempre.** |
 
 ### Mantener el proyecto limpio
 
@@ -371,7 +468,7 @@ git pull
 
 ### 6) CI automático
 
-El repo tiene un workflow en `.github/workflows/build-windows.yml` que, cuando haces un push a `main` (o `master`), **compila la app en un Windows virtual de GitHub** y publica el instalador como **Release público** en la pestaña *Releases* del repo. Si la compilación falla, GitHub te avisa en rojo.
+El repo tiene el workflow activo `.github/workflows/build-windows.yml`. Cuando publicas un tag con formato `v*` (por ejemplo, `v0.3.0`), **compila la app en un Windows virtual de GitHub** y publica el instalador como **Release público** en la pestaña *Releases*. También se puede ejecutar manualmente con `workflow_dispatch`. Si la compilación falla, GitHub lo marca en rojo.
 
 ---
 
@@ -423,8 +520,8 @@ npm run tauri build
 
 ```
 src-tauri/target/release/bundle/
-├── msi/App Prestamos P15_0.1.1_x64_en-US.msi
-└── nsi/App Prestamos P15_0.1.1_x64-setup.exe
+├── msi/App Prestamos P15_0.3.0_x64_en-US.msi
+└── nsi/App Prestamos P15_0.3.0_x64-setup.exe
 ```
 
 ### Scripts disponibles
@@ -436,14 +533,17 @@ src-tauri/target/release/bundle/
 | `npm run preview` | Sirve `dist/` para previsualizar |
 | `npm run tauri dev` | Desarrollo completo con Tauri + SQLite |
 | `npm run tauri build` | Genera instalador Windows |
+| `npm test` | Ejecuta las 6 suites de pruebas de utilidades |
+| `npm run test:<área>` | Ejecuta una suite concreta: `backup`, `patrimonio`, `identificadores`, `ficha`, `importacion` o `toma` |
 
-### Chequeo de tipos (no hay tests)
+### Chequeo de tipos y pruebas
 
 ```powershell
 npx tsc --noEmit
+npm test
 ```
 
-> ❗ El proyecto **no tiene suite de pruebas ni linter**. Cambios grandes deben validarse manualmente. Ver `docs/ENGINEERING_HANDBOOK.md`.
+> ✅ El proyecto tiene pruebas automatizadas para utilidades críticas, pero todavía **no tiene linter ni pruebas end-to-end de la interfaz**. Los cambios visuales y los flujos completos de Tauri también deben validarse manualmente. Ver `docs/ENGINEERING_HANDBOOK.md`.
 
 ### Configuración de Vite
 
@@ -465,6 +565,10 @@ npx tsc --noEmit
 
 ```
 app-prestamos-p15/                ← Carpeta del repo
+├── 📁 .github/workflows/
+│   └── build-windows.yml         ← CI activo: compila y publica al crear tags v*
+├── 📄 README.md                  ← ESTE ARCHIVO
+├── 📄 README_INSTALACION.md      ← Guía corta de instalación y actualización
 └── app-prestamos-p15/            ← Carpeta real del proyecto (necesaria así para el CI)
     │
     ├── 📄 package.json            ← Dependencias JS y scripts
@@ -489,15 +593,19 @@ app-prestamos-p15/                ← Carpeta del repo
     │   │   ├── SessionBadge.tsx  ← Badge "Sesión: nombre (código)"
     │   │   └── types.ts
     │   ├── hooks/
-    │   │   └── useInventory.ts   ← ⭐ EL CORAZÓN DE LA APP (1100+ líneas)
+    │   │   └── useInventory.ts   ← ⭐ EL CORAZÓN DE LA APP (2000+ líneas)
     │   │                            Define el esquema, migraciones, reglas de negocio,
     │   │                            y todos los accesos a SQLite.
     │   ├── pages/
     │   │   ├── Home.tsx          ← Pantalla con 3 tarjetas (Profesor/Admin/Préstamo Rápido)
     │   │   ├── Kiosk.tsx         ← Flujo del profesor
-    │   │   ├── Admin.tsx         ← Panel admin (inventario, categorías, profesores, reportes, config)
+    │   │   ├── Admin.tsx         ← Panel admin (inventario, toma física, categorías, profesores, reportes, config)
     │   │   ├── PrestamoRapido.tsx← Préstamo a alumnos con autenticación simple
     │   │   └── Admin-LeoLaptop.tsx ← Variante NO TOCAR (drift local)
+    │   ├── components/
+    │   │   ├── TomaFisicaPanel.tsx        ← Campañas de conteo físico (pestaña de Admin)
+    │   │   ├── ImportarPatrimonioPanel.tsx← Importación del Excel de Patrimonio
+    │   │   └── RedCelularPanel.tsx        ← Experimento: acceso LAN desde celular
     │   └── utils/
     │       ├── print.ts          ← Genera HTML e imprime PDF vía iframe + window.print()
     │       └── datetime.ts       ← Parseo/formateo de fechas SQLite (es-MX)
@@ -506,11 +614,16 @@ app-prestamos-p15/                ← Carpeta del repo
     │   ├── Cargo.toml            ← Dependencias Rust
     │   ├── tauri.conf.json       ← Configuración de la ventana, bundle, identificador
     │   ├── src/
-    │   │   └── lib.rs            ← 4 comandos nativos:
+    │   │   └── lib.rs            ← 9 comandos nativos:
     │   │                            🔹 get_database_url    → ruta de la BD
     │   │                            🔹 create_backup        → crea backups en disco
+    │   │                            🔹 guardar_reporte_inventario → guarda reportes exportados
+    │   │                            🔹 open_backups_dir     → abre la carpeta de respaldos
     │   │                            🔹 list_backups         → enumera respaldos
     │   │                            🔹 restore_backup_from_bytes → restaura validando magic header
+    │   │                            🔹 restore_backup_from_path → restaura desde una ruta local
+    │   │                            🔹 celular_registrar_dispositivo → registra acceso móvil experimental
+    │   │                            🔹 local_ip             → obtiene la IP para acceso LAN
     │   ├── capabilities/
     │   │   └── default.json      ← Permisos: core, opener, sql (execute, load, select)
     │   └── icons/                ← Iconos de Windows (.ico, .icns, PNGs)
@@ -519,6 +632,10 @@ app-prestamos-p15/                ← Carpeta del repo
     │
     ├── 📁 docs/                   ← DOCUMENTACIÓN TÉCNICA
     │   ├── ENGINEERING_HANDBOOK.md   ← Guía maestra de ingeniería y mantenimiento
+    │   ├── INVENTARIO_PATRIMONIO.md  ← Formato y reglas del Excel de Patrimonio
+    │   ├── PLAN_IMPORTACION_PATRIMONIO.md ← Diseño de la importación
+    │   ├── QR_CELULAR.md             ← Experimento de acceso por celular
+    │   ├── ROADMAP.md                ← Rumbo del proyecto
     │   ├── REPO_CLEANUP.md           ← Qué borrar/archivar
     │   ├── sqlite-backup-restore-guide.md
     │   ├── postgres-restore-guide.md ← ETL legacy Postgres→SQLite
@@ -538,7 +655,7 @@ app-prestamos-p15/                ← Carpeta del repo
     │   └── changes/archive/       ← Cambios ya cerrados (admin-auth, login-solo-codigo)
     │
     ├── 📁 .github/workflows/
-    │   └── tauri-build.yml        ← CI: compila en Windows virtual cada push a main
+    │   └── tauri-build.yml        ← Workflow histórico anidado; GitHub no lo ejecuta desde aquí
     │
     ├── 📁 .agents/skills/         ← Skills personales de AI (no se suben al hacer cambios)
     └── 📄 README.md               ← ESTE ARCHIVO
@@ -567,7 +684,22 @@ En el panel del Admin → pestaña Reportes. Filtras por fecha o profesor y das 
 Admin → Profesores → "Nuevo" → nombre y código UDG. Si también será admin, marca el checkbox y define un PIN.
 
 **¿Cómo marco un equipo como perdido?**
-Admin → Inventario → editar el equipo → estado "extraviado". A partir de ahí no aparecerá para préstamo.
+Admin → Inventario → menú de la fila (⋮) → **"Marcar perdido"**. También puedes editar el equipo y cambiar su estado a `extraviado`. A partir de ahí no aparecerá para préstamo.
+
+**¿Por qué mi equipo no aparece en el kiosko?**
+Tres causas comunes: 1) su categoría (o el equipo mismo) está en modo *Solo inventario* — actívalo como **Prestable** en Categorías; 2) está prestado, extraviado o en mantenimiento; 3) el kiosko tiene oculto el catálogo (revisa Configuración).
+
+**¿Importé el Excel y ahora no puedo prestar nada, es un error?**
+No: es a propósito. Todo lo importado entra como *solo inventario* para que el Excel nunca decida solo. Ve a Admin → Categorías → marca **Prestable** en lo que quieras prestar.
+
+**¿Qué significa "vencido"?**
+En Préstamo Rápido, todo préstamo activo con más de **24 horas** sin devolverse se marca vencido en el historial. El kiosko de profesores no maneja vencimientos automáticos: las devoluciones se registran manualmente.
+
+**Un profesor se lleva laptop pero se olvida el HDMI, ¿puedo forzar la devolución?**
+Sí. Admin → Inventario → menú de la fila del equipo (⋮) → **"Forzar devolución"**. Útil cuando el equipo volvió físicamente pero nadie lo registró en el kiosko.
+
+**¿Cómo sé qué me falta por contar en una toma de inventario?**
+La columna **"Deberían estar aquí"** lista los equipos pendientes del área actual. Cuando se vacía, terminaste ([guía completa](#-toma-de-inventario-físico)).
 
 **¿Mi base de datos se borró, qué hago?**
 Si tienes respaldo (en `backups/` o en un USB), lo restauras desde Configuración. Si no, **se perdió**. Por eso **RESPALDA SIEMPRE**.
@@ -579,7 +711,7 @@ Sí, pero **cada una tiene su base de datos independiente**. No se sincronizan e
 No. No hay telemetría, no hay envío a la nube, no hay cuenta de correo, no hay nada de internet.
 
 **¿Es seguro el PIN por defecto?**
-No, es un valor que viene para que puedas entrar la primera vez. **Cámbialo en cuanto entres.**
+No. **Cámbialo en cuanto entres**, pero ten presente que la versión actual conserva el código `223992647` más el PIN de fábrica como acceso de recuperación incluso después del cambio. Eliminar ese fallback requiere modificar `loginAdmin`; no basta con editar el PIN desde la interfaz.
 
 ---
 
@@ -598,13 +730,13 @@ No, es un valor que viene para que puedas entrar la primera vez. **Cámbialo en 
 
 ## 🏷 Versionado
 
-Usamos versionado simple `MAYOR.MENOR.PARCHE` en `package.json` y `tauri.conf.json`. Ej: `0.1.1`.
+Usamos versionado simple `MAYOR.MENOR.PARCHE` en `package.json` y `tauri.conf.json`. Ej: `0.3.0`.
 
-- **PARCHE** (0.1.**1** → 0.1.2): bugfixes, sin cambios de comportamiento.
-- **MENOR** (0.**1**.1 → 0.2.0): nuevas funciones, sin romper lo viejo.
-- **MAYOR** (**0**.1.1 → 1.0.0): cambios que pueden romper compatibilidad (requieren migración).
+- **PARCHE** (0.3.**0** → 0.3.1): bugfixes, sin cambios de comportamiento.
+- **MENOR** (0.**3**.0 → 0.4.0): nuevas funciones, sin romper lo viejo.
+- **MAYOR** (**0**.3.0 → 1.0.0): cambios que pueden romper compatibilidad (requieren migración).
 
-> ⚠️ `Cargo.toml` (Rust) puede estar ligeramente desincronizado con `package.json`. Cuando cambies versión, actualízalo también en `Cargo.toml`.
+> ✅ La versión debe coincidir en `package.json`, `src-tauri/tauri.conf.json` y `src-tauri/Cargo.toml`. Actualmente los tres usan `0.3.0`.
 
 ---
 
@@ -613,6 +745,9 @@ Usamos versionado simple `MAYOR.MENOR.PARCHE` en `package.json` y `tauri.conf.js
 | Doc | Para qué sirve |
 |---|---|
 | [docs/ENGINEERING_HANDBOOK.md](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
+| [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) | Formato y reglas del Excel de Patrimonio |
+| [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md) | Diseño técnico de la importación |
+| [docs/QR_CELULAR.md](app-prestamos-p15/docs/QR_CELULAR.md) | Experimento: acceso desde celular por LAN |
 | [docs/REPO_CLEANUP.md](app-prestamos-p15/docs/REPO_CLEANUP.md) | Qué carpetas borrar/archivar |
 | [docs/sqlite-backup-restore-guide.md](app-prestamos-p15/docs/sqlite-backup-restore-guide.md) | Backup/restore con scripts Python |
 | [docs/postgres-restore-guide.md](app-prestamos-p15/docs/postgres-restore-guide.md) | Migrar desde un Postgres legacy |
@@ -630,22 +765,29 @@ Proyecto de **uso interno educativo** para la Preparatoria 15 (UDG). No está pe
 
 <div align="center">
 
-### Desarrollado por **Leonardo González** 👨‍💻
+<img src="https://github.com/Leoglez10.png" alt="Leonardo Gonzalez" width="96"/>
 
-[![GitHub](https://img.shields.io/badge/GitHub-Leonardo%20Gonzalez-purple?logo=github)]()
+### Diseñado y desarrollado por **Leonardo Gonzalez**
+
+[![GitHub](https://img.shields.io/badge/GitHub-%40Leoglez10-181717?logo=github)](https://github.com/Leoglez10)
+[![Issues](https://img.shields.io/badge/Reportar_bug_o_idea-2ea44f?logo=github)](https://github.com/Leoglez10/app-prestamos-p15/issues)
+
+🏫 **Institución**: Preparatoria 15 — Universidad de Guadalajara (UDG)
+
+🎯 **Propósito**: Control y trazabilidad de préstamos de equipo audiovisual
+
+🛠 **Stack**: Tauri v2 · React 19 · TypeScript · Vite 7 · Rust · SQLite
 
 </div>
 
-- 🏫 **Institución**: Preparatoria 15 — Universidad de Guadalajara (UDG)
-- 🎯 **Propósito**: Control y trazabilidad de préstamos de equipo audiovisual
-- 🛠 **Stack**: Tauri v2 · React 19 · TypeScript · Vite 7 · Rust · SQLite
-
-> 📬 Si encuentras un bug o tienes una mejora, abre un [Issue](https://github.com/Leoglez10/app-prestamos-p15/issues) o un Pull Request.
+> 📬 ¿Encontraste un bug o tienes una mejora? Abre un [Issue](https://github.com/Leoglez10/app-prestamos-p15/issues) o manda un Pull Request.
 
 ---
 
 <div align="center">
 
-**¿Dudas?** Revisa la sección [Dudas frecuentes](#-dudas-frecuentes) o el [Handbook de ingeniería](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) antes de preguntar. Salves un bolígrafo, salven un dato 💾
+**¿Dudas?** [Dudas frecuentes](#-dudas-frecuentes) · [Respaldo y recuperación](#-respaldo-y-recuperación-importante) · [Handbook de ingeniería](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md)
+
+Hecho con 💙 para la comunidad de la **Preparatoria 15** — *respalda siempre* 💾
 
 </div>

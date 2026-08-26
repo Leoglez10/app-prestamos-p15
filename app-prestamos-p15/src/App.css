@@ -550,22 +550,66 @@ button.ghost {
   width: min(1000px, calc(100vw - 2rem));
 }
 
-/* Wider shell for the equipment form: two columns instead of one cramped strip. */
+/* Wider shell for the equipment form: two columns instead of one cramped strip.
+   [open] guard: a bare display:flex would override the UA rule that keeps a
+   closed <dialog> hidden. */
 .admin-dialog.is-form {
-  width: min(860px, calc(100vw - 2rem));
+  width: min(880px, calc(100vw - 2rem));
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-dialog.is-form[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-form-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.admin-form-head h3 { font-size: 1.35rem; }
+
+.admin-form-shell {
+  display: flex;
+  flex-direction: column;
+  /* Keep the form's intrinsic height when the dialog sizes itself, then let it
+     shrink against the dialog max-height so only the middle section scrolls. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Only the middle scrolls, so the save button never lands on top of a field. */
+.admin-form-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.2rem 1.4rem;
 }
 
 .admin-dialog-cols {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 0.8rem;
+  gap: 0.9rem;
   align-items: start;
+}
+
+.admin-field-pair {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .admin-form-section {
   display: grid;
-  gap: 0.65rem;
-  padding: 0.9rem;
+  gap: 0.7rem;
+  padding: 1rem;
   border-radius: 18px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.96));
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -579,11 +623,95 @@ button.ghost {
   color: var(--brand-primary);
 }
 
+/* Two choices side by side: a label and four words each, not two paragraphs. */
+.admin-segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.admin-segmented button {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 72px;
+  padding: 0.7rem 0.6rem;
+  border-radius: 16px;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  background: white;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.admin-segmented button span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.admin-segmented button:hover { filter: none; border-color: var(--brand-primary); }
+
+.admin-segmented button.is-active {
+  border-color: var(--brand-primary);
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--brand-primary);
+}
+
+.admin-toggle-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  min-height: 66px;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  background: white;
+  color: var(--text-primary);
+  font-size: 1.02rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.admin-toggle-card:hover { filter: none; }
+
+.admin-toggle-card.is-on {
+  border-color: var(--success-base);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.admin-toggle-pill {
+  min-width: 58px;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+  color: var(--text-secondary);
+  font-weight: 800;
+  text-align: center;
+}
+
+.admin-toggle-card.is-on .admin-toggle-pill {
+  background: var(--success-base);
+  color: white;
+}
+
+.ficha-patrimonio > summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style-position: inside;
+}
+
 .admin-dialog input,
 .admin-dialog select,
 .admin-dialog textarea {
-  padding: 0.72rem 0.85rem;
-  font-size: 1rem;
+  padding: 0.8rem 0.9rem;
+  font-size: 1.02rem;
 }
 
 .admin-dialog label {
@@ -598,11 +726,25 @@ button.ghost {
   bottom: 0;
   z-index: 2;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   margin-top: 0.25rem;
   padding: 0.9rem 0 0;
   background: var(--surface-default);
   border-top: 1px solid var(--border-subtle);
+}
+
+.admin-dialog.is-form .admin-dialog-actions {
+  position: static;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 1rem 1.4rem;
+}
+
+.admin-dialog.is-form .admin-dialog-actions button {
+  min-height: 56px;
+  border-radius: 15px;
+  font-size: 1.05rem;
+  font-weight: 800;
 }
 
 .admin-dialog::backdrop {
@@ -850,6 +992,53 @@ button.ghost {
 /* Status pills are single-token labels; breaking them mid-word is never right. */
 .admin-table .state {
   white-space: nowrap;
+}
+
+/* The current category policy and the available action are both written out;
+   color reinforces the state but is never the only signal. */
+.category-loanability {
+  display: grid;
+  gap: 0.16rem;
+  width: 100%;
+  min-height: 56px;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid rgba(100, 116, 139, 0.34);
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.94);
+  color: var(--text-primary);
+  text-align: left;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.category-loanability strong { font-size: 0.88rem; }
+
+.category-loanability span {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.category-loanability.is-loanable {
+  border-color: rgba(37, 99, 235, 0.5);
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--brand-primary);
+}
+
+.category-loanability:hover:not(:disabled) {
+  border-color: var(--brand-primary);
+  filter: none;
+}
+
+.category-loanability:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.38);
+  outline-offset: 2px;
+}
+
+.category-loanability:disabled {
+  cursor: wait;
+  opacity: 0.62;
 }
 
 @media (max-width: 1280px) {
@@ -1362,46 +1551,807 @@ button.ghost {
   text-decoration: underline;
 }
 
-/* Barra de acción masiva del inventario.
-   Aparece pegada arriba de la tabla y solo cuando hay un filtro puesto: actúa
-   sobre lo que ya está filtrado, así no hace falta una segunda lista de equipos
-   con sus propios filtros. */
-.admin-bulk-bar {
+
+/* -- Toma física de inventario ------------------------------------------------
+
+   Dos pantallas con reglas distintas. El paso 1 es una pantalla de escritorio
+   normal. El paso 2 se lee de pie, a un metro, con una pistola en la mano: ahí
+   el tamaño del texto y el foco del campo de escaneo mandan sobre todo lo demás.
+
+   La única animación permanente es el halo del campo de escaneo. Todo lo demás
+   entra, dice algo y se va, porque nadie va a soltar la pistola para cerrarlo. */
+
+.toma-inicio {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.7rem 1rem;
-  margin-bottom: 0.85rem;
-  border-radius: 12px;
-  border: 1px solid rgba(37, 99, 235, 0.28);
-  background: rgba(37, 99, 235, 0.07);
-  color: var(--text-secondary);
-  font-size: 0.92rem;
+  flex-direction: column;
+  gap: 1.6rem;
+  max-width: 1100px;
 }
 
-.admin-bulk-bar strong {
+.toma-inicio-titulo h1 {
+  margin: 0 0 0.3rem;
+  font-size: 2.5rem;
+  letter-spacing: -0.01em;
+}
+
+.toma-inicio-titulo p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.toma-metricas {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.toma-metricas article {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-default);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.toma-metricas span {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.toma-metricas strong {
+  display: block;
+  font-size: 1.7rem;
+}
+
+.toma-barra-progreso-fila {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.toma-barra-progreso-fila > span {
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--brand-primary);
 }
 
-.admin-bulk-bar button,
-.admin-bulk-bar select {
-  width: auto;
-  margin: 0;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.9rem;
+.toma-barra-progreso {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
 }
 
-/* Encabezado del recorrido de toma física: la ubicación actual y el avance,
-   siempre visibles mientras se dispara. */
+.toma-barra-progreso > div {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand-primary);
+  /* La barra crece al montar: hace visible que la campaña avanza. */
+  animation: tomaCrece 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes tomaCrece {
+  from { width: 0; }
+}
+
+.toma-inicio-cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 1.8rem;
+  align-items: start;
+}
+
+.toma-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toma-picker h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.45rem;
+}
+
+.toma-picker p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.toma-etiqueta {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.toma-chips-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toma-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Las áreas son siempre las mismas cinco o seis: un toque en vez de teclearlas
+   otra vez, que además es lo que evita "Aula 12" y "aula12" como dos lugares. */
+.toma-chip {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-default);
+  color: var(--text-primary);
+  font-weight: 700;
+  animation: tomaChipEntra 160ms ease-out both;
+}
+
+.toma-chip:hover {
+  filter: none;
+  border-color: var(--brand-primary);
+}
+
+.toma-chip.is-activo {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+@keyframes tomaChipEntra {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+.toma-chip:nth-child(2) { animation-delay: 30ms; }
+.toma-chip:nth-child(3) { animation-delay: 60ms; }
+.toma-chip:nth-child(4) { animation-delay: 90ms; }
+.toma-chip:nth-child(5) { animation-delay: 120ms; }
+.toma-chip:nth-child(6) { animation-delay: 150ms; }
+
+.toma-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 62px;
+  font-size: 1.15rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 18px -6px rgba(37, 99, 235, 0.55);
+}
+
+.toma-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.toma-lateral {
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--surface-default);
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.toma-lateral h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.toma-lateral p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.toma-lateral-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--surface-sunken);
+}
+
+.toma-lateral-acciones .ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Empezar una campaña nueva pone todo el inventario en pendiente otra vez: no
+   puede tener el mismo peso visual que exportar un archivo. */
+.toma-link-danger {
+  width: auto;
+  align-self: flex-start;
+  padding: 0.2rem 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-size: 0.92rem;
+  text-decoration: underline;
+}
+
+.toma-link-danger:hover {
+  filter: none;
+  color: var(--danger-base);
+}
+
+/* -- Paso 2: el recorrido -- */
+
+.toma-recorrido {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
 .toma-barra {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
+  padding: 0.85rem 1.1rem;
   border-radius: 12px;
   border: 1px solid var(--border-subtle);
-  background: var(--surface-sunken);
+  background: var(--surface-default);
+}
+
+.toma-barra-area {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.toma-barra-area strong {
+  font-size: 1.6rem;
+}
+
+.toma-barra-cuenta {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.toma-barra-cuenta .toma-barra-progreso {
+  width: 240px;
+  height: 6px;
+  flex: none;
+}
+
+.toma-salir {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+}
+
+/* El campo de escaneo es el producto. El halo respira para decir dónde va a
+   caer el disparo, y es lo ÚNICO que se mueve solo en toda la pantalla. */
+.toma-escaneo {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+  padding: 1.4rem 1.5rem;
+  border-radius: 16px;
+  border: 2px solid var(--brand-primary);
+  background: var(--surface-default);
+  animation: tomaRespira 2.4s ease-in-out infinite;
+}
+
+.toma-escaneo-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-width: 300px;
+}
+
+.toma-escaneo-texto label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.toma-escaneo-texto small {
+  color: var(--text-secondary);
+}
+
+.toma-escaneo input {
+  flex: 1;
+  min-width: 260px;
+  min-height: 88px;
+  font-size: 1.8rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+  border-style: dashed;
+  background: var(--background-default);
+}
+
+@keyframes tomaRespira {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.14); }
+  50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.2); }
+}
+
+/* Sin foco la pistola escribe en la nada y nadie se entera hasta varios equipos
+   después. Ese era el fallo silencioso: acá se ve. */
+.toma-escaneo.sin-foco {
+  border-color: var(--warning-base);
+  animation: tomaAlerta 900ms ease-in-out infinite;
+}
+
+@keyframes tomaAlerta {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.18); }
+  50% { box-shadow: 0 0 0 12px rgba(217, 119, 6, 0.3); }
+}
+
+.toma-sin-foco-aviso {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: #fef3c7;
+  color: #78350f;
+  font-weight: 700;
+}
+
+.toma-sin-foco-aviso button {
+  width: auto;
+  margin-left: auto;
+  padding: 0.5rem 0.9rem;
+  background: var(--warning-base);
+  border-color: var(--warning-base);
+}
+
+/* El flash del borde de la ventana: se ve por el rabillo del ojo, que es lo que
+   hay disponible cuando estás mirando el proyector del techo. */
+.toma-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  animation: tomaFlash 500ms ease-out forwards;
+}
+
+.toma-flash.is-ok { box-shadow: inset 0 0 0 10px var(--success-base); }
+.toma-flash.is-alerta { box-shadow: inset 0 0 0 10px var(--warning-base); }
+
+@keyframes tomaFlash {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* La respuesta al disparo. Tres colores, un solo mensaje, tamaño de cartel. */
+.toma-tarjeta {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.3rem 1.4rem;
+  border-radius: 16px;
+  border: 1px solid;
+  animation: tomaTarjeta 140ms ease-out;
+}
+
+.toma-tarjeta.is-nuevo { background: #d2efdf; border-color: var(--success-base); color: #0f5138; }
+.toma-tarjeta.is-repetido {
+  background: #fef3c7;
+  border-color: var(--warning-base);
+  color: #78350f;
+  animation: tomaSacude 180ms ease-in-out;
+}
+.toma-tarjeta.is-movido { background: #dbeafe; border-color: var(--brand-primary); color: #1e3a8a; }
+
+.toma-tarjeta-icono {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: currentColor;
+}
+
+.toma-tarjeta-icono svg { color: #fff; }
+
+.toma-tarjeta-cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.toma-tarjeta-cuerpo strong { font-size: 1.7rem; line-height: 1.15; }
+.toma-tarjeta-cuerpo span { font-size: 1rem; }
+.toma-tarjeta-cuerpo small { font-size: 0.9rem; opacity: 0.85; }
+
+.toma-movimiento {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.toma-movimiento em {
+  font-style: normal;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.toma-movimiento em.es-destino {
+  background: var(--brand-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.toma-deshacer {
+  width: auto;
+  flex-shrink: 0;
+  padding: 0.7rem 1.1rem;
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+}
+
+.toma-deshacer:hover { filter: none; background: rgba(255, 255, 255, 0.55); }
+
+/* La barra que se vacía ES la ventana para deshacer: cuando se acaba, se fue. */
+.toma-tarjeta-tiempo {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 100%;
+  transform-origin: left;
+  background: currentColor;
+  opacity: 0.35;
+  animation-name: tomaTiempo;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes tomaTiempo { to { transform: scaleX(0); } }
+@keyframes tomaTarjeta { from { opacity: 0; transform: scale(0.97); } }
+@keyframes tomaSacude {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Código huérfano: el único momento del flujo que exige una decisión, y el
+   único que interrumpe. Un desplegable con dos mil nombres no se usa de pie. */
+.toma-huerfano {
+  border: 1px solid var(--warning-base);
+  border-radius: 16px;
+  background: var(--surface-default);
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  animation: tomaTarjeta 180ms ease-out;
+}
+
+.toma-huerfano-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.3rem;
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.toma-huerfano-cabeza > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.toma-huerfano-cabeza strong { font-size: 1.3rem; }
+
+.toma-huerfano-cabeza code {
+  flex-shrink: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  background: var(--surface-default);
+  border: 1px solid var(--warning-base);
+}
+
+.toma-huerfano-cuerpo {
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.toma-buscador {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--brand-primary);
+  background: var(--surface-default);
+  color: var(--text-secondary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.toma-buscador input {
+  border: none;
+  box-shadow: none;
+  font-size: 1.05rem;
+  padding-left: 0;
+}
+
+.toma-buscador input:focus-visible { box-shadow: none; }
+
+.toma-candidatos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.toma-candidatos li {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+.toma-candidatos li > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.toma-candidatos strong { font-size: 1.05rem; }
+.toma-candidatos span { font-size: 0.9rem; color: var(--text-secondary); }
+.toma-candidatos button { width: auto; flex-shrink: 0; padding: 0.7rem 1.1rem; }
+
+/* -- Las dos columnas del bucle -- */
+
+.toma-columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.toma-columna-titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.toma-columna-titulo h2 { margin: 0; font-size: 1.2rem; }
+.toma-columna-titulo span { font-size: 1.2rem; font-weight: 700; }
+.toma-columna-titulo small { color: var(--text-secondary); font-size: 0.88rem; }
+
+.toma-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.toma-lista li {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-default);
+}
+
+.toma-lista li > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.toma-lista strong { font-size: 1.05rem; }
+.toma-lista span { font-size: 0.87rem; color: var(--text-secondary); }
+.toma-lista small { color: var(--text-secondary); font-size: 0.84rem; }
+.toma-lista button { width: auto; flex-shrink: 0; padding: 0.55rem 0.85rem; font-size: 0.87rem; }
+
+.toma-lista li.es-leido {
+  background: #d2efdf;
+  border-color: #d2efdf;
+  color: #0f5138;
+  animation: tomaEntraArriba 200ms ease-out;
+}
+
+.toma-lista li.es-leido span,
+.toma-lista li.es-leido small { color: inherit; opacity: 0.85; }
+
+@keyframes tomaEntraArriba {
+  from { opacity: 0; transform: translateY(-8px); }
+}
+
+.toma-vacio {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+li.toma-vacio {
+  border-style: dashed;
+  justify-content: center;
+}
+
+li.toma-vacio.es-listo {
+  color: var(--success-base);
+  border-color: var(--success-base);
+  font-weight: 700;
+}
+
+.toma-nota {
+  margin: 0.7rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  .toma-inicio-cuerpo,
+  .toma-columnas { grid-template-columns: minmax(0, 1fr); }
+
+}
+
+/* Quien pidió menos movimiento se queda con el mismo flujo, sin nada latiendo. */
+@media (prefers-reduced-motion: reduce) {
+  .toma-escaneo,
+  .toma-escaneo.sin-foco,
+  .toma-chip,
+  .toma-barra-progreso > div,
+  .toma-lista li.es-leido,
+  .toma-tarjeta,
+  .toma-huerfano {
+    animation: none;
+  }
+  .toma-escaneo { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.14); }
+  .toma-escaneo.sin-foco { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.24); }
+  .toma-flash { animation-duration: 120ms; }
+}
+
+/* -- Cerrar el área: lo que no apareció ---------------------------------------
+
+   "Pendiente" es "no lo vi todavía"; "no localizada" es una afirmación firmada
+   que viaja al reporte de Patrimonio. Por eso el botón es rojo de contorno y no
+   un rojo sólido más: no es destructivo, es serio. */
+
+.toma-btn-perdido {
+  width: auto;
+  flex-shrink: 0;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.87rem;
+  background: var(--surface-default);
+  border-color: var(--danger-base);
+  color: var(--danger-base);
+}
+
+.toma-btn-perdido:hover {
+  filter: none;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.toma-terminar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 56px;
+  font-size: 1.05rem;
+}
+
+.toma-cierre {
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--surface-default);
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.toma-cierre-cabeza {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 1.3rem 1.4rem;
+  background: #d2efdf;
+  color: #0f5138;
+  animation: tomaEntraArriba 220ms ease-out;
+}
+
+.toma-cierre-cabeza > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.toma-cierre-cabeza strong { font-size: 1.5rem; }
+
+.toma-cierre-cuerpo {
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.toma-cierre-cuerpo .toma-columna-titulo { margin-top: 0.6rem; }
+.toma-cierre-cuerpo .toma-columna-titulo:first-child { margin-top: 0; }
+
+.toma-lista li.es-perdido {
+  border-color: var(--danger-base);
+  background: rgba(220, 38, 38, 0.06);
+  color: #7f1f1f;
+}
+
+.toma-lista li.es-perdido span { color: inherit; opacity: 0.8; }
+
+.toma-cierre-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.toma-cierre-acciones .toma-cta { width: auto; flex: 1; min-width: 260px; }
+.toma-cierre-acciones .ghost {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 62px;
+  padding: 0 1.3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toma-cierre-cabeza { animation: none; }
 }

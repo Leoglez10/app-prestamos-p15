@@ -24,9 +24,9 @@ import {
   loginAdmin,
   openBackupsFolder,
   restoreBackupFromFile,
+  restoreBackupFromPath,
   updateCategoria,
   updateEquipo,
-  actualizarEquiposEnLote,
   updatePrestamoObservacionesAdmin,
   updateProfesor,
   getReportePrestamos,
@@ -39,6 +39,7 @@ import {
   deletePrestamo,
   updateSetting
 } from "../hooks/useInventory";
+import { esPrestableEfectivo } from "../utils/equipoFicha";
 import "../App.css";
 import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSchedule";
 import { formatSqliteDateTime } from "../utils/datetime";
@@ -72,7 +73,7 @@ import { confirmDialog, alertDialog } from "../utils/confirm";
 const BACKUP_KIND_LABELS: Record<string, string> = {
   auto: "Automático",
   manual: "Manual",
-  "pre-restore": "Previo a importar",
+  "pre-restore": "Previo a restaurar",
   otro: "Otro",
 };
 
@@ -418,7 +419,6 @@ function InventarioPanel() {
   // El inventario de la prepa son miles de filas y la tabla no vive dentro de un
   // scroll virtual: pintarlas todas congela la pagina en cada tecla del buscador.
   const [visibles, setVisibles] = useState(FILAS_POR_PAGINA);
-  const [bulkOcupado, setBulkOcupado] = useState(false);
   const [sortKey, setSortKey] = useState<"nombre" | "categoria" | "estado">("nombre");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [quickNombre, setQuickNombre] = useState("");
@@ -655,8 +655,8 @@ function InventarioPanel() {
   // esto no hay forma de mirar solo lo que si circula.
   const cumpleFiltro = (eq: Equipo, valor: string) => {
     if (!valor) return true;
-    if (valor === "prestable:1") return eq.es_prestable === 1;
-    if (valor === "prestable:0") return eq.es_prestable !== 1;
+    if (valor === "prestable:1") return esPrestableEfectivo(eq);
+    if (valor === "prestable:0") return !esPrestableEfectivo(eq);
     return eq.estado === valor;
   };
 
@@ -686,25 +686,6 @@ function InventarioPanel() {
     setVisibles(FILAS_POR_PAGINA);
   }, [searchTerm, filterCategory, filterStatus]);
 
-  const aplicarEnLote = async (cambios: { es_prestable?: number; categoria_id?: number }) => {
-    const cuantos = filteredEquipos.length;
-    const que = cambios.es_prestable === 1 ? "marcar como prestables"
-      : cambios.es_prestable === 0 ? "marcar como solo inventario"
-      : "mover de categoría";
-    if (!(await confirmDialog(`¿Seguro que quieres ${que} los ${cuantos} equipos filtrados?`))) return;
-
-    setBulkOcupado(true);
-    setError("");
-    try {
-      await actualizarEquiposEnLote(filteredEquipos.map(eq => eq.id), cambios);
-      await loadData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo aplicar el cambio en lote");
-    } finally {
-      setBulkOcupado(false);
-    }
-  };
-
   const toggleSort = (key: typeof sortKey) => {
     if (sortKey === key) {
       setSortDir(current => (current === "asc" ? "desc" : "asc"));
@@ -730,7 +711,7 @@ function InventarioPanel() {
     prestados: filteredEquipos.filter((equipo) => equipo.estado === "prestado").length,
     mantenimiento: filteredEquipos.filter((equipo) => equipo.estado === "mantenimiento").length,
     extraviados: filteredEquipos.filter((equipo) => equipo.estado === "extraviado").length,
-    noPrestables: filteredEquipos.filter((equipo) => equipo.es_prestable !== 1).length,
+    noPrestables: filteredEquipos.filter((equipo) => !esPrestableEfectivo(equipo)).length,
   };
 
   // Builds the PDF body. `rowLimit` trims the table for the on-screen preview so
@@ -781,7 +762,7 @@ function InventarioPanel() {
               : ""
           }</td>`,
           inventarioPdf.includeCategory ? `<td>${html(eq.categoria_nombre)}</td>` : "",
-          inventarioPdf.includeLoanType ? `<td>${html(eq.es_prestable === 1 ? "Prestable" : "Solo inventario")}</td>` : "",
+          inventarioPdf.includeLoanType ? `<td>${html(esPrestableEfectivo(eq) ? "Prestable" : "Solo inventario")}</td>` : "",
           `<td>${html(eq.estado)}</td>`,
           inventarioPdf.includeResponsible ? `<td>${html(eq.prestamo_activo_profe || "-")}</td>` : "",
           inventarioPdf.includeStock ? `<td>${html(eq.es_granel === 1 ? `${eq.stock_disponible}/${eq.stock_total}` : "1")}</td>` : "",
@@ -959,54 +940,28 @@ function InventarioPanel() {
         ))}
       </div>
 
-      {/* La accion masiva vive sobre la tabla y actua sobre lo que ya filtraste:
-          la tabla sabe buscar y filtrar, y una segunda lista con sus propios
-          filtros seria la misma pantalla dos veces. Aparece solo cuando hay un
-          filtro puesto, para que nadie toque 2137 equipos sin querer. */}
-      {hasActiveFilters && filteredEquipos.length > 1 && (
-        <div className="admin-bulk-bar">
-          <span>
-            Aplicar a los <strong>{filteredEquipos.length}</strong> equipos filtrados:
-          </span>
-          <button type="button" className="ghost" disabled={bulkOcupado} onClick={() => void aplicarEnLote({ es_prestable: 1 })}>
-            Marcar prestables
-          </button>
-          <button type="button" className="ghost" disabled={bulkOcupado} onClick={() => void aplicarEnLote({ es_prestable: 0 })}>
-            Solo inventario
-          </button>
-          <select
-            value=""
-            disabled={bulkOcupado}
-            onChange={(e) => { if (e.target.value) void aplicarEnLote({ categoria_id: Number(e.target.value) }); }}
-          >
-            <option value="">Mover a categoría…</option>
-            {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-          </select>
-        </div>
-      )}
-
       {/* The register/edit form used to sit in a permanent 350px column that took
-          about half the shell from the table. It is only needed while editing. */}
+          about half the shell from the table. It is only needed while editing.
+          Header and actions are fixed; only the middle scrolls, so the primary
+          action never floats on top of a field. */}
       <dialog ref={formDialogRef} className="admin-dialog is-form" onClose={handleCancelEdit}>
-        <div className="stack">
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '0.85rem' }}>
-            <div style={{ display: 'grid', gap: '0.25rem' }}>
-              <h3 style={{ margin: 0 }}>{editingId ? "Editar equipo" : "Registrar equipo nuevo"}</h3>
-              <div style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Agrega un artículo al inventario y define si se controlará por unidad o por cantidad.
-              </div>
-            </div>
-            <button type="button" className="admin-dialog-close" onClick={handleCancelEdit} aria-label="Cerrar">
-              <Icon name="x" size="1.1rem" />
-            </button>
-          </div>
+        <div className="admin-form-head">
+          <h3 style={{ margin: 0 }}>{editingId ? "Editar equipo" : "Registrar equipo nuevo"}</h3>
+          <button type="button" className="admin-dialog-close" onClick={handleCancelEdit} aria-label="Cerrar">
+            <Icon name="x" size="1.1rem" />
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit} className="stack" style={{ gap: '0.8rem' }}>
+        <form onSubmit={handleSubmit} className="admin-form-shell">
+          <div className="admin-form-body">
             <div className="admin-dialog-cols">
-            <div className="stack" style={{ gap: '0.8rem' }}>
+
+            <div className="stack" style={{ gap: '0.9rem' }}>
             <div className="admin-form-section">
-              <div className="admin-form-section-title">
-                Datos del equipo
+              <div className="admin-form-section-title">Qué es</div>
+              <div>
+                <label>Nombre</label>
+                <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej. Cámara Sony A7" required />
               </div>
               <div>
                 <label>Categoría</label>
@@ -1017,130 +972,47 @@ function InventarioPanel() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label>Nombre visible</label>
-                <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej. Cámara Sony A7" required />
-                <small style={{ color: 'var(--text-secondary)' }}>Así aparecerá en inventario y kiosko.</small>
-              </div>
             </div>
 
             <div className="admin-form-section">
-              <div className="admin-form-section-title">
-                Tipo de registro
-              </div>
-              <div style={{ display: 'grid', gap: '0.55rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setEsGranel(false)}
-                  style={{
-                    textAlign: 'left',
-                    padding: '0.8rem',
-                    borderRadius: '16px',
-                    border: esGranel ? '1px solid rgba(148, 163, 184, 0.18)' : '1px solid rgba(37, 99, 235, 0.28)',
-                    background: esGranel ? 'rgba(255,255,255,0.9)' : 'rgba(37, 99, 235, 0.08)',
-                    cursor: 'pointer',
-                    boxShadow: esGranel ? 'none' : '0 12px 24px rgba(37, 99, 235, 0.08)',
-                  }}
-                >
-                  <div style={{ fontWeight: 800, marginBottom: '0.25rem', color: 'var(--text-primary)' }}>Equipo único</div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.45 }}>
-                    Cada unidad se presta individualmente y puede tener identificador propio.
-                  </div>
+              <div className="admin-form-section-title">Cómo se cuenta</div>
+              {/* Two words each: the long paragraphs that used to explain these
+                  took more room than the whole rest of the form. */}
+              <div className="admin-segmented">
+                <button type="button" className={esGranel ? '' : 'is-active'} onClick={() => setEsGranel(false)} aria-pressed={!esGranel}>
+                  Equipo único
+                  <span>Se presta uno por uno</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setEsGranel(true)}
-                  style={{
-                    textAlign: 'left',
-                    padding: '0.8rem',
-                    borderRadius: '16px',
-                    border: esGranel ? '1px solid rgba(37, 99, 235, 0.28)' : '1px solid rgba(148, 163, 184, 0.18)',
-                    background: esGranel ? 'rgba(37, 99, 235, 0.08)' : 'rgba(255,255,255,0.9)',
-                    cursor: 'pointer',
-                    boxShadow: esGranel ? '0 12px 24px rgba(37, 99, 235, 0.08)' : 'none',
-                  }}
-                >
-                  <div style={{ fontWeight: 800, marginBottom: '0.25rem', color: 'var(--text-primary)' }}>Equipo por cantidad</div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.45 }}>
-                    Ideal para cables, adaptadores o controles que se administran por stock.
-                  </div>
+                <button type="button" className={esGranel ? 'is-active' : ''} onClick={() => setEsGranel(true)} aria-pressed={esGranel}>
+                  Por cantidad
+                  <span>Cables, controles, stock</span>
                 </button>
               </div>
 
               {!esGranel && (
-                <div>
-                  <label>Código o serie</label>
-                  <input value={identificador} onChange={e => setIdentificador(e.target.value)} placeholder="Ej. CAM-01" />
-                  <small style={{ color: 'var(--text-secondary)' }}>Opcional, útil para control interno del equipo.</small>
-                </div>
-              )}
-              {/* El ID de Patrimonio es único por objeto y no es correlativo, así
-                  que el alta múltiple no puede repartirlo entre las unidades. */}
-              {!esGranel && (editingId !== null || identificadoresPrevistos.length === 1) && (
-                <div>
-                  <label>ID de Patrimonio (UdeG)</label>
-                  <input
-                    value={idPatrimonial}
-                    onChange={e => setIdPatrimonial(e.target.value)}
-                    placeholder="Ej. 3382871"
-                    inputMode="numeric"
-                    autoComplete="off"
-                  />
-                  <small style={{ color: 'var(--text-secondary)' }}>
-                    El número del código de barras de la etiqueta blanca de la Universidad.
-                    Puedes escanearlo con la pistola sobre este campo.
-                  </small>
+                <div className="admin-field-pair">
+                  <div>
+                    <label>Código o serie</label>
+                    <input value={identificador} onChange={e => setIdentificador(e.target.value)} placeholder="Ej. CAM-01" />
+                  </div>
+                  {/* El ID de Patrimonio es único por objeto y no es correlativo, así
+                      que el alta múltiple no puede repartirlo entre las unidades. */}
+                  {(editingId !== null || identificadoresPrevistos.length === 1) && (
+                    <div>
+                      <label>ID de Patrimonio</label>
+                      <input
+                        value={idPatrimonial}
+                        onChange={e => setIdPatrimonial(e.target.value)}
+                        placeholder="Ej. 3382871"
+                        inputMode="numeric"
+                        autoComplete="off"
+                      />
+                      <small style={{ color: 'var(--text-secondary)' }}>Escanea la etiqueta blanca con la pistola.</small>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Plegado: el alta común es nombre + categoría. Estos ocho campos
-                  los llena la importación del Excel, no la mano, salvo correcciones. */}
-              <details className="ficha-patrimonio">
-                <summary style={{ cursor: 'pointer', fontWeight: 700, padding: '0.5rem 0' }}>
-                  Ficha del equipo (marca, modelo, resguardante…)
-                </summary>
-                <div style={{ display: 'grid', gap: '0.8rem', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', marginTop: '0.6rem' }}>
-                  <div>
-                    <label>Marca</label>
-                    <input value={ficha.marca} onChange={e => setFicha(f => ({ ...f, marca: e.target.value }))} placeholder="Ej. DELL" />
-                  </div>
-                  <div>
-                    <label>Modelo</label>
-                    <input value={ficha.modelo} onChange={e => setFicha(f => ({ ...f, modelo: e.target.value }))} placeholder="Ej. OPTIPLEX" />
-                  </div>
-                  {(editingId !== null || identificadoresPrevistos.length === 1) && (
-                    <div>
-                      <label>Número de serie</label>
-                      <input value={ficha.num_serie} onChange={e => setFicha(f => ({ ...f, num_serie: e.target.value }))} placeholder="Ej. MXL3322DP2" />
-                    </div>
-                  )}
-                  <div>
-                    <label>Ubicación</label>
-                    <input value={ficha.ubicacion} onChange={e => setFicha(f => ({ ...f, ubicacion: e.target.value }))} placeholder="Ej. Aula 12" />
-                  </div>
-                  <div>
-                    <label>Código del resguardante</label>
-                    <input value={ficha.resguardante_codigo} onChange={e => setFicha(f => ({ ...f, resguardante_codigo: e.target.value }))} placeholder="Ej. 2800829" inputMode="numeric" />
-                  </div>
-                  <div>
-                    <label>Nombre del resguardante</label>
-                    <input value={ficha.resguardante_nombre} onChange={e => setFicha(f => ({ ...f, resguardante_nombre: e.target.value }))} placeholder="Quien responde por el bien" />
-                  </div>
-                  <div>
-                    <label>Fecha de adquisición</label>
-                    <input type="date" value={ficha.fecha_adquisicion} onChange={e => setFicha(f => ({ ...f, fecha_adquisicion: e.target.value }))} />
-                  </div>
-                </div>
-                <div style={{ marginTop: '0.8rem' }}>
-                  <label>Descripción</label>
-                  <textarea
-                    value={ficha.descripcion}
-                    onChange={e => setFicha(f => ({ ...f, descripcion: e.target.value }))}
-                    placeholder="Características: procesador, memoria, medidas…"
-                    rows={2}
-                  />
-                </div>
-              </details>
               {!esGranel && !editingId && (
                 <div>
                   <label>¿Cuántas unidades?</label>
@@ -1151,9 +1023,6 @@ function InventarioPanel() {
                     value={cantidadUnidades}
                     onChange={e => setCantidadUnidades(e.target.value)}
                   />
-                  <small style={{ color: 'var(--text-secondary)' }}>
-                    Cada unidad se registra por separado, con su propio historial.
-                  </small>
                   {identificadoresPrevistos.length > 1 && (
                     <div style={{ marginTop: '0.5rem', padding: '0.55rem 0.7rem', borderRadius: '12px', background: 'rgba(37, 99, 235, 0.07)', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
                       {identificadoresPrevistos[0] === null ? (
@@ -1180,60 +1049,26 @@ function InventarioPanel() {
                     placeholder="Ej. 10"
                     required
                   />
-                  <small style={{ color: 'var(--text-secondary)' }}>Este equipo se controlará por stock disponible.</small>
                 </div>
               )}
             </div>
-
             </div>
 
-            <div className="stack" style={{ gap: '0.8rem' }}>
+            <div className="stack" style={{ gap: '0.9rem' }}>
             <div className="admin-form-section">
-              <div className="admin-form-section-title">
-                Disponibilidad y vista rápida
-              </div>
+              <div className="admin-form-section-title">Dónde se ve</div>
               <button
                 type="button"
+                className={`admin-toggle-card${esPrestable ? ' is-on' : ''}`}
                 onClick={() => setEsPrestable((current) => !current)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '0.8rem',
-                  width: '100%',
-                  padding: '0.8rem 0.9rem',
-                  borderRadius: '16px',
-                  border: esPrestable ? '1px solid rgba(34, 197, 94, 0.28)' : '1px solid rgba(148, 163, 184, 0.18)',
-                  background: esPrestable ? 'rgba(34, 197, 94, 0.08)' : 'rgba(255,255,255,0.92)',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  boxShadow: esPrestable ? '0 12px 24px rgba(34, 197, 94, 0.08)' : 'none',
-                }}
                 aria-pressed={esPrestable}
               >
-                <div style={{ display: 'grid', gap: '0.2rem' }}>
-                  <strong style={{ color: 'var(--text-primary)' }}>Mostrar en kiosko de profesores</strong>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                    {esPrestable ? 'Visible para préstamo inmediato.' : 'Oculto del kiosko; solo visible en inventario.'}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    minWidth: '64px',
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: '999px',
-                    background: esPrestable ? 'var(--success-base)' : 'rgba(148, 163, 184, 0.24)',
-                    color: esPrestable ? 'white' : 'var(--text-secondary)',
-                    fontWeight: 800,
-                    textAlign: 'center',
-                  }}
-                >
-                  {esPrestable ? 'Activo' : 'Oculto'}
-                </span>
+                <span>Mostrar en kiosko</span>
+                <span className="admin-toggle-pill">{esPrestable ? 'Sí' : 'No'}</span>
               </button>
               {editingId && (
                 <div>
-                  <label>Estado administrativo</label>
+                  <label>Estado</label>
                   <select value={estadoEdit} onChange={e => setEstadoEdit(e.target.value)} required>
                     <option value="disponible">Disponible</option>
                     <option value="prestado">Prestado (No remueve el préstamo)</option>
@@ -1242,32 +1077,64 @@ function InventarioPanel() {
                   </select>
                 </div>
               )}
-              <div style={{ borderRadius: '15px', padding: '0.75rem 0.85rem', background: 'white', border: '1px solid rgba(148, 163, 184, 0.16)', display: 'grid', gap: '0.25rem' }}>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-primary)' }}>
-                  Vista rápida
+            </div>
+
+            {/* Plegado: el alta común es nombre + categoría. Estos campos los llena
+                la importación del Excel, no la mano, salvo correcciones. */}
+            <details className="admin-form-section ficha-patrimonio">
+              <summary>Ficha del equipo (marca, modelo, resguardante…)</summary>
+              <div className="admin-field-pair" style={{ marginTop: '0.7rem' }}>
+                <div>
+                  <label>Marca</label>
+                  <input value={ficha.marca} onChange={e => setFicha(f => ({ ...f, marca: e.target.value }))} placeholder="Ej. DELL" />
                 </div>
-                <strong style={{ fontSize: '1rem' }}>{nombre || 'Sin nombre todavía'}</strong>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  {categoriaId ? `Categoría: ${categorias.find((c) => c.id === Number(categoriaId))?.nombre || 'Seleccionada'}` : 'Elige una categoría'}
+                <div>
+                  <label>Modelo</label>
+                  <input value={ficha.modelo} onChange={e => setFicha(f => ({ ...f, modelo: e.target.value }))} placeholder="Ej. OPTIPLEX" />
                 </div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                  Tipo: {esGranel ? `Por cantidad (${stockTotal || 1} total)` : `Equipo único${!editingId && identificadoresPrevistos.length > 1 ? ` × ${identificadoresPrevistos.length}` : ''}`}
+                {(editingId !== null || identificadoresPrevistos.length === 1) && (
+                  <div>
+                    <label>Número de serie</label>
+                    <input value={ficha.num_serie} onChange={e => setFicha(f => ({ ...f, num_serie: e.target.value }))} placeholder="Ej. MXL3322DP2" />
+                  </div>
+                )}
+                <div>
+                  <label>Ubicación</label>
+                  <input value={ficha.ubicacion} onChange={e => setFicha(f => ({ ...f, ubicacion: e.target.value }))} placeholder="Ej. Aula 12" />
                 </div>
-                <div style={{ color: esPrestable ? 'var(--success-base)' : 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 700 }}>
-                  {esPrestable ? 'Visible para préstamo' : 'Solo inventario interno'}
+                <div>
+                  <label>Código del resguardante</label>
+                  <input value={ficha.resguardante_codigo} onChange={e => setFicha(f => ({ ...f, resguardante_codigo: e.target.value }))} placeholder="Ej. 2800829" inputMode="numeric" />
+                </div>
+                <div>
+                  <label>Nombre del resguardante</label>
+                  <input value={ficha.resguardante_nombre} onChange={e => setFicha(f => ({ ...f, resguardante_nombre: e.target.value }))} placeholder="Quien responde por el bien" />
+                </div>
+                <div>
+                  <label>Fecha de adquisición</label>
+                  <input type="date" value={ficha.fecha_adquisicion} onChange={e => setFicha(f => ({ ...f, fecha_adquisicion: e.target.value }))} />
                 </div>
               </div>
+              <div style={{ marginTop: '0.8rem' }}>
+                <label>Descripción</label>
+                <textarea
+                  value={ficha.descripcion}
+                  onChange={e => setFicha(f => ({ ...f, descripcion: e.target.value }))}
+                  placeholder="Características: procesador, memoria, medidas…"
+                  rows={2}
+                />
+              </div>
+            </details>
             </div>
 
             </div>
-            </div>
+          </div>
 
-            <div className="admin-dialog-actions">
-              <button type="submit" style={{ flex: 2 }}>{editingId ? "Guardar cambios" : (!esGranel && identificadoresPrevistos.length > 1 ? `Guardar ${identificadoresPrevistos.length} unidades` : "Guardar equipo")}</button>
-              <button type="button" className="ghost" onClick={handleCancelEdit} style={{ flex: 1 }}>Cancelar</button>
-            </div>
-          </form>
-        </div>
+          <div className="admin-dialog-actions">
+            <button type="submit" style={{ flex: 2 }}>{editingId ? "Guardar cambios" : (!esGranel && identificadoresPrevistos.length > 1 ? `Guardar ${identificadoresPrevistos.length} unidades` : "Guardar equipo")}</button>
+            <button type="button" className="ghost" onClick={handleCancelEdit} style={{ flex: 1 }}>Cancelar</button>
+          </div>
+        </form>
       </dialog>
 
       {/* The row menus are absolutely positioned, so the panel must not clip them. */}
@@ -1344,8 +1211,8 @@ function InventarioPanel() {
                   </td>
                   <td className="col-optional" style={{ padding: '0.55rem 1rem' }}>{eq.categoria_nombre}</td>
                   <td style={{ padding: '0.55rem 1rem' }}>
-                    <span className={`state ${eq.es_prestable === 1 ? 'activo' : 'historico'}`} style={{ width: 'fit-content' }}>
-                      {eq.es_prestable === 1 ? 'Prestable' : 'Solo inventario'}
+                    <span className={`state ${esPrestableEfectivo(eq) ? 'activo' : 'historico'}`} style={{ width: 'fit-content' }}>
+                      {esPrestableEfectivo(eq) ? 'Prestable' : 'Solo inventario'}
                     </span>
                   </td>
                   <td style={{ padding: '0.55rem 1rem' }}>
@@ -1981,6 +1848,7 @@ function CategoriasPanel() {
   const [equipoEsPrestable, setEquipoEsPrestable] = useState(true);
   const [equipoEsGranel, setEquipoEsGranel] = useState(false);
   const [equipoStockTotal, setEquipoStockTotal] = useState("1");
+  const [savingLoanabilityId, setSavingLoanabilityId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -2066,6 +1934,27 @@ function CategoriasPanel() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar la categoría.");
+    }
+  };
+
+  const handleToggleLoanability = async (categoria: Categoria) => {
+    const esPrestable = categoria.es_prestable === 1;
+
+    try {
+      setSavingLoanabilityId(categoria.id);
+      setError("");
+      await updateCategoria(categoria.id, categoria.nombre, !esPrestable);
+      await loadCategorias();
+
+      // Evita que un formulario de edición ya abierto vuelva a guardar el valor
+      // anterior y deshaga el cambio directo de la tabla.
+      if (editingId === categoria.id) {
+        setEsPrestableCategoria(!esPrestable);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cambiar el tipo de préstamo de la categoría.");
+    } finally {
+      setSavingLoanabilityId(null);
     }
   };
 
@@ -2224,9 +2113,27 @@ function CategoriasPanel() {
                 <td style={{ padding: "1rem" }}>{c.nombre}</td>
                 <td style={{ padding: "1rem" }}>{c.total_articulos}</td>
                 <td style={{ padding: "1rem" }}>
-                  <span className={`state ${c.es_prestable === 1 ? "activo" : "historico"}`}>
-                    {c.es_prestable === 1 ? "Prestable" : "Solo inventario"}
-                  </span>
+                  <button
+                    type="button"
+                    className={`category-loanability${c.es_prestable === 1 ? " is-loanable" : ""}`}
+                    onClick={() => void handleToggleLoanability(c)}
+                    disabled={savingLoanabilityId !== null}
+                    aria-pressed={c.es_prestable === 1}
+                    aria-label={
+                      c.es_prestable === 1
+                        ? `${c.nombre}: prestable. Cambiar a solo inventario`
+                        : `${c.nombre}: solo inventario. Permitir préstamos`
+                    }
+                  >
+                    <strong>{c.es_prestable === 1 ? "Prestable" : "Solo inventario"}</strong>
+                    <span>
+                      {savingLoanabilityId === c.id
+                        ? "Guardando…"
+                        : c.es_prestable === 1
+                          ? "Cambiar a solo inventario"
+                          : "Permitir préstamos"}
+                    </span>
+                  </button>
                 </td>
                 <td style={{ padding: "1rem", textAlign: "right" }}>
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.45rem", flexWrap: "wrap" }}>
@@ -2301,7 +2208,7 @@ function CategoriasPanel() {
                       <td style={{ padding: "0.8rem" }}>{eq.nombre_equipo}</td>
                       <td className="col-optional" style={{ padding: "0.8rem", color: "var(--text-secondary)" }}>{eq.identificador || "S/N"}</td>
                       <td style={{ padding: "0.8rem" }}>{eq.estado}</td>
-                      <td style={{ padding: "0.8rem" }}>{eq.es_prestable === 1 ? "Prestable" : "Solo inventario"}</td>
+                      <td style={{ padding: "0.8rem" }}>{esPrestableEfectivo(eq) ? "Prestable" : "Solo inventario"}</td>
                       <td className="col-optional" style={{ padding: "0.8rem" }}>{eq.es_granel === 1 ? "Granel" : "Único"}</td>
                       <td style={{ padding: "0.8rem" }}>{eq.es_granel === 1 ? `${eq.stock_disponible}/${eq.stock_total}` : "1"}</td>
                       <td style={{ padding: "0.8rem", textAlign: "right" }}>
@@ -2770,6 +2677,27 @@ function ConfiguracionPanel({ adminUser }: { adminUser: Profesor }) {
     }
   };
 
+  const handleRestoreBackup = async (backup: BackupInfo) => {
+    if (!(await confirmDialog(`Se restaurará el respaldo "${backup.file_name}" y reemplazará la base actual. Todo lo que se haya registrado después de esa fecha se perderá. Se creará un respaldo de seguridad antes de continuar. ¿Deseas seguir?`))) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError("");
+      setHistoryMessage("");
+      const restoreResult = await restoreBackupFromPath(backup.backup_path);
+      setBackupMessage(`Respaldo restaurado: ${restoreResult.restored_file_name}. Se guardó una copia de seguridad en ${restoreResult.backup_path}. La app se recargará.`);
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo restaurar el respaldo.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDeleteHistorial = async () => {
     if (!(await confirmDialog("¿Deseas borrar todos los registros históricos de préstamos? Los préstamos activos no se eliminarán."))) return;
     if (!(await confirmDialog("Esta acción es irreversible. Solo quedarán los préstamos activos y los nuevos que se creen a partir de ahora. ¿Continuar?"))) return;
@@ -2900,16 +2828,17 @@ function ConfiguracionPanel({ adminUser }: { adminUser: Profesor }) {
           <table className="admin-table">
             <thead>
               <tr style={{ background: "var(--surface-sunken)", borderBottom: "2px solid var(--border-subtle)" }}>
-                <th style={{ padding: "0.9rem", width: "30%" }}>Archivo</th>
-                <th style={{ padding: "0.9rem", width: "14%" }}>Tipo</th>
-                <th style={{ padding: "0.9rem", width: "20%" }}>Fecha</th>
-                <th className="col-optional" style={{ padding: "0.9rem", width: "36%" }}>Ruta</th>
+                <th style={{ padding: "0.9rem", width: "28%" }}>Archivo</th>
+                <th style={{ padding: "0.9rem", width: "13%" }}>Tipo</th>
+                <th style={{ padding: "0.9rem", width: "18%" }}>Fecha</th>
+                <th className="col-optional" style={{ padding: "0.9rem", width: "28%" }}>Ruta</th>
+                <th style={{ padding: "0.9rem", width: "13%" }}>Acción</th>
               </tr>
             </thead>
             <tbody>
               {backups.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: "1.2rem", textAlign: "center", color: "var(--text-secondary)" }}>
+                  <td colSpan={5} style={{ padding: "1.2rem", textAlign: "center", color: "var(--text-secondary)" }}>
                     Aún no hay respaldos creados.
                   </td>
                 </tr>
@@ -2920,6 +2849,17 @@ function ConfiguracionPanel({ adminUser }: { adminUser: Profesor }) {
                   <td style={{ padding: "0.9rem", color: "var(--text-secondary)" }}>{BACKUP_KIND_LABELS[backup.kind] ?? backup.kind}</td>
                   <td style={{ padding: "0.9rem" }}>{formatSqliteDateTime(new Date(backup.created_epoch * 1000).toISOString())}</td>
                   <td className="col-optional" style={{ padding: "0.9rem", color: "var(--text-secondary)" }}>{backup.backup_path}</td>
+                  <td style={{ padding: "0.9rem" }}>
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => void handleRestoreBackup(backup)}
+                      disabled={saving}
+                      style={{ width: "auto", padding: "0.5rem 0.9rem" }}
+                    >
+                      Restaurar
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -2967,6 +2907,11 @@ export default function Admin() {
   const [loginPin, setLoginPin] = useState("");
   const [loginError, setLoginError] = useState("");
   const [activeTab, setActiveTab] = useState("inventario");
+  // Mientras dura un recorrido de toma fisica la barra lateral desaparece: son
+  // seis pestanas y dos salidas a un clic de robarle el foco al campo de
+  // escaneo, y sin foco la pistola dispara al vacio sin avisar. Ver
+  // src/components/TomaFisicaPanel.tsx.
+  const [recorridoAbierto, setRecorridoAbierto] = useState(false);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -3079,7 +3024,7 @@ export default function Admin() {
   return (
     <div style={{ display: "flex", height: "100vh", background: "var(--background-default)", color: "var(--text-primary)" }}>
       {/* Sidebar */}
-      <aside className="admin-sidebar" style={{
+      {!recorridoAbierto && <aside className="admin-sidebar" style={{
         background: "var(--surface-sunken)",
         borderRight: "1px solid var(--border-subtle)",
         display: "flex",
@@ -3156,14 +3101,14 @@ export default function Admin() {
             Volver a Inicio
           </Link>
         </div>
-      </aside>
+      </aside>}
 
       {/* Main Content */}
       <main className="admin-main">
 
         {activeTab === "inventario" && <InventarioPanel />}
 
-        {activeTab === "toma" && <TomaFisicaPanel adminUser={adminUser} />}
+        {activeTab === "toma" && <TomaFisicaPanel adminUser={adminUser} onRecorrido={setRecorridoAbierto} />}
 
         {activeTab === "categorias" && <CategoriasPanel />}
 

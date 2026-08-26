@@ -41,6 +41,16 @@ export type BaseEquipo = {
  * Listas blancas de columnas. Son la única fuente de nombres que llega al string
  * del SQL: ninguna clave del objeto de entrada se concatena a la consulta.
  */
+/**
+ * Un equipo solo se presta si el equipo Y su categoria lo permiten. Marcar una
+ * categoria como "solo inventario" apaga todos sus equipos sin reescribirlos,
+ * asi que leer `es_prestable` a secas miente en cuanto la categoria esta apagada.
+ */
+export const esPrestableEfectivo = (equipo: {
+  es_prestable?: number;
+  categoria_es_prestable?: number;
+}): boolean => equipo.es_prestable === 1 && (equipo.categoria_es_prestable ?? 1) === 1;
+
 export const COLUMNAS_FICHA_EQUIPO = [
   "id_patrimonial",
   "marca",

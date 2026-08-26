@@ -119,9 +119,9 @@ export function ImportarPatrimonioPanel({ onImportado }: Props) {
           )}
 
           <div style={{ padding: "0.8rem 1rem", borderRadius: 12, background: "rgba(148, 163, 184, 0.10)", lineHeight: 1.55 }}>
-            Los equipos nuevos entran como <strong>solo inventario</strong>, salvo los tipos que
-            se prestan (laptops, cámaras, proyectores, audio). Lo demás se habilita después,
-            desde esta misma pantalla.
+            Todos los equipos y categorías nuevos entran como <strong>solo inventario</strong>.
+            El Excel los organiza, pero nunca decide qué se presta. Puedes habilitar una
+            categoría después desde esta misma pantalla.
             <br />
             La importación <strong>no toca</strong> la ubicación, la categoría ni el nombre de
             los equipos que ya existen: eso lo produce la escuela, no Patrimonio.

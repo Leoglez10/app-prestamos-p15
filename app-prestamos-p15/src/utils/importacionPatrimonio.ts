@@ -63,12 +63,11 @@ export const CAMPOS_DE_PATRIMONIO = [
 export const CATEGORIA_SIN_CLASIFICAR = "Patrimonio (sin clasificar)";
 
 /**
- * Clasificadores que sí se prestan, y en qué categoría caen.
+ * Clasificadores que conviene agrupar en categorías reconocibles.
  *
- * Es un punto de partida, no una verdad: de las 2137 filas del archivo solo unas
- * 470 se prestan, y el resto es infraestructura fija (ventiladores, pintarrones,
- * extintores). Todo lo que no esté acá entra como **solo inventario**, y se
- * habilita después desde Admin.
+ * El mapeo sirve únicamente para organizar el inventario. Patrimonio no decide
+ * qué se presta: incluso una laptop o cámara nueva entra como **solo inventario**
+ * y se habilita después, de forma explícita, desde Admin.
  *
  * No se deriva del COG del Excel: 46 de los 190 clasificadores aparecen en más
  * de un COG, así que ese árbol miente. Ver el plan §2.1.
@@ -98,10 +97,12 @@ export type DestinoFila = {
 };
 
 export const destinoDeClasificador = (clasificador: string): DestinoFila => {
-  const categoria = CATEGORIA_POR_CLASIFICADOR[clasificador.trim().toUpperCase()];
-  return categoria
-    ? { categoria, es_prestable: 1 }
-    : { categoria: CATEGORIA_SIN_CLASIFICAR, es_prestable: 0 };
+  const categoria =
+    CATEGORIA_POR_CLASIFICADOR[clasificador.trim().toUpperCase()] ??
+    CATEGORIA_SIN_CLASIFICAR;
+
+  // El clasificador solo organiza. La decisión de prestar es de la escuela.
+  return { categoria, es_prestable: 0 };
 };
 
 export type AltaPlaneada = {

@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { formatSqliteDateTime } from "../utils/datetime";
 import { getHistorialEquipo, type Equipo, type HistorialEquipo } from "../hooks/useInventory";
+import { esPrestableEfectivo } from "../utils/equipoFicha";
 
 type Props = {
   equipo: Equipo | null;
@@ -82,8 +83,8 @@ export function EquipoDetalleModal({ equipo, onClose, onEditar }: Props) {
             <div className="stack" style={{ gap: "0.9rem" }}>
               <Dato label="Categoría">{equipo.categoria_nombre}</Dato>
               <Dato label="Tipo de préstamo">
-                <span className={`state ${equipo.es_prestable === 1 ? "activo" : "historico"}`} style={{ width: "fit-content" }}>
-                  {equipo.es_prestable === 1 ? "Prestable" : "Solo inventario"}
+                <span className={`state ${esPrestableEfectivo(equipo) ? "activo" : "historico"}`} style={{ width: "fit-content" }}>
+                  {esPrestableEfectivo(equipo) ? "Prestable" : "Solo inventario"}
                 </span>
               </Dato>
               <Dato label="Disponibilidad">

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cambiosDeEquipo, textoONulo } from "./equipoFicha.ts";
+import { cambiosDeEquipo, esPrestableEfectivo, textoONulo } from "./equipoFicha.ts";
 
 test("una clave ausente no llega al SQL", () => {
   // Es la regla que evita el bug: una pantalla que no conoce un campo no lo pisa.
@@ -48,4 +48,16 @@ test("textoONulo trata undefined y null igual que el vacío", () => {
   assert.equal(textoONulo(undefined), null);
   assert.equal(textoONulo(null), null);
   assert.equal(textoONulo(" Aula 12 "), "Aula 12");
+});
+
+test("solo es prestable si el equipo Y su categoria lo permiten", () => {
+  // Apagar la categoria apaga sus equipos sin reescribir ni una fila de inventario.
+  assert.equal(esPrestableEfectivo({ es_prestable: 1, categoria_es_prestable: 1 }), true);
+  assert.equal(esPrestableEfectivo({ es_prestable: 1, categoria_es_prestable: 0 }), false);
+  assert.equal(esPrestableEfectivo({ es_prestable: 0, categoria_es_prestable: 1 }), false);
+});
+
+test("sin dato de la categoria se asume que la categoria presta", () => {
+  assert.equal(esPrestableEfectivo({ es_prestable: 1 }), true);
+  assert.equal(esPrestableEfectivo({ es_prestable: 0 }), false);
 });

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  CATEGORIA_POR_CLASIFICADOR,
   destinoDeClasificador,
   planificarImportacion,
   CATEGORIA_SIN_CLASIFICAR,
@@ -44,14 +45,19 @@ test("lo que no se presta entra como solo inventario", () => {
   }
 });
 
-test("los clasificadores prestables caen en su categoría", () => {
-  assert.deepEqual(destinoDeClasificador("COMPUTADORA PORTATIL"), { categoria: "Laptops", es_prestable: 1 });
-  assert.deepEqual(destinoDeClasificador("CAÑON PROYECTOR"), { categoria: "Proyectores", es_prestable: 1 });
+test("los clasificadores conocidos conservan su categoría pero nunca infieren préstamo", () => {
+  assert.deepEqual(destinoDeClasificador("COMPUTADORA PORTATIL"), { categoria: "Laptops", es_prestable: 0 });
+  assert.deepEqual(destinoDeClasificador("CAÑON PROYECTOR"), { categoria: "Proyectores", es_prestable: 0 });
+
+  for (const clasificador of Object.keys(CATEGORIA_POR_CLASIFICADOR)) {
+    assert.equal(destinoDeClasificador(clasificador).es_prestable, 0, clasificador);
+  }
 });
 
 test("una fila nueva se da de alta", () => {
   const plan = planificarImportacion({ filas: [fila()], avisos: [] }, []);
   assert.equal(plan.altas.length, 1);
+  assert.equal(plan.altas[0].es_prestable, 0);
   assert.equal(plan.cambios.length, 0);
   assert.deepEqual(plan.categoriasNuevas, ["Laptops"]);
 });

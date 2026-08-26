@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "../App.css";
 import logoP15 from "../../img/logo-p15.png";
 import { getEquipos, type Equipo } from "../hooks/useInventory";
+import { esPrestableEfectivo } from "../utils/equipoFicha";
 import { formatSqliteDateTime, formatSqliteLoanDate } from "../utils/datetime";
 import { html, printHtmlDocument } from "../utils/print";
 
@@ -60,7 +61,7 @@ const summarizeEquipos = (equipos: Equipo[]): HomeStats => {
       [responsable, desde && `desde ${desde}`].filter(Boolean).join(" · ") || categoria;
     push(stats.enPrestamo, equipo, total - libres, detallePrestamo);
 
-    if (equipo.es_prestable && (equipo.categoria_es_prestable ?? 1)) {
+    if (esPrestableEfectivo(equipo)) {
       push(stats.disponibles, equipo, libres, equipo.identificador?.trim() || categoria);
     }
   }

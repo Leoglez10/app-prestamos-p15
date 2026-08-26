@@ -17,6 +17,7 @@ import {
   devolverEquipo,
   getSettings,
 } from "../hooks/useInventory";
+import { esPrestableEfectivo } from "../utils/equipoFicha";
 import { formatSqliteLoanDate } from "../utils/datetime";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
 import { Icon, type IconName } from "../components/Icon";
@@ -104,12 +105,12 @@ export default function Kiosk() {
 
   const loadEquipos = async (categoriaId?: number | null) => {
     const rows = await getEquipos(categoriaId);
-    setEquipos(rows.filter((equipo) => equipo.es_prestable === 1 && equipo.categoria_es_prestable === 1));
+    setEquipos(rows.filter(esPrestableEfectivo));
   };
 
   const loadAllEquipos = async () => {
     const rows = await getEquipos();
-    setAllEquipos(rows.filter((equipo) => equipo.es_prestable === 1 && equipo.categoria_es_prestable === 1));
+    setAllEquipos(rows.filter(esPrestableEfectivo));
   };
 
   // Helper: cambiar categoría y limpiar búsqueda para evitar confusión de filtros activos

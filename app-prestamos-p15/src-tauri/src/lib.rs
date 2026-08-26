@@ -240,6 +240,50 @@ fn restore_backup_from_bytes(
     file_name: String,
     bytes: Vec<u8>,
 ) -> Result<RestoreBackupResult, String> {
+    restore_from_bytes(&app, file_name, bytes)
+}
+
+/// Restore one of the app's own backups, addressed by the path `list_backups` returned.
+///
+/// The path is confined to the backups directory on purpose. This command takes a
+/// filesystem path straight from the frontend, and a path that escaped the folder
+/// would let any file on disk be copied over the live database.
+#[tauri::command]
+fn restore_backup_from_path(
+    app: AppHandle,
+    backup_path: String,
+) -> Result<RestoreBackupResult, String> {
+    let backups_dir = backups_dir(&app)?
+        .canonicalize()
+        .map_err(|error| format!("No se pudo resolver el directorio de respaldos: {error}"))?;
+
+    let path = PathBuf::from(&backup_path)
+        .canonicalize()
+        .map_err(|_| "El respaldo seleccionado ya no existe.".to_string())?;
+
+    if !path.starts_with(&backups_dir) {
+        return Err(
+            "Solo se pueden restaurar respaldos de la carpeta de respaldos de la app.".into(),
+        );
+    }
+
+    let file_name = path
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_else(|| backup_path.clone());
+
+    let bytes = fs::read(&path)
+        .map_err(|error| format!("No se pudo leer el respaldo seleccionado: {error}"))?;
+
+    restore_from_bytes(&app, file_name, bytes)
+}
+
+/// Overwrite the live database with `bytes`, keeping a safety copy of what was there.
+fn restore_from_bytes(
+    app: &AppHandle,
+    file_name: String,
+    bytes: Vec<u8>,
+) -> Result<RestoreBackupResult, String> {
     if bytes.len() < 16 {
         return Err("El archivo seleccionado es demasiado pequeno para ser un respaldo SQLite valido.".into());
     }
@@ -248,12 +292,12 @@ fn restore_backup_from_bytes(
         return Err("El archivo seleccionado no parece ser una base SQLite valida.".into());
     }
 
-    let db_path = database_path(&app)?;
-    let root = app_data_root(&app)?;
+    let db_path = database_path(app)?;
+    let root = app_data_root(app)?;
     fs::create_dir_all(&root)
         .map_err(|error| format!("No se pudo preparar el directorio de datos de la app: {error}"))?;
 
-    let backups_dir = backups_dir(&app)?;
+    let backups_dir = backups_dir(app)?;
 
     let now = Local::now();
     let timestamp = SystemTime::now()
@@ -352,6 +396,7 @@ pub fn run() {
             list_backups,
             open_backups_dir,
             restore_backup_from_bytes,
+            restore_backup_from_path,
             local_ip,
             celular_registrar_dispositivo,
             patrimonio::leer_excel_patrimonio,

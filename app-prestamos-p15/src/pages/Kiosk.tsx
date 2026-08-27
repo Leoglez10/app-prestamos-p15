@@ -435,7 +435,24 @@ setSelectedEquipoIds([]);
 
   // Hay lectores que no mandan el `Enter` del final: sin esto el codigo se
   // queda escrito en el buscador y el equipo nunca entra al carrito.
-  usePistola(equipoSearchTerm, agregarPrimerDisponible);
+  //
+  // El disparo limpia el buscador SIEMPRE, encuentre algo o no. Escanear la
+  // etiqueta de algo que ya se llevo otro profe dejaba el codigo escrito, y el
+  // disparo siguiente se le pegaba (`22104073005532`): el error pasaba a culpar
+  // a un equipo que si estaba disponible, y nadie lo notaba porque quien escanea
+  // mira el aparato, no la pantalla.
+  //
+  // Tecleando no se limpia: ahi el texto es una busqueda a medio escribir que se
+  // corrige a mano. La pistola no corrige nada, vuelve a disparar.
+  //
+  // ponytail: si el campo ya traia texto tecleado, el primer disparo se le pega
+  // igual y falla una vez. Se arregla con `useEntradaPistola` (el buscador de
+  // Admin lo usa), pero aca conviven dos temporizadores de 140 ms y el orden
+  // entre ellos decide que valor se busca. No vale la carrera por ese caso.
+  usePistola(equipoSearchTerm, () => {
+    agregarPrimerDisponible();
+    setEquipoSearchTerm("");
+  });
 
   const handleLaptopSelection = (includeHdmi: boolean) => {
     if (!hdmiPromptEquipo) return;

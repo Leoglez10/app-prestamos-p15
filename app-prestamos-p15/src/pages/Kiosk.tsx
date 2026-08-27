@@ -17,6 +17,7 @@ import {
   devolverEquipo,
   getSettings,
 } from "../hooks/useInventory";
+import { usePistola } from "../hooks/usePistola";
 import { esPrestableEfectivo } from "../utils/equipoFicha";
 import { formatSqliteLoanDate } from "../utils/datetime";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
@@ -420,6 +421,21 @@ setSelectedEquipoIds([]);
     spawnFlyToCart(equipo, sourceElement);
     setEquipoSearchTerm("");
   };
+
+  // Lo que hace el `Enter` del buscador, sea tecleado o venga de la pistola.
+  const agregarPrimerDisponible = () => {
+    const firstAvailable = filteredEquipos.find(isEquipoDisponible);
+    if (!firstAvailable) {
+      setErrorMessage("No hay equipos disponibles con ese criterio.");
+      return;
+    }
+    handleToggleEquipo(firstAvailable);
+    setEquipoSearchTerm("");
+  };
+
+  // Hay lectores que no mandan el `Enter` del final: sin esto el codigo se
+  // queda escrito en el buscador y el equipo nunca entra al carrito.
+  usePistola(equipoSearchTerm, agregarPrimerDisponible);
 
   const handleLaptopSelection = (includeHdmi: boolean) => {
     if (!hdmiPromptEquipo) return;
@@ -1761,13 +1777,7 @@ setSelectedEquipoIds([]);
                         onKeyDown={(e) => {
                           if (e.key !== "Enter") return;
                           e.preventDefault();
-                          const firstAvailable = filteredEquipos.find(isEquipoDisponible);
-                          if (!firstAvailable) {
-                            setErrorMessage("No hay equipos disponibles con ese criterio.");
-                            return;
-                          }
-                          handleToggleEquipo(firstAvailable);
-                          setEquipoSearchTerm("");
+                          agregarPrimerDisponible();
                         }}
                       />
                     </div>

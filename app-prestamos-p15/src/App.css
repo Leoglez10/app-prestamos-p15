@@ -1844,6 +1844,45 @@ button.ghost {
   color: var(--danger-base);
 }
 
+/* La salida del callejón: se ve como botón, no como texto suelto, porque es
+   la única forma de seguir el recorrido sin resolver el código huérfano. */
+.toma-saltar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.4rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  background: var(--background-default);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.toma-saltar span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.toma-saltar small {
+  font-weight: 400;
+  font-size: 0.82rem;
+  opacity: 0.75;
+}
+
+.toma-saltar svg { flex-shrink: 0; }
+
+.toma-saltar:hover {
+  filter: none;
+  background: var(--surface-default);
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
 /* -- Paso 2: el recorrido -- */
 
 .toma-recorrido {
@@ -2199,6 +2238,64 @@ button.ghost {
 .toma-candidatos strong { font-size: 1.05rem; }
 .toma-candidatos span { font-size: 0.9rem; color: var(--text-secondary); }
 .toma-candidatos button { width: auto; flex-shrink: 0; padding: 0.7rem 1.1rem; }
+
+/* Alta al vuelo de un codigo huerfano. Dos campos y nada mas: quien esta de pie
+   con la pistola en la mano no llena una ficha de Patrimonio completa, y la que
+   falte se corrige despues desde Inventario con el equipo ya en la base. */
+.toma-alta-abrir {
+  width: auto;
+  align-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.7rem 1.1rem;
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px dashed var(--brand-primary);
+}
+
+.toma-alta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--brand-primary);
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.toma-alta-titulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.toma-alta-titulo strong { font-size: 1.1rem; }
+.toma-alta-titulo span { font-size: 0.9rem; color: var(--text-secondary); }
+
+.toma-alta-titulo code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.toma-alta-campos {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.toma-alta-acciones {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.toma-alta-acciones button { width: auto; padding: 0.75rem 1.2rem; }
+
+@media (max-width: 720px) {
+  .toma-alta-campos { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* -- Las dos columnas del bucle -- */
 

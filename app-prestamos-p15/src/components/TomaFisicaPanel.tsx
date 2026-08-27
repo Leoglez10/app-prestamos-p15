@@ -22,7 +22,9 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { Icon } from "./Icon";
 import {
   buscarPorIdPatrimonial,
+  createEquipo,
   exportarReporteInventario,
+  getCategorias,
   getEquipos,
   getInicioCampana,
   getUbicacionesRecientes,
@@ -32,9 +34,12 @@ import {
   registrarRevision,
   revertirRevision,
   vincularIdPatrimonial,
+  type Categoria,
   type Equipo,
   type Profesor,
 } from "../hooks/useInventory";
+import { usePistola } from "../hooks/usePistola";
+import { EquipoFormDialog } from "./EquipoFormDialog";
 import {
   calcularProgreso,
   clasificarDisparo,
@@ -136,6 +141,7 @@ export function TomaFisicaPanel({
 
   const [cargando, setCargando] = useState(true);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [inicioCampana, setInicioCampana] = useState<string | null>(null);
   const [recientes, setRecientes] = useState<string[]>([]);
 
@@ -153,6 +159,15 @@ export function TomaFisicaPanel({
   const [error, setError] = useState("");
   const [desconocido, setDesconocido] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
+  // Alta al vuelo de un codigo huerfano: `null` mientras no se pida. La
+  // categoria se recuerda entre altas porque un recorrido da de alta cosas
+  // parecidas seguidas, y volver a elegirla en cada una es la friccion que
+  // hace que la gente prefiera anotarlo en un papel.
+  const [alta, setAlta] = useState<{ nombre: string; categoriaId: string } | null>(null);
+  const [ultimaCategoria, setUltimaCategoria] = useState("");
+  // El formulario completo de Inventario, abierto desde el alta corta cuando el
+  // aparato en la mano merece marca, modelo y serie ahora y no "después".
+  const [formCompleto, setFormCompleto] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [foco, setFoco] = useState(true);
   // El area se cierra a mano, no se abandona: es el unico momento en que la
@@ -168,14 +183,16 @@ export function TomaFisicaPanel({
   const quienRevisa = adminUser.nombre;
 
   const recargar = useCallback(async () => {
-    const [filas, inicio, areas] = await Promise.all([
+    const [filas, inicio, areas, cats] = await Promise.all([
       getEquipos(),
       getInicioCampana(),
       getUbicacionesRecientes(),
+      getCategorias(),
     ]);
     setEquipos(filas);
     setInicioCampana(inicio);
     setRecientes(areas);
+    setCategorias(cats);
   }, []);
 
   useEffect(() => {
@@ -312,8 +329,8 @@ export function TomaFisicaPanel({
     }
   };
 
-  const escanear = async (e: FormEvent) => {
-    e.preventDefault();
+  const escanear = async (e?: FormEvent) => {
+    e?.preventDefault();
     const leido = codigo.trim();
     if (!leido || ocupado) return;
 
@@ -335,7 +352,10 @@ export function TomaFisicaPanel({
         setBusqueda("");
         if (prueba) {
           // Ligar una etiqueta es para siempre: en prueba solo se avisa.
-          setAviso(`${normalizarCodigoPatrimonial(leido)} no existe en el inventario.`);
+          setAviso(
+            `${normalizarCodigoPatrimonial(leido)} no existe en el inventario. ` +
+              "Apaga el modo prueba para ligarlo o darlo de alta."
+          );
           enfocarEscaneo();
           return;
         }
@@ -378,6 +398,10 @@ export function TomaFisicaPanel({
       setOcupado(false);
     }
   };
+
+  // Red para los lectores que no mandan el `Enter` del final: sin esto el
+  // código queda escrito en el campo y el recorrido se detiene.
+  usePistola(codigo, () => void escanear());
 
   /** Vuelve atrás el último disparo. La pistola dispara contra lo que se le ponga enfrente. */
   const deshacer = async (equipoId: number, previo: Previo) => {
@@ -440,6 +464,75 @@ export function TomaFisicaPanel({
       setDesconocido(null);
       setBusqueda("");
       await recargar();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  /**
+   * Lo que pasa DESPUÉS de que la base aceptó el alta, venga del formulario
+   * corto o del completo: el equipo recién creado se cuenta como leído aquí.
+   *
+   * Se relee por `id_patrimonial` porque es el único dato que se conoce de los
+   * dos lados; el `id` lo asigna SQLite y sin él no hay revisión que registrar
+   * ni tarjeta que mostrar. Sin etiqueta (un alta que terminó siendo granel) no
+   * hay nada que releer: se recarga y ya.
+   */
+  const cerrarElAlta = async (idPatrimonial: string | null) => {
+    const equipo = idPatrimonial ? await buscarPorIdPatrimonial(idPatrimonial) : null;
+    if (equipo) {
+      await registrarRevision(equipo.id, ubicacion, quienRevisa);
+      setLeidos((actuales) => [
+        { equipo, cuando: new Date().toLocaleTimeString(), previo: comoPrevio(equipo) },
+        ...actuales,
+      ]);
+      tono(true);
+      setFlash("ok");
+      setAviso(`${equipo.nombre_equipo} quedó dado de alta en ${ubicacion}.`);
+    }
+
+    setAlta(null);
+    setFormCompleto(false);
+    setDesconocido(null);
+    setBusqueda("");
+    await recargar();
+  };
+
+  /**
+   * Da de alta un equipo que la base nunca tuvo, sin salir del recorrido.
+   *
+   * Antes esto mandaba a la pestaña de Inventario: había que soltar la pistola,
+   * cambiar de pantalla, escribir la ubicación a mano y volver — y en la
+   * práctica se anotaba en un papel que nadie capturaba después. La ubicación no
+   * se pregunta: es el área del recorrido, que ya está elegida.
+   *
+   * Nace apagado para el kiosko (`es_prestable: 0`). Lo que aparece caminando el
+   * edificio es inventario; prestarlo es una decisión aparte que toma la escuela
+   * desde Admin, nunca un efecto secundario de escanear una etiqueta.
+   */
+  const darDeAlta = async () => {
+    if (!desconocido || !alta || prueba || ocupado) return;
+    const nombre = alta.nombre.trim();
+    if (!nombre || !alta.categoriaId) return;
+
+    setOcupado(true);
+    setError("");
+    try {
+      await createEquipo({
+        nombre_equipo: nombre,
+        identificador: null,
+        id_patrimonial: desconocido,
+        ubicacion,
+        categoria_id: Number(alta.categoriaId),
+        es_prestable: 0,
+        es_granel: 0,
+        stock_total: 1,
+      });
+
+      setUltimaCategoria(alta.categoriaId);
+      await cerrarElAlta(desconocido);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -861,6 +954,73 @@ export function TomaFisicaPanel({
           </div>
 
           <div className="toma-huerfano-cuerpo">
+            {alta ? (
+              <form
+                className="toma-alta"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void darDeAlta();
+                }}
+              >
+                <div className="toma-alta-titulo">
+                  <strong>Equipo nuevo en {ubicacion}</strong>
+                  <span>
+                    La etiqueta <code>{desconocido}</code> y la ubicación ya quedan puestas.
+                  </span>
+                </div>
+                <div className="toma-alta-campos">
+                  <div>
+                    <label htmlFor="alta-nombre">¿Qué es?</label>
+                    <input
+                      id="alta-nombre"
+                      value={alta.nombre}
+                      onChange={(e) => setAlta((actual) => (actual ? { ...actual, nombre: e.target.value } : actual))}
+                      placeholder="Ej. Proyector Epson"
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="alta-categoria">Categoría</label>
+                    <select
+                      id="alta-categoria"
+                      value={alta.categoriaId}
+                      onChange={(e) => setAlta((actual) => (actual ? { ...actual, categoriaId: e.target.value } : actual))}
+                    >
+                      <option value="">-- Elegir --</option>
+                      {categorias.map((categoria) => (
+                        <option key={categoria.id} value={categoria.id}>
+                          {categoria.nombre}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <small>
+                  Entra como solo inventario: para prestarlo hay que habilitarlo desde Inventario.
+                </small>
+                <div className="toma-alta-acciones">
+                  <button type="submit" disabled={ocupado || !alta.nombre.trim() || !alta.categoriaId}>
+                    <Icon name="plus" /> Agregarlo al inventario
+                  </button>
+                  {/* La misma ficha completa de Inventario, con lo escrito acá ya
+                      adentro. Es para cuando el aparato está en la mano: la marca,
+                      el modelo y la serie se leen del chasis AHORA, y si no se
+                      capturan ahora no las captura nadie. */}
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => setFormCompleto(true)}
+                    disabled={ocupado}
+                  >
+                    <Icon name="clipboard" /> Editarlo completo
+                  </button>
+                  <button type="button" className="ghost" onClick={() => setAlta(null)}>
+                    Volver a buscarlo
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
             <div className="toma-buscador">
               <Icon name="search" />
               <input
@@ -872,9 +1032,7 @@ export function TomaFisicaPanel({
             </div>
 
             {candidatos.length === 0 ? (
-              <p className="toma-vacio">
-                Ningún equipo sin etiqueta coincide. Dalo de alta desde la pestaña Inventario.
-              </p>
+              <p className="toma-vacio">Ningún equipo sin etiqueta coincide con lo que buscaste.</p>
             ) : (
               <ul className="toma-candidatos">
                 {candidatos.map((equipo) => {
@@ -910,13 +1068,29 @@ export function TomaFisicaPanel({
 
             <button
               type="button"
-              className="toma-link-danger"
+              className="toma-alta-abrir"
+              onClick={() => setAlta({ nombre: busqueda.trim(), categoriaId: ultimaCategoria })}
+              disabled={ocupado}
+            >
+              <Icon name="plus" /> No es ninguno: agregarlo como equipo nuevo en {ubicacion}
+            </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              className="toma-saltar"
               onClick={() => {
                 setDesconocido(null);
+                setAlta(null);
                 setBusqueda("");
               }}
             >
-              Saltarlo y seguir escaneando
+              <Icon name="arrowRight" />
+              <span>
+                Saltarlo y seguir escaneando
+                <small>Queda sin marcar: lo puedes resolver después.</small>
+              </span>
             </button>
           </div>
         </div>
@@ -996,6 +1170,27 @@ export function TomaFisicaPanel({
       <button type="button" className="ghost toma-terminar" onClick={() => setCerrando(true)}>
         <Icon name="checkCircle" size="1.3rem" /> Terminar {ubicacion}
       </button>
+
+      {/* Exactamente el mismo formulario que Inventario, con la etiqueta, la
+          ubicación y lo ya escrito adentro. Entra apagado para el kiosko por la
+          misma razón que el alta corta: escanear no decide qué se presta. */}
+      <EquipoFormDialog
+        abierto={formCompleto}
+        editando={null}
+        categorias={categorias}
+        prefill={{
+          id_patrimonial: desconocido,
+          ubicacion,
+          nombre_equipo: alta?.nombre ?? null,
+          categoria_id: alta?.categoriaId ? Number(alta.categoriaId) : null,
+          es_prestable: false,
+        }}
+        onCerrar={() => setFormCompleto(false)}
+        onGuardado={async (idPatrimonial) => {
+          if (alta?.categoriaId) setUltimaCategoria(alta.categoriaId);
+          await cerrarElAlta(idPatrimonial);
+        }}
+      />
     </section>
   );
 }

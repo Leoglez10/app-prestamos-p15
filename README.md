@@ -336,6 +336,27 @@ La app incluye **respaldo nativo** desde dentro del programa:
 
 > 💡 Detalle técnico bueno: el respaldo tiene validación de "magic header" (los primeros bytes dicen `SQLite format 3`), así que si eliges un archivo que no es de base de datos, se rechaza limpiamente sin romper nada.
 
+### Trabajar en dos computadoras (relevo por USB)
+
+Si la laptop principal está siempre ocupada, puedes hacer la toma física (o cualquier captura) en otra PC y luego traerte el trabajo. La app no fusiona dos bases: **restaurar reemplaza la base completa**. Por eso el método es de relevo, como pasarse una estafeta.
+
+> ⚠️ **Regla no negociable: solo una computadora activa a la vez.** Si las dos capturan el mismo día, la última en restaurar borra el trabajo de la otra y no hay forma de recuperarlo salvo el respaldo previo.
+
+**Ida (laptop → PC prestada):**
+
+1. Instala la app en la otra PC (mismo instalador, ver [Instalación](#-instalación-para-usuarios-finales-no-programadores)).
+2. En la laptop: **Admin** → Configuración → **"Crear respaldo"** → **"Abrir carpeta"**.
+3. Copia el archivo `.db` recién creado a la USB.
+4. En la otra PC: **Admin** → Configuración → **"Importar respaldo"** y elige ese `.db`.
+5. Reinicia la app. Ya tienes todo el inventario ahí; trabaja normal.
+
+**Vuelta (PC prestada → laptop):**
+
+6. En la otra PC: **"Crear respaldo"** → **"Abrir carpeta"** → copia el `.db` a la USB.
+7. En la laptop: **"Importar respaldo"** con ese archivo. Reinicia.
+
+Desde ese momento la laptop vuelve a ser la computadora activa, y la otra PC queda desactualizada: no captures nada más ahí hasta el siguiente relevo.
+
 ### Respaldo automatizado con Python (opcional)
 
 El repo trae scripts en `scripts/`:
@@ -700,6 +721,9 @@ Sí. Admin → Inventario → menú de la fila del equipo (⋮) → **"Forzar de
 
 **¿Cómo sé qué me falta por contar en una toma de inventario?**
 La columna **"Deberían estar aquí"** lista los equipos pendientes del área actual. Cuando se vacía, terminaste ([guía completa](#-toma-de-inventario-físico)).
+
+**¿Puedo trabajar en otra computadora si la laptop está ocupada?**
+Sí, pasándote la base con un USB y con **una sola computadora activa a la vez**: la app no fusiona dos bases, restaurar reemplaza todo ([pasos del relevo](#trabajar-en-dos-computadoras-relevo-por-usb)).
 
 **¿Mi base de datos se borró, qué hago?**
 Si tienes respaldo (en `backups/` o en un USB), lo restauras desde Configuración. Si no, **se perdió**. Por eso **RESPALDA SIEMPRE**.

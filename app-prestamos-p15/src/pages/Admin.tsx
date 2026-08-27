@@ -43,31 +43,21 @@ import { esPrestableEfectivo } from "../utils/equipoFicha";
 import "../App.css";
 import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSchedule";
 import { formatSqliteDateTime } from "../utils/datetime";
-import { generarIdentificadores } from "../utils/identificadores";
 import { html, buildPrintDocument, printHtmlDocument } from "../utils/print";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
 
 // Cuantas filas de inventario se pintan de un jalon. Ver `visibles`.
 const FILAS_POR_PAGINA = 100;
 
-// Los campos de la ficha de Patrimonio viven juntos en un solo estado: son ocho
-// campos de texto que se llenan y se limpian siempre en bloque.
-const FICHA_VACIA = {
-  marca: "",
-  modelo: "",
-  num_serie: "",
-  descripcion: "",
-  resguardante_codigo: "",
-  resguardante_nombre: "",
-  fecha_adquisicion: "",
-  ubicacion: "",
-};
 import { Icon } from "../components/Icon";
 // EXPERIMENT: phone access over the LAN. See docs/QR_CELULAR.md to remove.
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
 import { TomaFisicaPanel } from "../components/TomaFisicaPanel";
+import { EquipoFormDialog } from "../components/EquipoFormDialog";
+import { useEscaneoGlobal } from "../hooks/useEscaneoGlobal";
+import { useEntradaPistola } from "../hooks/usePistola";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
@@ -399,18 +389,9 @@ function InventarioPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Form states
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [nombre, setNombre] = useState("");
-  const [identificador, setIdentificador] = useState("");
-  const [idPatrimonial, setIdPatrimonial] = useState("");
-  const [ficha, setFicha] = useState(FICHA_VACIA);
-  const [categoriaId, setCategoriaId] = useState("");
-  const [estadoEdit, setEstadoEdit] = useState("disponible");
-  const [esPrestable, setEsPrestable] = useState(true);
-  const [esGranel, setEsGranel] = useState(false);
-  const [stockTotal, setStockTotal] = useState("1");
-  const [cantidadUnidades, setCantidadUnidades] = useState("1");
+  // El formulario completo es dueño de sus doce campos: acá solo se dice si está
+  // abierto y qué equipo está editando. Ver `components/EquipoFormDialog.tsx`.
+  const [editando, setEditando] = useState<Equipo | null>(null);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -423,8 +404,10 @@ function InventarioPanel() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [quickNombre, setQuickNombre] = useState("");
   const [quickCategoria, setQuickCategoria] = useState("");
-  const formDialogRef = useRef<HTMLDialogElement>(null);
+  const [formAbierto, setFormAbierto] = useState(false);
   const [detalleId, setDetalleId] = useState<number | null>(null);
+  // Última etiqueta escaneada que no está en la base. Es la puerta al alta.
+  const [escaneoHuerfano, setEscaneoHuerfano] = useState<string | null>(null);
   const [inventarioPdf, setInventarioPdf] = useState({
     title: "Inventario completo P15",
     subtitle: "Control general de equipos, disponibilidad y estado administrativo.",
@@ -456,119 +439,54 @@ function InventarioPanel() {
     void loadData();
   }, []);
 
-  // Las unidades que creará el alta múltiple. Se muestran ANTES de guardar: la
-  // numeración no es algo que se deba descubrir después de imprimir etiquetas.
-  const identificadoresPrevistos = useMemo(
-    () => generarIdentificadores(identificador, editingId ? 1 : Number(cantidadUnidades)),
-    [identificador, cantidadUnidades, editingId]
-  );
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!nombre || !categoriaId) return;
-
-    try {
-      if (editingId) {
-        await updateEquipo(editingId, {
-          nombre_equipo: nombre,
-          identificador: identificador || null,
-          id_patrimonial: idPatrimonial || null,
-          ...ficha,
-          categoria_id: Number(categoriaId),
-          estado: estadoEdit,
-          es_prestable: esPrestable ? 1 : 0,
-          es_granel: esGranel ? 1 : 0,
-          stock_total: Number(stockTotal) || 1
-        });
-      } else if (esGranel) {
-        await createEquipo({
-          nombre_equipo: nombre,
-          identificador: identificador || null,
-          // El granel nunca pasó por Patrimonio: no tiene etiqueta que leer.
-          id_patrimonial: null,
-          ...ficha,
-          categoria_id: Number(categoriaId),
-          es_prestable: esPrestable ? 1 : 0,
-          es_granel: 1,
-          stock_total: Number(stockTotal) || 1
-        });
-      } else {
-        // Una fila por unidad: es lo que le da a cada objeto su propia etiqueta y
-        // su propio historial. Ver src/utils/identificadores.ts.
-        //
-        // El ID de Patrimonio y el número de serie NO se autonumeran como el
-        // identificador: son propios de cada objeto físico y no son correlativos.
-        // Repartir el mismo valor entre N unidades sería inventar el dato, así que
-        // solo se asignan cuando el alta es de una sola unidad.
-        //
-        // El resto de la ficha sí se comparte: cinco laptops iguales compradas
-        // juntas tienen la misma marca, modelo, fecha, resguardante y ubicación.
-        const unaSolaUnidad = identificadoresPrevistos.length === 1;
-        for (const codigo of identificadoresPrevistos) {
-          await createEquipo({
-            nombre_equipo: nombre,
-            identificador: codigo,
-            ...ficha,
-            id_patrimonial: unaSolaUnidad ? idPatrimonial || null : null,
-            num_serie: unaSolaUnidad ? ficha.num_serie || null : null,
-            categoria_id: Number(categoriaId),
-            es_prestable: esPrestable ? 1 : 0,
-            es_granel: 0,
-            stock_total: 1
-          });
-        }
-      }
-      handleCancelEdit();
-      await loadData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al guardar el equipo");
-    }
-  };
-
   const handleEditInit = (eq: Equipo) => {
-    formDialogRef.current?.showModal();
-    setEditingId(eq.id);
-    setNombre(eq.nombre_equipo);
-    setIdentificador(eq.identificador || "");
-    setIdPatrimonial(eq.id_patrimonial || "");
-    setFicha({
-      marca: eq.marca ?? "",
-      modelo: eq.modelo ?? "",
-      num_serie: eq.num_serie ?? "",
-      descripcion: eq.descripcion ?? "",
-      resguardante_codigo: eq.resguardante_codigo ?? "",
-      resguardante_nombre: eq.resguardante_nombre ?? "",
-      fecha_adquisicion: eq.fecha_adquisicion ?? "",
-      ubicacion: eq.ubicacion ?? "",
-    });
-    setCategoriaId(eq.categoria_id.toString());
-    setEstadoEdit(eq.estado);
-    setEsPrestable(eq.es_prestable === 1);
-    setEsGranel(eq.es_granel === 1);
-    setStockTotal(eq.stock_total.toString());
-    setCantidadUnidades("1");
+    setEscaneoHuerfano(null);
+    setEditando(eq);
+    setFormAbierto(true);
   };
 
   const handleCancelEdit = () => {
-    formDialogRef.current?.close();
-    setEditingId(null);
-    setNombre("");
-    setIdentificador("");
-    setIdPatrimonial("");
-    setFicha(FICHA_VACIA);
-    setCategoriaId("");
-    setEstadoEdit("disponible");
-    setEsPrestable(true);
-    setEsGranel(false);
-    setStockTotal("1");
-    setCantidadUnidades("1");
+    setFormAbierto(false);
+    setEditando(null);
   };
 
-  // Reset first so the dialog never opens showing the equipment edited last.
-  const handleNuevoEquipo = () => {
-    handleCancelEdit();
-    formDialogRef.current?.showModal();
+  /** Alta. `conIdPatrimonial` llega cuando la abrió una etiqueta escaneada. */
+  const handleNuevoEquipo = (conIdPatrimonial?: string) => {
+    setEditando(null);
+    setEscaneoHuerfano(conIdPatrimonial ?? null);
+    setFormAbierto(true);
   };
+
+  /**
+   * La pistola apuntada a la pantalla, sin campo de escaneo: la etiqueta abre
+   * la ficha del equipo. Es el gesto que ya se hace en la toma física, pero sin
+   * abrir un recorrido, para cuando solo se quiere ver qué es un aparato.
+   *
+   * La búsqueda es contra `equipos`, que ya está en memoria: la tabla completa
+   * se cargó al entrar y no hay razón para volver a la base por una fila.
+   */
+  const abrirPorEscaneo = (leido: string) => {
+    const codigo = normalizarCodigoPatrimonial(leido);
+    if (!codigo) return;
+
+    const equipo = equipos.find(eq => eq.id_patrimonial === codigo);
+    if (equipo) {
+      setEscaneoHuerfano(null);
+      setDetalleId(equipo.id);
+      return;
+    }
+
+    setDetalleId(null);
+    setEscaneoHuerfano(codigo);
+  };
+
+  // Mientras el formulario está abierto el teclado le pertenece a él: el código
+  // que se dispare ahí va al campo de ID de Patrimonio, no a esto.
+  useEscaneoGlobal(!formAbierto, abrirPorEscaneo);
+
+  // Escanear con el cursor dentro del buscador: el código nuevo reemplaza al
+  // viejo en vez de pegarse a él. Ver `useEntradaPistola`.
+  const buscadorPistola = useEntradaPistola(setSearchTerm);
 
   // Name + category is the whole cost of adding one more unique item; the full
   // form stays for stock, serial numbers and kiosk visibility.
@@ -867,16 +785,38 @@ function InventarioPanel() {
         onAction={handlePrintInventario}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem', marginBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+        {/* La pistola está escuchando siempre en esta pestaña; decirlo evita que
+            alguien busque el campo de escaneo que aquí no existe. */}
+        <span className="admin-escaneo-listo">
+          <Icon name="barcode" size="1.05rem" />
+          Dispara la pistola contra cualquier etiqueta para abrir su ficha.
+        </span>
         <button
           type="button"
-          onClick={handleNuevoEquipo}
+          onClick={() => handleNuevoEquipo()}
           style={{ width: 'auto', padding: '0.75rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
         >
           <Icon name="plus" size="1.05rem" />
           Nuevo equipo
         </button>
       </div>
+
+      {escaneoHuerfano && (
+        <div className="admin-escaneo-huerfano">
+          <Icon name="alert" size="1.4rem" />
+          <div>
+            <strong><code>{escaneoHuerfano}</code> no existe en el inventario.</strong>
+            <span>Nadie reclama esa etiqueta. Puedes darla de alta ahora mismo.</span>
+          </div>
+          <button type="button" onClick={() => handleNuevoEquipo(escaneoHuerfano)}>
+            <Icon name="plus" size="1rem" /> Agregarlo como equipo nuevo
+          </button>
+          <button type="button" className="admin-escaneo-descartar" onClick={() => setEscaneoHuerfano(null)} aria-label="Descartar">
+            <Icon name="x" size="1rem" />
+          </button>
+        </div>
+      )}
 
       {/* Buscador y Filtros */}
       <div className="admin-filters">
@@ -887,6 +827,7 @@ function InventarioPanel() {
             placeholder="Buscar por nombre o ID..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
+            onKeyDown={buscadorPistola}
           />
         </div>
         <select
@@ -944,198 +885,21 @@ function InventarioPanel() {
           about half the shell from the table. It is only needed while editing.
           Header and actions are fixed; only the middle scrolls, so the primary
           action never floats on top of a field. */}
-      <dialog ref={formDialogRef} className="admin-dialog is-form" onClose={handleCancelEdit}>
-        <div className="admin-form-head">
-          <h3 style={{ margin: 0 }}>{editingId ? "Editar equipo" : "Registrar equipo nuevo"}</h3>
-          <button type="button" className="admin-dialog-close" onClick={handleCancelEdit} aria-label="Cerrar">
-            <Icon name="x" size="1.1rem" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="admin-form-shell">
-          <div className="admin-form-body">
-            <div className="admin-dialog-cols">
-
-            <div className="stack" style={{ gap: '0.9rem' }}>
-            <div className="admin-form-section">
-              <div className="admin-form-section-title">Qué es</div>
-              <div>
-                <label>Nombre</label>
-                <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej. Cámara Sony A7" required />
-              </div>
-              <div>
-                <label>Categoría</label>
-                <select value={categoriaId} onChange={e => setCategoriaId(e.target.value)} required>
-                  <option value="">-- Seleccionar --</option>
-                  {categorias.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="admin-form-section">
-              <div className="admin-form-section-title">Cómo se cuenta</div>
-              {/* Two words each: the long paragraphs that used to explain these
-                  took more room than the whole rest of the form. */}
-              <div className="admin-segmented">
-                <button type="button" className={esGranel ? '' : 'is-active'} onClick={() => setEsGranel(false)} aria-pressed={!esGranel}>
-                  Equipo único
-                  <span>Se presta uno por uno</span>
-                </button>
-                <button type="button" className={esGranel ? 'is-active' : ''} onClick={() => setEsGranel(true)} aria-pressed={esGranel}>
-                  Por cantidad
-                  <span>Cables, controles, stock</span>
-                </button>
-              </div>
-
-              {!esGranel && (
-                <div className="admin-field-pair">
-                  <div>
-                    <label>Código o serie</label>
-                    <input value={identificador} onChange={e => setIdentificador(e.target.value)} placeholder="Ej. CAM-01" />
-                  </div>
-                  {/* El ID de Patrimonio es único por objeto y no es correlativo, así
-                      que el alta múltiple no puede repartirlo entre las unidades. */}
-                  {(editingId !== null || identificadoresPrevistos.length === 1) && (
-                    <div>
-                      <label>ID de Patrimonio</label>
-                      <input
-                        value={idPatrimonial}
-                        onChange={e => setIdPatrimonial(e.target.value)}
-                        placeholder="Ej. 3382871"
-                        inputMode="numeric"
-                        autoComplete="off"
-                      />
-                      <small style={{ color: 'var(--text-secondary)' }}>Escanea la etiqueta blanca con la pistola.</small>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!esGranel && !editingId && (
-                <div>
-                  <label>¿Cuántas unidades?</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="200"
-                    value={cantidadUnidades}
-                    onChange={e => setCantidadUnidades(e.target.value)}
-                  />
-                  {identificadoresPrevistos.length > 1 && (
-                    <div style={{ marginTop: '0.5rem', padding: '0.55rem 0.7rem', borderRadius: '12px', background: 'rgba(37, 99, 235, 0.07)', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                      {identificadoresPrevistos[0] === null ? (
-                        <>Se crearán {identificadoresPrevistos.length} unidades sin código. Escribe uno arriba para numerarlas.</>
-                      ) : (
-                        <>
-                          Se crearán: <code>{identificadoresPrevistos[0]}</code>
-                          {identificadoresPrevistos.length > 2 ? ' … ' : ', '}
-                          <code>{identificadoresPrevistos[identificadoresPrevistos.length - 1]}</code>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              {esGranel && (
-                <div>
-                  <label>Cantidad total</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={stockTotal}
-                    onChange={e => setStockTotal(e.target.value)}
-                    placeholder="Ej. 10"
-                    required
-                  />
-                </div>
-              )}
-            </div>
-            </div>
-
-            <div className="stack" style={{ gap: '0.9rem' }}>
-            <div className="admin-form-section">
-              <div className="admin-form-section-title">Dónde se ve</div>
-              <button
-                type="button"
-                className={`admin-toggle-card${esPrestable ? ' is-on' : ''}`}
-                onClick={() => setEsPrestable((current) => !current)}
-                aria-pressed={esPrestable}
-              >
-                <span>Mostrar en kiosko</span>
-                <span className="admin-toggle-pill">{esPrestable ? 'Sí' : 'No'}</span>
-              </button>
-              {editingId && (
-                <div>
-                  <label>Estado</label>
-                  <select value={estadoEdit} onChange={e => setEstadoEdit(e.target.value)} required>
-                    <option value="disponible">Disponible</option>
-                    <option value="prestado">Prestado (No remueve el préstamo)</option>
-                    <option value="extraviado">Extraviado</option>
-                    <option value="mantenimiento">Mantenimiento</option>
-                  </select>
-                </div>
-              )}
-            </div>
-
-            {/* Plegado: el alta común es nombre + categoría. Estos campos los llena
-                la importación del Excel, no la mano, salvo correcciones. */}
-            <details className="admin-form-section ficha-patrimonio">
-              <summary>Ficha del equipo (marca, modelo, resguardante…)</summary>
-              <div className="admin-field-pair" style={{ marginTop: '0.7rem' }}>
-                <div>
-                  <label>Marca</label>
-                  <input value={ficha.marca} onChange={e => setFicha(f => ({ ...f, marca: e.target.value }))} placeholder="Ej. DELL" />
-                </div>
-                <div>
-                  <label>Modelo</label>
-                  <input value={ficha.modelo} onChange={e => setFicha(f => ({ ...f, modelo: e.target.value }))} placeholder="Ej. OPTIPLEX" />
-                </div>
-                {(editingId !== null || identificadoresPrevistos.length === 1) && (
-                  <div>
-                    <label>Número de serie</label>
-                    <input value={ficha.num_serie} onChange={e => setFicha(f => ({ ...f, num_serie: e.target.value }))} placeholder="Ej. MXL3322DP2" />
-                  </div>
-                )}
-                <div>
-                  <label>Ubicación</label>
-                  <input value={ficha.ubicacion} onChange={e => setFicha(f => ({ ...f, ubicacion: e.target.value }))} placeholder="Ej. Aula 12" />
-                </div>
-                <div>
-                  <label>Código del resguardante</label>
-                  <input value={ficha.resguardante_codigo} onChange={e => setFicha(f => ({ ...f, resguardante_codigo: e.target.value }))} placeholder="Ej. 2800829" inputMode="numeric" />
-                </div>
-                <div>
-                  <label>Nombre del resguardante</label>
-                  <input value={ficha.resguardante_nombre} onChange={e => setFicha(f => ({ ...f, resguardante_nombre: e.target.value }))} placeholder="Quien responde por el bien" />
-                </div>
-                <div>
-                  <label>Fecha de adquisición</label>
-                  <input type="date" value={ficha.fecha_adquisicion} onChange={e => setFicha(f => ({ ...f, fecha_adquisicion: e.target.value }))} />
-                </div>
-              </div>
-              <div style={{ marginTop: '0.8rem' }}>
-                <label>Descripción</label>
-                <textarea
-                  value={ficha.descripcion}
-                  onChange={e => setFicha(f => ({ ...f, descripcion: e.target.value }))}
-                  placeholder="Características: procesador, memoria, medidas…"
-                  rows={2}
-                />
-              </div>
-            </details>
-            </div>
-
-            </div>
-          </div>
-
-          <div className="admin-dialog-actions">
-            <button type="submit" style={{ flex: 2 }}>{editingId ? "Guardar cambios" : (!esGranel && identificadoresPrevistos.length > 1 ? `Guardar ${identificadoresPrevistos.length} unidades` : "Guardar equipo")}</button>
-            <button type="button" className="ghost" onClick={handleCancelEdit} style={{ flex: 1 }}>Cancelar</button>
-          </div>
-        </form>
-      </dialog>
+      <EquipoFormDialog
+        abierto={formAbierto}
+        editando={editando}
+        categorias={categorias}
+        prefill={escaneoHuerfano ? { id_patrimonial: escaneoHuerfano } : undefined}
+        onCerrar={handleCancelEdit}
+        onGuardado={async () => {
+          // El aviso de la etiqueta huérfana se apaga acá y no al cerrar: si se
+          // cancela el alta, esa etiqueta sigue sin existir y el aviso sigue
+          // siendo cierto. Recién deja de serlo cuando la base la aceptó.
+          setEscaneoHuerfano(null);
+          handleCancelEdit();
+          await loadData();
+        }}
+      />
 
       {/* The row menus are absolutely positioned, so the panel must not clip them. */}
       <div className="panel" style={{ padding: '0' }}>
@@ -1186,7 +950,7 @@ function InventarioPanel() {
                 </tr>
               ) : null}
               {filteredEquipos.slice(0, visibles).map(eq => (
-                <tr key={eq.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: editingId === eq.id ? 'var(--surface-sunken)' : 'transparent' }}>
+                <tr key={eq.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: editando?.id === eq.id ? 'var(--surface-sunken)' : 'transparent' }}>
                   <td style={{ padding: '0.55rem 1rem' }}>
                     <button type="button" className="row-link" onClick={() => setDetalleId(eq.id)}>
                       {eq.nombre_equipo}

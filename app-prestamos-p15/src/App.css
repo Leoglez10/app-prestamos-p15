@@ -399,6 +399,59 @@ button.ghost {
    The global `input, select, button { width: 100% }` rule makes flex children
    claim a full row each, which is why these controls stacked. A grid gives the
    search field the slack and keeps both selects on fixed tracks beside it. */
+/* La pistola escuchando en toda la pestana de inventario. No hay campo de
+   escaneo aqui: el aviso es lo unico que dice que el gesto existe. */
+.admin-escaneo-listo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.admin-escaneo-huerfano {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--warning-base);
+  border-radius: 16px;
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.admin-escaneo-huerfano > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.admin-escaneo-huerfano span { font-size: 0.9rem; }
+
+.admin-escaneo-huerfano code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.06em;
+}
+
+.admin-escaneo-huerfano button {
+  width: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+}
+
+.admin-escaneo-descartar {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(120, 53, 15, 0.3);
+  padding: 0.55rem !important;
+}
+
 .admin-filters {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(150px, 210px) minmax(150px, 210px) auto;

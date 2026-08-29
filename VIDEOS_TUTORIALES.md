@@ -18,7 +18,7 @@ Serie corta de videos de capacitación para el personal de la Preparatoria 15: p
 
 | # | Video | Duración | Estado |
 |---|---|---|---|
-| 1 | Kiosko: prestar y devolver | ~75 s | ⬜ Pendiente |
+| 1 | [Kiosko: prestar y devolver](videos/01-kiosko/GUION.md) | ~78 s | 🟡 Guion listo |
 | 2 | Configuración inicial | ~90 s | ⬜ Pendiente |
 | 3 | Importar Excel de Patrimonio | ~90 s | ⬜ Pendiente |
 | 4 | Préstamos de alumnos (Préstamo Rápido) | ~75 s | ⬜ Pendiente |
@@ -26,18 +26,20 @@ Serie corta de videos de capacitación para el personal de la Preparatoria 15: p
 
 ---
 
-## Video 1 — Kiosko: prestar y devolver (~75 s)
+## Video 1 — Kiosko: prestar y devolver (~78 s)
+
+📄 **Guion de producción:** [videos/01-kiosko/GUION.md](videos/01-kiosko/GUION.md) — escena por escena, con el mapa de dónde vive cada pantalla en el código.
 
 **Qué incluye:**
 
 - Entrar a "Soy Profesor" desde la pantalla de inicio y escribir el código UDG
-- Catálogo: filtro por chips de categoría, búsqueda por nombre/marca/modelo/ID patrimonial
+- Catálogo: lista lateral de categorías, búsqueda por nombre/marca/modelo/ID patrimonial (al escribir se busca en TODO el inventario, no solo en la categoría activa)
 - Escanear código de barras: el match exacto gana sobre el filtro de texto
 - Agregar al carrito; equipos a granel muestran cuántos hay disponibles
-- Prestar una laptop → la app sugiere agregar un HDMI disponible automáticamente
-- Notas de entrega opcionales → confirmar
+- Prestar una laptop → la app pregunta "¿Tambien necesita HDMI?" y, si aceptas, elige uno disponible por ti
+- "Agregar observacion" (opcional, dentro del carrito) → "Confirmar y Llevar"
 - Modal de éxito con cierre de sesión automático a los 3 segundos (terminal compartida)
-- Devolver: devolución préstamo por préstamo o botón "Devolver todo"
+- Devolver: préstamo por préstamo, o "Devolver todo" (solo aparece con 2 o más) con su modal de confirmación
 
 **Qué resuelve:** es el video de uso diario. Todo profesor debería poder pedir y devolver equipo sin ayuda después de verlo.
 

@@ -54,6 +54,7 @@ import { Icon } from "../components/Icon";
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
+import { ImportarReportePanel } from "../components/ImportarReportePanel";
 import { TomaFisicaPanel } from "../components/TomaFisicaPanel";
 import { EquipoFormDialog } from "../components/EquipoFormDialog";
 import { useEscaneoGlobal } from "../hooks/useEscaneoGlobal";
@@ -1067,6 +1068,8 @@ function InventarioPanel() {
       </div>
 
       <ImportarPatrimonioPanel onImportado={() => void loadData()} />
+
+      <ImportarReportePanel onImportado={() => void loadData()} />
 
       <EquipoDetalleModal
         equipo={detalleId === null ? null : equipos.find(eq => eq.id === detalleId) ?? null}

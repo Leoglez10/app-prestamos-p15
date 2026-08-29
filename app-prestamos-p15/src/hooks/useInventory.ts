@@ -16,8 +16,14 @@ import {
   nombreDelReporte,
   type EquipoRevisable,
 } from "../utils/tomaFisica";
+import {
+  leerReporteCsv,
+  planificarFusionReporte,
+  type PlanFusion,
+} from "../utils/reporteTomaFisica";
 
 export type { EquipoRevisable };
+export type { PlanFusion };
 
 export type { FichaEquipo };
 
@@ -2068,5 +2074,55 @@ export const exportarReporteInventario = async (
     nombre: nombreDelReporte(new Date()),
     contenido: construirReporteCsv(equipos, inicioCampana),
   });
+};
+
+/**
+ * Lee un reporte de toma fisica hecho en OTRA computadora y dice que haria.
+ *
+ * No escribe nada: alimenta la vista previa, igual que la importacion del Excel.
+ * Ver `src/utils/reporteTomaFisica.ts` para las reglas de fusion.
+ */
+export const leerReporteTomaFisica = async (texto: string): Promise<PlanFusion> => {
+  const equipos = await getEquipos();
+  return planificarFusionReporte(leerReporteCsv(texto), equipos);
+};
+
+/**
+ * Aplica la fusion de un reporte de toma fisica.
+ *
+ * FUSIONA, no reemplaza: toca unicamente las columnas que produce un recorrido.
+ * Los prestamos no comparten ninguna de ellas, asi que traer el trabajo de la
+ * segunda computadora no puede borrar lo que la principal registro mientras
+ * tanto. Restaurar un respaldo `.db` si lo borraria, y por eso existe esto.
+ *
+ * Todo en una transaccion, por la misma razon que la importacion de Patrimonio:
+ * una fusion a medias deja un inventario que nadie sabe donde quedo.
+ */
+export const aplicarFusionReporte = async (
+  plan: PlanFusion
+): Promise<{ aplicados: number; respaldo: string }> => {
+  const respaldo = await createBackup(false);
+
+  const sentencias: SentenciaSql[] = plan.cambios.map((cambio) =>
+    cambio.tipo === "revisado"
+      ? {
+          // Mismas reglas que `registrarRevision`: encontrarlo borra el "no
+          // aparecio", y una ubicacion vacia conserva la que ya estaba.
+          sql: `UPDATE inventario
+                SET revisado_en = ?, revisado_por = ?,
+                    ubicacion = COALESCE(NULLIF(?, ''), ubicacion),
+                    no_localizado_en = NULL, no_localizado_por = NULL
+                WHERE id = ?`,
+          params: [cambio.cuando, cambio.quien, cambio.ubicacion ?? "", cambio.id],
+        }
+      : {
+          sql: "UPDATE inventario SET no_localizado_en = ?, no_localizado_por = ? WHERE id = ?",
+          params: [cambio.cuando, cambio.quien, cambio.id],
+        }
+  );
+
+  await ejecutarEnTransaccion(sentencias);
+
+  return { aplicados: plan.cambios.length, respaldo: respaldo.file_name };
 };
 

@@ -5,13 +5,13 @@
 
 | Campo | Valor |
 |---|---|
-| **Duración objetivo** | ~78 s |
+| **Duración real** | 110.8 s (1:51) — medida sobre la narración sintetizada, no estimada |
 | **Público** | Profesores de la Preparatoria 15 (usuarios finales, no técnicos) |
 | **Objetivo** | Que un profesor pueda pedir y devolver equipo sin ayuda después de verlo una vez |
-| **Herramienta** | HyperFrames (composición HTML → MP4) |
+| **Herramienta** | HyperFrames · preset `blue-professional` · voz HeyGen (español) |
 | **Formato** | 1920×1080, 30 fps |
 | **Narración** | Voz en off, español neutro, tono tranquilo de instructivo |
-| **Estado** | 🟡 Guion listo · composición pendiente |
+| **Estado** | ✅ Renderizado · [`renders/video.mp4`](renders/video.mp4) |
 | **Plan de la serie** | [../../VIDEOS_TUTORIALES.md](../../VIDEOS_TUTORIALES.md) |
 
 ---
@@ -86,63 +86,66 @@ Cinco puntos del plan original describen la app de forma imprecisa. El guion usa
 
 ## 3. Guion escena por escena
 
+Los tiempos son los **reales del render**, tomados de la duración medida de cada línea de
+narración (el guion original los estimaba leyendo, y se quedaba corto ~30 s).
+
 Formato: `⏱ tiempo · TÍTULO` → **Pantalla** (qué se ve) / **Voz** (narración literal) / **Nota de producción**.
 
-### ⏱ 0:00 – 0:06 · Portada
+### ⏱ 0:00 – 0:07 · Portada
 
 - **Pantalla:** logo P15 sobre fondo limpio. Título grande: **“Prestar y devolver equipo”**. Subtítulo: *Video 1 de 5 · Kiosko*.
 - **Voz:** «Este es el video que necesitas para el día a día: cómo pedir equipo y cómo devolverlo.»
 - **Nota:** logo en `app-prestamos-p15/img/logo-p15.png`.
 
-### ⏱ 0:06 – 0:14 · Entrar como profesor
+### ⏱ 0:07 – 0:17 · Entrar como profesor
 
 - **Pantalla:** pantalla de inicio completa. El cursor se mueve a la tarjeta azul **“Soy Profesor”** y hace clic. Resaltar la tarjeta con un halo.
 - **Voz:** «Desde la pantalla principal, toca “Soy Profesor”. La otra tarjeta, “Préstamo Rápido”, es para alumnos y la vemos en otro video.»
 - **Nota:** dejar visible la tira de métricas de abajo un segundo antes del clic; da contexto sin explicarla.
 
-### ⏱ 0:14 – 0:22 · Tu código UDG
+### ⏱ 0:17 – 0:27 · Tu código UDG
 
 - **Pantalla:** pantalla “Ingresa tu Código”. Se teclea un código de ejemplo y se pulsa **Identificarse**. Aparece el nombre del profesor arriba a la izquierda.
 - **Voz:** «Escribe tu código de profesor y presiona Identificarse. No necesitas contraseña: el código es suficiente.»
 - **Nota:** usar un código ficticio (`2958101`, el del placeholder). **Nunca** un código real de personal.
 
-### ⏱ 0:22 – 0:32 · Encontrar el equipo
+### ⏱ 0:27 – 0:45 · Encontrar el equipo
 
 - **Pantalla:** dividida. Izquierda, “Por devolver”. Derecha, “Tomar equipo nuevo”. Se hace clic en una categoría de la lista lateral; luego se escribe *“dell”* en el buscador y la lista se reduce.
 - **Voz:** «A la derecha está el catálogo. Puedes filtrar por categoría, o escribir directo: busca por nombre, marca, modelo o número de inventario. Ojo, al escribir se busca en todo el equipo de la prepa, no solo en la categoría que elegiste.»
 - **Nota:** mostrar los chips verdes de estado — *Listo para llevar* y *N disponibles* — y uno rojo *Agotado* al final de la lista.
 
-### ⏱ 0:32 – 0:40 · La pistola de código de barras
+### ⏱ 0:45 – 0:59 · La pistola de código de barras
 
 - **Pantalla:** ilustración de la pistola apuntando a una etiqueta de Patrimonio. Al “disparar”, el código aparece en el buscador y el equipo salta solo al carrito con la animación de vuelo.
 - **Voz:** «Si el equipo trae etiqueta de Patrimonio, solo escanéalo. Se agrega solo, sin tocar nada más. Y como usa el número exacto de la etiqueta, nunca te va a meter otro equipo parecido.»
 - **Nota:** este es el diferenciador del sistema. Vale la pena un plano cerrado del carrito recibiendo el objeto.
 
-### ⏱ 0:40 – 0:50 · La laptop y el HDMI
+### ⏱ 0:59 – 1:13 · La laptop y el HDMI
 
 - **Pantalla:** se toca una laptop del catálogo. Se abre el modal **“¿Tambien necesita HDMI?”** con sus tres botones. Se pulsa **“Si, agregar HDMI”** y entran dos objetos al carrito; el HDMI trae la etiqueta verde *Agregado automaticamente*.
 - **Voz:** «Cuando pides una laptop, la app te pregunta si también necesitas HDMI. Si dices que sí, ella escoge uno disponible y lo agrega. Un paso menos, y un cable menos que se te olvide.»
 - **Nota:** la etiqueta verde está en `src/pages/Kiosk.tsx:1882`.
 
-### ⏱ 0:50 – 0:58 · Observación y confirmar
+### ⏱ 1:13 – 1:23 · Observación y confirmar
 
 - **Pantalla:** se despliega **“Agregar observacion”** dentro del carrito, se escribe una nota corta, y se pulsa la barra inferior **“Confirmar y Llevar (2)”**.
 - **Voz:** «Si algo no cuadra —te llevas otro control, falta un cable— déjalo escrito en la observación. Después, Confirmar y Llevar.»
 - **Nota:** usar el ejemplo del propio placeholder: *“No estaba este control, me llevo otro en su lugar.”*
 
-### ⏱ 0:58 – 1:06 · Listo, y la sesión se cierra sola
+### ⏱ 1:23 – 1:32 · Listo, y la sesión se cierra sola
 
 - **Pantalla:** modal verde **“Registro confirmado”** con la lista de lo prestado y el contador `3 · 2 · 1`. Al llegar a cero vuelve la pantalla de código.
 - **Voz:** «Listo. La app te muestra lo que te llevas y cierra tu sesión sola en tres segundos, porque esta terminal la usan todos.»
 - **Nota:** el contador es real (`SUCCESS_AUTO_LOGOUT_SECONDS = 3`). Respetar los 3 s exactos en la animación.
 
-### ⏱ 1:06 – 1:16 · Devolver
+### ⏱ 1:32 – 1:48 · Devolver
 
 - **Pantalla:** sesión nueva con dos préstamos en “Por devolver”. Primero se pulsa **“Devolver”** en una tarjeta. Después se muestra **“Devolver todo”** y su modal de confirmación, resaltando el botón **“Si, devolver y cerrar sesion”**.
 - **Voz:** «Para devolver, entra con tu código otra vez. Puedes devolver uno por uno, o si traes todo, usar “Devolver todo”: te muestra la lista para que revises, y si quieres, cierra tu sesión al terminar.»
 - **Nota:** “Devolver todo” solo existe con **dos o más** préstamos. Montar la escena de demo con dos.
 
-### ⏱ 1:16 – 1:18 · Cierre
+### ⏱ 1:48 – 1:51 · Cierre
 
 - **Pantalla:** logo P15 y una sola línea: *“Pedir y devolver, sin ayuda.”*
 - **Voz:** —
@@ -169,3 +172,33 @@ Preparar una base de datos de demostración (nunca la de producción) con:
 - Préstamo Rápido (alumnos) → Video 4.
 - Toma física y respaldos → Video 5.
 - Ocultar el catálogo o los pendientes desde Configuración → Video 2.
+
+---
+
+## 6. Cómo se construyó (para rehacerlo o editarlo)
+
+El proyecto HyperFrames vive en **este mismo directorio**. Comandos, desde `videos/01-kiosko/`:
+
+| Qué | Comando |
+|---|---|
+| Ver en el navegador | `npm run dev` |
+| Validar | `npx hyperframes lint && npx hyperframes check` |
+| Fotos de control | `npx hyperframes snapshot --at 3.4,12.2,22.4,36,52,66,78,88,100,109.5` |
+| Volver a renderizar | `npm run render` |
+
+Archivos que importan:
+
+- `BRIEF.md` — la intención cerrada (público, mensaje, idioma, formato). Nada se vuelve a preguntar.
+- `STORYBOARD.md` — los 10 frames: narración, duración real y la **secuencia de planos con tiempos**.
+- `SCRIPT.md` — la narración hablada, con acentos correctos para el sintetizador.
+- `frame.md` — la paleta y la tipografía. Sale del preset `blue-professional` remezclado sobre el azul de la app (`#2563eb`).
+- `compositions/frames/NN-*.html` — un archivo por frame, HTML + GSAP.
+- `assets/voice/` `assets/bgm/` `assets/sfx/` — audio generado.
+
+### Decisiones que conviene conocer antes de tocar nada
+
+1. **La duración la manda la voz, no el guion.** `audio.mjs sync-durations` reescribe la duración de cada frame con la medida real del audio. Si cambias una línea de `SCRIPT.md`, hay que regenerar el audio, volver a sincronizar y **reajustar los tiempos de las escenas** en `STORYBOARD.md`.
+2. **Las fuentes viven en el repo.** `assets/fonts/space-grotesk.woff2` e `inter.woff2` se descargaron a propósito: el render corre en un Chrome headless sin fuentes del sistema, y una fuente que no es un archivo local simplemente no aparece.
+3. **`compositions/captions.html` está parcheado a mano.** El generador dejaba el último subtítulo pegado hasta el final del video, así que el cierre mudo arrastraba una frase del frame 9. Se cambió `var end = isLast ? DURATION : …` por `Math.min(DURATION, group.end + 0.3)`. **Si vuelves a correr `captions.mjs build`, el parche se pierde y hay que reaplicarlo.**
+4. **Los `data-layout-allow-overlap` son deliberados.** Un modal encima del catálogo es solapamiento a propósito; sin esa marca, `hyperframes check` lo reporta como error.
+5. **La UI está reconstruida en HTML, no capturada.** Por eso los rótulos hay que copiarlos a mano de la app — y por eso conservan sus faltas de tilde.

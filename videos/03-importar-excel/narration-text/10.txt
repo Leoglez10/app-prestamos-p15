@@ -1,0 +1,1 @@
+¿Y si algo salió mal? En Configuración, en la lista de respaldos, busca el que dice "Manual" con la hora de la importación y pulsa Restaurar. Vuelve todo a como estaba. Ojo: también se pierde lo que se haya registrado después de esa hora.

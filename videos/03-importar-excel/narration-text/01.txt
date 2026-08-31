@@ -1,0 +1,1 @@
+Patrimonio te manda el listado oficial en Excel. Vamos a meterlo a la app sin romper nada de lo que ya tienes.

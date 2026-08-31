@@ -1,0 +1,2420 @@
+{
+  "bgm": {
+    "path": "assets/bgm/track.mp3",
+    "volume": 0.1,
+    "query": "calm",
+    "duration_s": 7
+  },
+  "bgm_pending": false,
+  "voices": [
+    {
+      "frame": 1,
+      "path": "assets/voice/01.wav",
+      "duration_s": 6.891,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Patrimonio",
+          "start": 0.15,
+          "end": 0.396
+        },
+        {
+          "id": "w1",
+          "text": "te",
+          "start": 0.45,
+          "end": 0.695
+        },
+        {
+          "id": "w2",
+          "text": "manda",
+          "start": 0.749,
+          "end": 0.995
+        },
+        {
+          "id": "w3",
+          "text": "el",
+          "start": 1.049,
+          "end": 1.294
+        },
+        {
+          "id": "w4",
+          "text": "listado",
+          "start": 1.348,
+          "end": 1.594
+        },
+        {
+          "id": "w5",
+          "text": "oficial",
+          "start": 1.648,
+          "end": 1.894
+        },
+        {
+          "id": "w6",
+          "text": "en",
+          "start": 1.947,
+          "end": 2.193
+        },
+        {
+          "id": "w7",
+          "text": "Excel.",
+          "start": 2.247,
+          "end": 2.493
+        },
+        {
+          "id": "w8",
+          "text": "Vamos",
+          "start": 2.547,
+          "end": 2.792
+        },
+        {
+          "id": "w9",
+          "text": "a",
+          "start": 2.846,
+          "end": 3.092
+        },
+        {
+          "id": "w10",
+          "text": "meterlo",
+          "start": 3.146,
+          "end": 3.391
+        },
+        {
+          "id": "w11",
+          "text": "a",
+          "start": 3.445,
+          "end": 3.691
+        },
+        {
+          "id": "w12",
+          "text": "la",
+          "start": 3.745,
+          "end": 3.991
+        },
+        {
+          "id": "w13",
+          "text": "app",
+          "start": 4.044,
+          "end": 4.29
+        },
+        {
+          "id": "w14",
+          "text": "sin",
+          "start": 4.344,
+          "end": 4.59
+        },
+        {
+          "id": "w15",
+          "text": "romper",
+          "start": 4.644,
+          "end": 4.889
+        },
+        {
+          "id": "w16",
+          "text": "nada",
+          "start": 4.943,
+          "end": 5.189
+        },
+        {
+          "id": "w17",
+          "text": "de",
+          "start": 5.243,
+          "end": 5.488
+        },
+        {
+          "id": "w18",
+          "text": "lo",
+          "start": 5.542,
+          "end": 5.788
+        },
+        {
+          "id": "w19",
+          "text": "que",
+          "start": 5.842,
+          "end": 6.088
+        },
+        {
+          "id": "w20",
+          "text": "ya",
+          "start": 6.142,
+          "end": 6.387
+        },
+        {
+          "id": "w21",
+          "text": "tienes.",
+          "start": 6.441,
+          "end": 6.687
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "path": "assets/voice/02.wav",
+      "duration_s": 14.443,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Es",
+          "start": 0.15,
+          "end": 0.414
+        },
+        {
+          "id": "w1",
+          "text": "el",
+          "start": 0.471,
+          "end": 0.735
+        },
+        {
+          "id": "w2",
+          "text": "listado",
+          "start": 0.793,
+          "end": 1.056
+        },
+        {
+          "id": "w3",
+          "text": "que",
+          "start": 1.114,
+          "end": 1.378
+        },
+        {
+          "id": "w4",
+          "text": "entrega",
+          "start": 1.436,
+          "end": 1.699
+        },
+        {
+          "id": "w5",
+          "text": "la",
+          "start": 1.757,
+          "end": 2.021
+        },
+        {
+          "id": "w6",
+          "text": "Coordinación",
+          "start": 2.079,
+          "end": 2.342
+        },
+        {
+          "id": "w7",
+          "text": "de",
+          "start": 2.4,
+          "end": 2.664
+        },
+        {
+          "id": "w8",
+          "text": "Patrimonio:",
+          "start": 2.721,
+          "end": 2.985
+        },
+        {
+          "id": "w9",
+          "text": "miles",
+          "start": 3.043,
+          "end": 3.306
+        },
+        {
+          "id": "w10",
+          "text": "de",
+          "start": 3.364,
+          "end": 3.628
+        },
+        {
+          "id": "w11",
+          "text": "renglones,",
+          "start": 3.686,
+          "end": 3.949
+        },
+        {
+          "id": "w12",
+          "text": "uno",
+          "start": 4.007,
+          "end": 4.271
+        },
+        {
+          "id": "w13",
+          "text": "por",
+          "start": 4.329,
+          "end": 4.592
+        },
+        {
+          "id": "w14",
+          "text": "cada",
+          "start": 4.65,
+          "end": 4.914
+        },
+        {
+          "id": "w15",
+          "text": "bien",
+          "start": 4.971,
+          "end": 5.235
+        },
+        {
+          "id": "w16",
+          "text": "de",
+          "start": 5.293,
+          "end": 5.556
+        },
+        {
+          "id": "w17",
+          "text": "la",
+          "start": 5.614,
+          "end": 5.878
+        },
+        {
+          "id": "w18",
+          "text": "escuela.",
+          "start": 5.936,
+          "end": 6.199
+        },
+        {
+          "id": "w19",
+          "text": "De",
+          "start": 6.257,
+          "end": 6.521
+        },
+        {
+          "id": "w20",
+          "text": "todas",
+          "start": 6.578,
+          "end": 6.842
+        },
+        {
+          "id": "w21",
+          "text": "sus",
+          "start": 6.9,
+          "end": 7.163
+        },
+        {
+          "id": "w22",
+          "text": "columnas,",
+          "start": 7.221,
+          "end": 7.485
+        },
+        {
+          "id": "w23",
+          "text": "la",
+          "start": 7.543,
+          "end": 7.806
+        },
+        {
+          "id": "w24",
+          "text": "app",
+          "start": 7.864,
+          "end": 8.128
+        },
+        {
+          "id": "w25",
+          "text": "necesita",
+          "start": 8.186,
+          "end": 8.449
+        },
+        {
+          "id": "w26",
+          "text": "dos:",
+          "start": 8.507,
+          "end": 8.771
+        },
+        {
+          "id": "w27",
+          "text": "el",
+          "start": 8.828,
+          "end": 9.092
+        },
+        {
+          "id": "w28",
+          "text": "Id",
+          "start": 9.15,
+          "end": 9.413
+        },
+        {
+          "id": "w29",
+          "text": "y",
+          "start": 9.471,
+          "end": 9.735
+        },
+        {
+          "id": "w30",
+          "text": "el",
+          "start": 9.793,
+          "end": 10.056
+        },
+        {
+          "id": "w31",
+          "text": "Clasificador.",
+          "start": 10.114,
+          "end": 10.378
+        },
+        {
+          "id": "w32",
+          "text": "Las",
+          "start": 10.436,
+          "end": 10.699
+        },
+        {
+          "id": "w33",
+          "text": "busca",
+          "start": 10.757,
+          "end": 11.021
+        },
+        {
+          "id": "w34",
+          "text": "por",
+          "start": 11.078,
+          "end": 11.342
+        },
+        {
+          "id": "w35",
+          "text": "nombre,",
+          "start": 11.4,
+          "end": 11.663
+        },
+        {
+          "id": "w36",
+          "text": "así",
+          "start": 11.721,
+          "end": 11.985
+        },
+        {
+          "id": "w37",
+          "text": "que",
+          "start": 12.043,
+          "end": 12.306
+        },
+        {
+          "id": "w38",
+          "text": "no",
+          "start": 12.364,
+          "end": 12.628
+        },
+        {
+          "id": "w39",
+          "text": "importa",
+          "start": 12.686,
+          "end": 12.949
+        },
+        {
+          "id": "w40",
+          "text": "en",
+          "start": 13.007,
+          "end": 13.271
+        },
+        {
+          "id": "w41",
+          "text": "qué",
+          "start": 13.328,
+          "end": 13.592
+        },
+        {
+          "id": "w42",
+          "text": "orden",
+          "start": 13.65,
+          "end": 13.913
+        },
+        {
+          "id": "w43",
+          "text": "vengan.",
+          "start": 13.971,
+          "end": 14.235
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "path": "assets/voice/03.wav",
+      "duration_s": 6.059,
+      "words": [
+        {
+          "id": "w0",
+          "text": "El",
+          "start": 0.15,
+          "end": 0.428
+        },
+        {
+          "id": "w1",
+          "text": "panel",
+          "start": 0.489,
+          "end": 0.767
+        },
+        {
+          "id": "w2",
+          "text": "vive",
+          "start": 0.827,
+          "end": 1.105
+        },
+        {
+          "id": "w3",
+          "text": "hasta",
+          "start": 1.166,
+          "end": 1.444
+        },
+        {
+          "id": "w4",
+          "text": "abajo",
+          "start": 1.505,
+          "end": 1.783
+        },
+        {
+          "id": "w5",
+          "text": "de",
+          "start": 1.844,
+          "end": 2.121
+        },
+        {
+          "id": "w6",
+          "text": "la",
+          "start": 2.182,
+          "end": 2.46
+        },
+        {
+          "id": "w7",
+          "text": "pestaña",
+          "start": 2.521,
+          "end": 2.799
+        },
+        {
+          "id": "w8",
+          "text": "Inventario,",
+          "start": 2.86,
+          "end": 3.138
+        },
+        {
+          "id": "w9",
+          "text": "en",
+          "start": 3.199,
+          "end": 3.476
+        },
+        {
+          "id": "w10",
+          "text": "Administrador.",
+          "start": 3.537,
+          "end": 3.815
+        },
+        {
+          "id": "w11",
+          "text": "Ahí,",
+          "start": 3.876,
+          "end": 4.154
+        },
+        {
+          "id": "w12",
+          "text": "y",
+          "start": 4.215,
+          "end": 4.493
+        },
+        {
+          "id": "w13",
+          "text": "en",
+          "start": 4.554,
+          "end": 4.831
+        },
+        {
+          "id": "w14",
+          "text": "ningún",
+          "start": 4.892,
+          "end": 5.17
+        },
+        {
+          "id": "w15",
+          "text": "otro",
+          "start": 5.231,
+          "end": 5.509
+        },
+        {
+          "id": "w16",
+          "text": "lado.",
+          "start": 5.57,
+          "end": 5.848
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "path": "assets/voice/04.wav",
+      "duration_s": 10.155,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Eliges",
+          "start": 0.15,
+          "end": 0.411
+        },
+        {
+          "id": "w1",
+          "text": "el",
+          "start": 0.468,
+          "end": 0.729
+        },
+        {
+          "id": "w2",
+          "text": "archivo",
+          "start": 0.786,
+          "end": 1.046
+        },
+        {
+          "id": "w3",
+          "text": "y",
+          "start": 1.104,
+          "end": 1.364
+        },
+        {
+          "id": "w4",
+          "text": "la",
+          "start": 1.422,
+          "end": 1.682
+        },
+        {
+          "id": "w5",
+          "text": "app",
+          "start": 1.739,
+          "end": 2
+        },
+        {
+          "id": "w6",
+          "text": "te",
+          "start": 2.057,
+          "end": 2.318
+        },
+        {
+          "id": "w7",
+          "text": "dice",
+          "start": 2.375,
+          "end": 2.636
+        },
+        {
+          "id": "w8",
+          "text": "qué",
+          "start": 2.693,
+          "end": 2.954
+        },
+        {
+          "id": "w9",
+          "text": "va",
+          "start": 3.011,
+          "end": 3.272
+        },
+        {
+          "id": "w10",
+          "text": "a",
+          "start": 3.329,
+          "end": 3.59
+        },
+        {
+          "id": "w11",
+          "text": "pasar",
+          "start": 3.647,
+          "end": 3.907
+        },
+        {
+          "id": "w12",
+          "text": "antes",
+          "start": 3.965,
+          "end": 4.225
+        },
+        {
+          "id": "w13",
+          "text": "de",
+          "start": 4.283,
+          "end": 4.543
+        },
+        {
+          "id": "w14",
+          "text": "hacerlo:",
+          "start": 4.6,
+          "end": 4.861
+        },
+        {
+          "id": "w15",
+          "text": "cuántos",
+          "start": 4.918,
+          "end": 5.179
+        },
+        {
+          "id": "w16",
+          "text": "entran",
+          "start": 5.236,
+          "end": 5.497
+        },
+        {
+          "id": "w17",
+          "text": "nuevos,",
+          "start": 5.554,
+          "end": 5.815
+        },
+        {
+          "id": "w18",
+          "text": "cuántos",
+          "start": 5.872,
+          "end": 6.133
+        },
+        {
+          "id": "w19",
+          "text": "se",
+          "start": 6.19,
+          "end": 6.451
+        },
+        {
+          "id": "w20",
+          "text": "actualizan",
+          "start": 6.508,
+          "end": 6.769
+        },
+        {
+          "id": "w21",
+          "text": "y",
+          "start": 6.826,
+          "end": 7.086
+        },
+        {
+          "id": "w22",
+          "text": "cuántos",
+          "start": 7.144,
+          "end": 7.404
+        },
+        {
+          "id": "w23",
+          "text": "ya",
+          "start": 7.462,
+          "end": 7.722
+        },
+        {
+          "id": "w24",
+          "text": "estaban",
+          "start": 7.779,
+          "end": 8.04
+        },
+        {
+          "id": "w25",
+          "text": "igual.",
+          "start": 8.097,
+          "end": 8.358
+        },
+        {
+          "id": "w26",
+          "text": "Todavía",
+          "start": 8.415,
+          "end": 8.676
+        },
+        {
+          "id": "w27",
+          "text": "no",
+          "start": 8.733,
+          "end": 8.994
+        },
+        {
+          "id": "w28",
+          "text": "se",
+          "start": 9.051,
+          "end": 9.312
+        },
+        {
+          "id": "w29",
+          "text": "guardó",
+          "start": 9.369,
+          "end": 9.63
+        },
+        {
+          "id": "w30",
+          "text": "nada.",
+          "start": 9.687,
+          "end": 9.947
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "path": "assets/voice/05.wav",
+      "duration_s": 12.587,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Si",
+          "start": 0.15,
+          "end": 0.39
+        },
+        {
+          "id": "w1",
+          "text": "algo",
+          "start": 0.443,
+          "end": 0.682
+        },
+        {
+          "id": "w2",
+          "text": "del",
+          "start": 0.735,
+          "end": 0.975
+        },
+        {
+          "id": "w3",
+          "text": "archivo",
+          "start": 1.028,
+          "end": 1.268
+        },
+        {
+          "id": "w4",
+          "text": "viene",
+          "start": 1.32,
+          "end": 1.56
+        },
+        {
+          "id": "w5",
+          "text": "raro",
+          "start": 1.613,
+          "end": 1.853
+        },
+        {
+          "id": "w6",
+          "text": "—un",
+          "start": 1.905,
+          "end": 2.145
+        },
+        {
+          "id": "w7",
+          "text": "Id",
+          "start": 2.198,
+          "end": 2.438
+        },
+        {
+          "id": "w8",
+          "text": "repetido,",
+          "start": 2.49,
+          "end": 2.73
+        },
+        {
+          "id": "w9",
+          "text": "una",
+          "start": 2.783,
+          "end": 3.023
+        },
+        {
+          "id": "w10",
+          "text": "fecha",
+          "start": 3.075,
+          "end": 3.315
+        },
+        {
+          "id": "w11",
+          "text": "que",
+          "start": 3.368,
+          "end": 3.608
+        },
+        {
+          "id": "w12",
+          "text": "no",
+          "start": 3.66,
+          "end": 3.9
+        },
+        {
+          "id": "w13",
+          "text": "se",
+          "start": 3.953,
+          "end": 4.193
+        },
+        {
+          "id": "w14",
+          "text": "entiende,",
+          "start": 4.246,
+          "end": 4.485
+        },
+        {
+          "id": "w15",
+          "text": "un",
+          "start": 4.538,
+          "end": 4.778
+        },
+        {
+          "id": "w16",
+          "text": "renglón",
+          "start": 4.831,
+          "end": 5.071
+        },
+        {
+          "id": "w17",
+          "text": "sin",
+          "start": 5.123,
+          "end": 5.363
+        },
+        {
+          "id": "w18",
+          "text": "tipo",
+          "start": 5.416,
+          "end": 5.656
+        },
+        {
+          "id": "w19",
+          "text": "de",
+          "start": 5.708,
+          "end": 5.948
+        },
+        {
+          "id": "w20",
+          "text": "equipo—",
+          "start": 6.001,
+          "end": 6.241
+        },
+        {
+          "id": "w21",
+          "text": "aparece",
+          "start": 6.293,
+          "end": 6.533
+        },
+        {
+          "id": "w22",
+          "text": "aquí",
+          "start": 6.586,
+          "end": 6.826
+        },
+        {
+          "id": "w23",
+          "text": "en",
+          "start": 6.878,
+          "end": 7.118
+        },
+        {
+          "id": "w24",
+          "text": "vez",
+          "start": 7.171,
+          "end": 7.411
+        },
+        {
+          "id": "w25",
+          "text": "de",
+          "start": 7.463,
+          "end": 7.703
+        },
+        {
+          "id": "w26",
+          "text": "entrar",
+          "start": 7.756,
+          "end": 7.996
+        },
+        {
+          "id": "w27",
+          "text": "callado",
+          "start": 8.049,
+          "end": 8.288
+        },
+        {
+          "id": "w28",
+          "text": "a",
+          "start": 8.341,
+          "end": 8.581
+        },
+        {
+          "id": "w29",
+          "text": "la",
+          "start": 8.634,
+          "end": 8.874
+        },
+        {
+          "id": "w30",
+          "text": "base.",
+          "start": 8.926,
+          "end": 9.166
+        },
+        {
+          "id": "w31",
+          "text": "Léelos:",
+          "start": 9.219,
+          "end": 9.459
+        },
+        {
+          "id": "w32",
+          "text": "no",
+          "start": 9.511,
+          "end": 9.751
+        },
+        {
+          "id": "w33",
+          "text": "son",
+          "start": 9.804,
+          "end": 10.044
+        },
+        {
+          "id": "w34",
+          "text": "errores",
+          "start": 10.096,
+          "end": 10.336
+        },
+        {
+          "id": "w35",
+          "text": "de",
+          "start": 10.389,
+          "end": 10.629
+        },
+        {
+          "id": "w36",
+          "text": "la",
+          "start": 10.681,
+          "end": 10.921
+        },
+        {
+          "id": "w37",
+          "text": "app,",
+          "start": 10.974,
+          "end": 11.214
+        },
+        {
+          "id": "w38",
+          "text": "son",
+          "start": 11.267,
+          "end": 11.506
+        },
+        {
+          "id": "w39",
+          "text": "cosas",
+          "start": 11.559,
+          "end": 11.799
+        },
+        {
+          "id": "w40",
+          "text": "del",
+          "start": 11.852,
+          "end": 12.091
+        },
+        {
+          "id": "w41",
+          "text": "archivo.",
+          "start": 12.144,
+          "end": 12.384
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "path": "assets/voice/06.wav",
+      "duration_s": 10.091,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Al",
+          "start": 0.15,
+          "end": 0.418
+        },
+        {
+          "id": "w1",
+          "text": "aplicar,",
+          "start": 0.476,
+          "end": 0.744
+        },
+        {
+          "id": "w2",
+          "text": "lo",
+          "start": 0.803,
+          "end": 1.07
+        },
+        {
+          "id": "w3",
+          "text": "primero",
+          "start": 1.129,
+          "end": 1.397
+        },
+        {
+          "id": "w4",
+          "text": "que",
+          "start": 1.455,
+          "end": 1.723
+        },
+        {
+          "id": "w5",
+          "text": "hace",
+          "start": 1.782,
+          "end": 2.049
+        },
+        {
+          "id": "w6",
+          "text": "la",
+          "start": 2.108,
+          "end": 2.376
+        },
+        {
+          "id": "w7",
+          "text": "app",
+          "start": 2.434,
+          "end": 2.702
+        },
+        {
+          "id": "w8",
+          "text": "es",
+          "start": 2.761,
+          "end": 3.028
+        },
+        {
+          "id": "w9",
+          "text": "guardar",
+          "start": 3.087,
+          "end": 3.355
+        },
+        {
+          "id": "w10",
+          "text": "un",
+          "start": 3.414,
+          "end": 3.681
+        },
+        {
+          "id": "w11",
+          "text": "respaldo",
+          "start": 3.74,
+          "end": 4.008
+        },
+        {
+          "id": "w12",
+          "text": "completo.",
+          "start": 4.066,
+          "end": 4.334
+        },
+        {
+          "id": "w13",
+          "text": "Después",
+          "start": 4.393,
+          "end": 4.66
+        },
+        {
+          "id": "w14",
+          "text": "escribe",
+          "start": 4.719,
+          "end": 4.987
+        },
+        {
+          "id": "w15",
+          "text": "todo",
+          "start": 5.045,
+          "end": 5.313
+        },
+        {
+          "id": "w16",
+          "text": "de",
+          "start": 5.372,
+          "end": 5.639
+        },
+        {
+          "id": "w17",
+          "text": "un",
+          "start": 5.698,
+          "end": 5.966
+        },
+        {
+          "id": "w18",
+          "text": "solo",
+          "start": 6.024,
+          "end": 6.292
+        },
+        {
+          "id": "w19",
+          "text": "golpe:",
+          "start": 6.351,
+          "end": 6.618
+        },
+        {
+          "id": "w20",
+          "text": "o",
+          "start": 6.677,
+          "end": 6.945
+        },
+        {
+          "id": "w21",
+          "text": "entra",
+          "start": 7.003,
+          "end": 7.271
+        },
+        {
+          "id": "w22",
+          "text": "completo,",
+          "start": 7.33,
+          "end": 7.597
+        },
+        {
+          "id": "w23",
+          "text": "o",
+          "start": 7.656,
+          "end": 7.924
+        },
+        {
+          "id": "w24",
+          "text": "no",
+          "start": 7.983,
+          "end": 8.25
+        },
+        {
+          "id": "w25",
+          "text": "entra",
+          "start": 8.309,
+          "end": 8.577
+        },
+        {
+          "id": "w26",
+          "text": "nada.",
+          "start": 8.635,
+          "end": 8.903
+        },
+        {
+          "id": "w27",
+          "text": "Nunca",
+          "start": 8.962,
+          "end": 9.229
+        },
+        {
+          "id": "w28",
+          "text": "a",
+          "start": 9.288,
+          "end": 9.556
+        },
+        {
+          "id": "w29",
+          "text": "medias.",
+          "start": 9.614,
+          "end": 9.882
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "path": "assets/voice/07.wav",
+      "duration_s": 18.027,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Y",
+          "start": 0.15,
+          "end": 0.459
+        },
+        {
+          "id": "w1",
+          "text": "aquí",
+          "start": 0.527,
+          "end": 0.836
+        },
+        {
+          "id": "w2",
+          "text": "viene",
+          "start": 0.904,
+          "end": 1.214
+        },
+        {
+          "id": "w3",
+          "text": "lo",
+          "start": 1.281,
+          "end": 1.591
+        },
+        {
+          "id": "w4",
+          "text": "importante.",
+          "start": 1.659,
+          "end": 1.968
+        },
+        {
+          "id": "w5",
+          "text": "Todo",
+          "start": 2.036,
+          "end": 2.345
+        },
+        {
+          "id": "w6",
+          "text": "lo",
+          "start": 2.413,
+          "end": 2.722
+        },
+        {
+          "id": "w7",
+          "text": "que",
+          "start": 2.79,
+          "end": 3.099
+        },
+        {
+          "id": "w8",
+          "text": "entra",
+          "start": 3.167,
+          "end": 3.477
+        },
+        {
+          "id": "w9",
+          "text": "por",
+          "start": 3.544,
+          "end": 3.854
+        },
+        {
+          "id": "w10",
+          "text": "el",
+          "start": 3.922,
+          "end": 4.231
+        },
+        {
+          "id": "w11",
+          "text": "Excel",
+          "start": 4.299,
+          "end": 4.608
+        },
+        {
+          "id": "w12",
+          "text": "queda",
+          "start": 4.676,
+          "end": 4.985
+        },
+        {
+          "id": "w13",
+          "text": "como",
+          "start": 5.053,
+          "end": 5.362
+        },
+        {
+          "id": "w14",
+          "text": "\"solo",
+          "start": 5.43,
+          "end": 5.74
+        },
+        {
+          "id": "w15",
+          "text": "inventario\":",
+          "start": 5.807,
+          "end": 6.117
+        },
+        {
+          "id": "w16",
+          "text": "está",
+          "start": 6.185,
+          "end": 6.494
+        },
+        {
+          "id": "w17",
+          "text": "registrado,",
+          "start": 6.562,
+          "end": 6.871
+        },
+        {
+          "id": "w18",
+          "text": "pero",
+          "start": 6.939,
+          "end": 7.248
+        },
+        {
+          "id": "w19",
+          "text": "nadie",
+          "start": 7.316,
+          "end": 7.625
+        },
+        {
+          "id": "w20",
+          "text": "lo",
+          "start": 7.693,
+          "end": 8.003
+        },
+        {
+          "id": "w21",
+          "text": "puede",
+          "start": 8.07,
+          "end": 8.38
+        },
+        {
+          "id": "w22",
+          "text": "pedir.",
+          "start": 8.448,
+          "end": 8.757
+        },
+        {
+          "id": "w23",
+          "text": "Es",
+          "start": 8.825,
+          "end": 9.134
+        },
+        {
+          "id": "w24",
+          "text": "a",
+          "start": 9.202,
+          "end": 9.511
+        },
+        {
+          "id": "w25",
+          "text": "propósito.",
+          "start": 9.579,
+          "end": 9.888
+        },
+        {
+          "id": "w26",
+          "text": "En",
+          "start": 9.956,
+          "end": 10.266
+        },
+        {
+          "id": "w27",
+          "text": "ese",
+          "start": 10.333,
+          "end": 10.643
+        },
+        {
+          "id": "w28",
+          "text": "listado",
+          "start": 10.711,
+          "end": 11.02
+        },
+        {
+          "id": "w29",
+          "text": "hay",
+          "start": 11.088,
+          "end": 11.397
+        },
+        {
+          "id": "w30",
+          "text": "ventiladores,",
+          "start": 11.465,
+          "end": 11.774
+        },
+        {
+          "id": "w31",
+          "text": "escritorios",
+          "start": 11.842,
+          "end": 12.151
+        },
+        {
+          "id": "w32",
+          "text": "y",
+          "start": 12.219,
+          "end": 12.528
+        },
+        {
+          "id": "w33",
+          "text": "pizarrones;",
+          "start": 12.596,
+          "end": 12.906
+        },
+        {
+          "id": "w34",
+          "text": "ninguno",
+          "start": 12.974,
+          "end": 13.283
+        },
+        {
+          "id": "w35",
+          "text": "se",
+          "start": 13.351,
+          "end": 13.66
+        },
+        {
+          "id": "w36",
+          "text": "presta.",
+          "start": 13.728,
+          "end": 14.037
+        },
+        {
+          "id": "w37",
+          "text": "Patrimonio",
+          "start": 14.105,
+          "end": 14.414
+        },
+        {
+          "id": "w38",
+          "text": "organiza",
+          "start": 14.482,
+          "end": 14.791
+        },
+        {
+          "id": "w39",
+          "text": "el",
+          "start": 14.859,
+          "end": 15.169
+        },
+        {
+          "id": "w40",
+          "text": "inventario,",
+          "start": 15.237,
+          "end": 15.546
+        },
+        {
+          "id": "w41",
+          "text": "pero",
+          "start": 15.614,
+          "end": 15.923
+        },
+        {
+          "id": "w42",
+          "text": "la",
+          "start": 15.991,
+          "end": 16.3
+        },
+        {
+          "id": "w43",
+          "text": "escuela",
+          "start": 16.368,
+          "end": 16.677
+        },
+        {
+          "id": "w44",
+          "text": "decide",
+          "start": 16.745,
+          "end": 17.054
+        },
+        {
+          "id": "w45",
+          "text": "qué",
+          "start": 17.122,
+          "end": 17.432
+        },
+        {
+          "id": "w46",
+          "text": "circula.",
+          "start": 17.5,
+          "end": 17.809
+        }
+      ]
+    },
+    {
+      "frame": 8,
+      "path": "assets/voice/08.wav",
+      "duration_s": 16.789,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Para",
+          "start": 0.15,
+          "end": 0.415
+        },
+        {
+          "id": "w1",
+          "text": "que",
+          "start": 0.473,
+          "end": 0.738
+        },
+        {
+          "id": "w2",
+          "text": "algo",
+          "start": 0.797,
+          "end": 1.062
+        },
+        {
+          "id": "w3",
+          "text": "se",
+          "start": 1.12,
+          "end": 1.385
+        },
+        {
+          "id": "w4",
+          "text": "pueda",
+          "start": 1.443,
+          "end": 1.708
+        },
+        {
+          "id": "w5",
+          "text": "pedir",
+          "start": 1.767,
+          "end": 2.032
+        },
+        {
+          "id": "w6",
+          "text": "hacen",
+          "start": 2.09,
+          "end": 2.355
+        },
+        {
+          "id": "w7",
+          "text": "falta",
+          "start": 2.413,
+          "end": 2.678
+        },
+        {
+          "id": "w8",
+          "text": "dos",
+          "start": 2.737,
+          "end": 3.002
+        },
+        {
+          "id": "w9",
+          "text": "interruptores,",
+          "start": 3.06,
+          "end": 3.325
+        },
+        {
+          "id": "w10",
+          "text": "no",
+          "start": 3.383,
+          "end": 3.648
+        },
+        {
+          "id": "w11",
+          "text": "uno:",
+          "start": 3.707,
+          "end": 3.972
+        },
+        {
+          "id": "w12",
+          "text": "el",
+          "start": 4.03,
+          "end": 4.295
+        },
+        {
+          "id": "w13",
+          "text": "de",
+          "start": 4.353,
+          "end": 4.618
+        },
+        {
+          "id": "w14",
+          "text": "la",
+          "start": 4.676,
+          "end": 4.942
+        },
+        {
+          "id": "w15",
+          "text": "categoría",
+          "start": 5,
+          "end": 5.265
+        },
+        {
+          "id": "w16",
+          "text": "y",
+          "start": 5.323,
+          "end": 5.588
+        },
+        {
+          "id": "w17",
+          "text": "el",
+          "start": 5.646,
+          "end": 5.912
+        },
+        {
+          "id": "w18",
+          "text": "del",
+          "start": 5.97,
+          "end": 6.235
+        },
+        {
+          "id": "w19",
+          "text": "equipo.",
+          "start": 6.293,
+          "end": 6.558
+        },
+        {
+          "id": "w20",
+          "text": "Si",
+          "start": 6.616,
+          "end": 6.882
+        },
+        {
+          "id": "w21",
+          "text": "prendes",
+          "start": 6.94,
+          "end": 7.205
+        },
+        {
+          "id": "w22",
+          "text": "solo",
+          "start": 7.263,
+          "end": 7.528
+        },
+        {
+          "id": "w23",
+          "text": "la",
+          "start": 7.586,
+          "end": 7.851
+        },
+        {
+          "id": "w24",
+          "text": "categoría,",
+          "start": 7.91,
+          "end": 8.175
+        },
+        {
+          "id": "w25",
+          "text": "el",
+          "start": 8.233,
+          "end": 8.498
+        },
+        {
+          "id": "w26",
+          "text": "kiosko",
+          "start": 8.556,
+          "end": 8.821
+        },
+        {
+          "id": "w27",
+          "text": "sigue",
+          "start": 8.88,
+          "end": 9.145
+        },
+        {
+          "id": "w28",
+          "text": "vacío,",
+          "start": 9.203,
+          "end": 9.468
+        },
+        {
+          "id": "w29",
+          "text": "y",
+          "start": 9.526,
+          "end": 9.791
+        },
+        {
+          "id": "w30",
+          "text": "esa",
+          "start": 9.85,
+          "end": 10.115
+        },
+        {
+          "id": "w31",
+          "text": "es",
+          "start": 10.173,
+          "end": 10.438
+        },
+        {
+          "id": "w32",
+          "text": "la",
+          "start": 10.496,
+          "end": 10.761
+        },
+        {
+          "id": "w33",
+          "text": "confusión",
+          "start": 10.82,
+          "end": 11.085
+        },
+        {
+          "id": "w34",
+          "text": "más",
+          "start": 11.143,
+          "end": 11.408
+        },
+        {
+          "id": "w35",
+          "text": "común.",
+          "start": 11.466,
+          "end": 11.731
+        },
+        {
+          "id": "w36",
+          "text": "Enciende",
+          "start": 11.79,
+          "end": 12.055
+        },
+        {
+          "id": "w37",
+          "text": "únicamente",
+          "start": 12.113,
+          "end": 12.378
+        },
+        {
+          "id": "w38",
+          "text": "lo",
+          "start": 12.436,
+          "end": 12.701
+        },
+        {
+          "id": "w39",
+          "text": "que",
+          "start": 12.759,
+          "end": 13.025
+        },
+        {
+          "id": "w40",
+          "text": "de",
+          "start": 13.083,
+          "end": 13.348
+        },
+        {
+          "id": "w41",
+          "text": "verdad",
+          "start": 13.406,
+          "end": 13.671
+        },
+        {
+          "id": "w42",
+          "text": "se",
+          "start": 13.729,
+          "end": 13.995
+        },
+        {
+          "id": "w43",
+          "text": "presta:",
+          "start": 14.053,
+          "end": 14.318
+        },
+        {
+          "id": "w44",
+          "text": "son",
+          "start": 14.376,
+          "end": 14.641
+        },
+        {
+          "id": "w45",
+          "text": "unas",
+          "start": 14.699,
+          "end": 14.965
+        },
+        {
+          "id": "w46",
+          "text": "decenas",
+          "start": 15.023,
+          "end": 15.288
+        },
+        {
+          "id": "w47",
+          "text": "de",
+          "start": 15.346,
+          "end": 15.611
+        },
+        {
+          "id": "w48",
+          "text": "aparatos,",
+          "start": 15.669,
+          "end": 15.934
+        },
+        {
+          "id": "w49",
+          "text": "no",
+          "start": 15.993,
+          "end": 16.258
+        },
+        {
+          "id": "w50",
+          "text": "miles.",
+          "start": 16.316,
+          "end": 16.581
+        }
+      ]
+    },
+    {
+      "frame": 9,
+      "path": "assets/voice/09.wav",
+      "duration_s": 14.784,
+      "words": [
+        {
+          "id": "w0",
+          "text": "El",
+          "start": 0.15,
+          "end": 0.42
+        },
+        {
+          "id": "w1",
+          "text": "mes",
+          "start": 0.479,
+          "end": 0.749
+        },
+        {
+          "id": "w2",
+          "text": "que",
+          "start": 0.808,
+          "end": 1.078
+        },
+        {
+          "id": "w3",
+          "text": "viene",
+          "start": 1.138,
+          "end": 1.407
+        },
+        {
+          "id": "w4",
+          "text": "te",
+          "start": 1.467,
+          "end": 1.737
+        },
+        {
+          "id": "w5",
+          "text": "mandan",
+          "start": 1.796,
+          "end": 2.066
+        },
+        {
+          "id": "w6",
+          "text": "el",
+          "start": 2.125,
+          "end": 2.395
+        },
+        {
+          "id": "w7",
+          "text": "archivo",
+          "start": 2.454,
+          "end": 2.724
+        },
+        {
+          "id": "w8",
+          "text": "actualizado",
+          "start": 2.783,
+          "end": 3.053
+        },
+        {
+          "id": "w9",
+          "text": "y",
+          "start": 3.113,
+          "end": 3.383
+        },
+        {
+          "id": "w10",
+          "text": "lo",
+          "start": 3.442,
+          "end": 3.712
+        },
+        {
+          "id": "w11",
+          "text": "vuelves",
+          "start": 3.771,
+          "end": 4.041
+        },
+        {
+          "id": "w12",
+          "text": "a",
+          "start": 4.1,
+          "end": 4.37
+        },
+        {
+          "id": "w13",
+          "text": "importar",
+          "start": 4.429,
+          "end": 4.699
+        },
+        {
+          "id": "w14",
+          "text": "sin",
+          "start": 4.759,
+          "end": 5.028
+        },
+        {
+          "id": "w15",
+          "text": "miedo:",
+          "start": 5.088,
+          "end": 5.358
+        },
+        {
+          "id": "w16",
+          "text": "actualiza",
+          "start": 5.417,
+          "end": 5.687
+        },
+        {
+          "id": "w17",
+          "text": "marca,",
+          "start": 5.746,
+          "end": 6.016
+        },
+        {
+          "id": "w18",
+          "text": "modelo",
+          "start": 6.075,
+          "end": 6.345
+        },
+        {
+          "id": "w19",
+          "text": "y",
+          "start": 6.404,
+          "end": 6.674
+        },
+        {
+          "id": "w20",
+          "text": "número",
+          "start": 6.734,
+          "end": 7.004
+        },
+        {
+          "id": "w21",
+          "text": "de",
+          "start": 7.063,
+          "end": 7.333
+        },
+        {
+          "id": "w22",
+          "text": "serie,",
+          "start": 7.392,
+          "end": 7.662
+        },
+        {
+          "id": "w23",
+          "text": "pero",
+          "start": 7.721,
+          "end": 7.991
+        },
+        {
+          "id": "w24",
+          "text": "nunca",
+          "start": 8.05,
+          "end": 8.32
+        },
+        {
+          "id": "w25",
+          "text": "toca",
+          "start": 8.38,
+          "end": 8.649
+        },
+        {
+          "id": "w26",
+          "text": "la",
+          "start": 8.709,
+          "end": 8.979
+        },
+        {
+          "id": "w27",
+          "text": "ubicación,",
+          "start": 9.038,
+          "end": 9.308
+        },
+        {
+          "id": "w28",
+          "text": "la",
+          "start": 9.367,
+          "end": 9.637
+        },
+        {
+          "id": "w29",
+          "text": "categoría",
+          "start": 9.696,
+          "end": 9.966
+        },
+        {
+          "id": "w30",
+          "text": "ni",
+          "start": 10.025,
+          "end": 10.295
+        },
+        {
+          "id": "w31",
+          "text": "lo",
+          "start": 10.355,
+          "end": 10.625
+        },
+        {
+          "id": "w32",
+          "text": "que",
+          "start": 10.684,
+          "end": 10.954
+        },
+        {
+          "id": "w33",
+          "text": "ya",
+          "start": 11.013,
+          "end": 11.283
+        },
+        {
+          "id": "w34",
+          "text": "marcaste",
+          "start": 11.342,
+          "end": 11.612
+        },
+        {
+          "id": "w35",
+          "text": "como",
+          "start": 11.671,
+          "end": 11.941
+        },
+        {
+          "id": "w36",
+          "text": "prestable.",
+          "start": 12.001,
+          "end": 12.27
+        },
+        {
+          "id": "w37",
+          "text": "Eso",
+          "start": 12.33,
+          "end": 12.6
+        },
+        {
+          "id": "w38",
+          "text": "lo",
+          "start": 12.659,
+          "end": 12.929
+        },
+        {
+          "id": "w39",
+          "text": "pusiste",
+          "start": 12.988,
+          "end": 13.258
+        },
+        {
+          "id": "w40",
+          "text": "tú,",
+          "start": 13.317,
+          "end": 13.587
+        },
+        {
+          "id": "w41",
+          "text": "y",
+          "start": 13.646,
+          "end": 13.916
+        },
+        {
+          "id": "w42",
+          "text": "se",
+          "start": 13.976,
+          "end": 14.246
+        },
+        {
+          "id": "w43",
+          "text": "queda.",
+          "start": 14.305,
+          "end": 14.575
+        }
+      ]
+    },
+    {
+      "frame": 10,
+      "path": "assets/voice/10.wav",
+      "duration_s": 13.952,
+      "words": [
+        {
+          "id": "w0",
+          "text": "¿Y",
+          "start": 0.15,
+          "end": 0.404
+        },
+        {
+          "id": "w1",
+          "text": "si",
+          "start": 0.46,
+          "end": 0.715
+        },
+        {
+          "id": "w2",
+          "text": "algo",
+          "start": 0.771,
+          "end": 1.025
+        },
+        {
+          "id": "w3",
+          "text": "salió",
+          "start": 1.081,
+          "end": 1.335
+        },
+        {
+          "id": "w4",
+          "text": "mal?",
+          "start": 1.391,
+          "end": 1.646
+        },
+        {
+          "id": "w5",
+          "text": "En",
+          "start": 1.701,
+          "end": 1.956
+        },
+        {
+          "id": "w6",
+          "text": "Configuración,",
+          "start": 2.012,
+          "end": 2.266
+        },
+        {
+          "id": "w7",
+          "text": "en",
+          "start": 2.322,
+          "end": 2.576
+        },
+        {
+          "id": "w8",
+          "text": "la",
+          "start": 2.632,
+          "end": 2.887
+        },
+        {
+          "id": "w9",
+          "text": "lista",
+          "start": 2.942,
+          "end": 3.197
+        },
+        {
+          "id": "w10",
+          "text": "de",
+          "start": 3.253,
+          "end": 3.507
+        },
+        {
+          "id": "w11",
+          "text": "respaldos,",
+          "start": 3.563,
+          "end": 3.817
+        },
+        {
+          "id": "w12",
+          "text": "busca",
+          "start": 3.873,
+          "end": 4.128
+        },
+        {
+          "id": "w13",
+          "text": "el",
+          "start": 4.184,
+          "end": 4.438
+        },
+        {
+          "id": "w14",
+          "text": "que",
+          "start": 4.494,
+          "end": 4.748
+        },
+        {
+          "id": "w15",
+          "text": "dice",
+          "start": 4.804,
+          "end": 5.059
+        },
+        {
+          "id": "w16",
+          "text": "\"Manual\"",
+          "start": 5.114,
+          "end": 5.369
+        },
+        {
+          "id": "w17",
+          "text": "con",
+          "start": 5.425,
+          "end": 5.679
+        },
+        {
+          "id": "w18",
+          "text": "la",
+          "start": 5.735,
+          "end": 5.989
+        },
+        {
+          "id": "w19",
+          "text": "hora",
+          "start": 6.045,
+          "end": 6.3
+        },
+        {
+          "id": "w20",
+          "text": "de",
+          "start": 6.355,
+          "end": 6.61
+        },
+        {
+          "id": "w21",
+          "text": "la",
+          "start": 6.666,
+          "end": 6.92
+        },
+        {
+          "id": "w22",
+          "text": "importación",
+          "start": 6.976,
+          "end": 7.23
+        },
+        {
+          "id": "w23",
+          "text": "y",
+          "start": 7.286,
+          "end": 7.541
+        },
+        {
+          "id": "w24",
+          "text": "pulsa",
+          "start": 7.597,
+          "end": 7.851
+        },
+        {
+          "id": "w25",
+          "text": "Restaurar.",
+          "start": 7.907,
+          "end": 8.161
+        },
+        {
+          "id": "w26",
+          "text": "Vuelve",
+          "start": 8.217,
+          "end": 8.472
+        },
+        {
+          "id": "w27",
+          "text": "todo",
+          "start": 8.527,
+          "end": 8.782
+        },
+        {
+          "id": "w28",
+          "text": "a",
+          "start": 8.838,
+          "end": 9.092
+        },
+        {
+          "id": "w29",
+          "text": "como",
+          "start": 9.148,
+          "end": 9.402
+        },
+        {
+          "id": "w30",
+          "text": "estaba.",
+          "start": 9.458,
+          "end": 9.713
+        },
+        {
+          "id": "w31",
+          "text": "Ojo:",
+          "start": 9.768,
+          "end": 10.023
+        },
+        {
+          "id": "w32",
+          "text": "también",
+          "start": 10.079,
+          "end": 10.333
+        },
+        {
+          "id": "w33",
+          "text": "se",
+          "start": 10.389,
+          "end": 10.643
+        },
+        {
+          "id": "w34",
+          "text": "pierde",
+          "start": 10.699,
+          "end": 10.954
+        },
+        {
+          "id": "w35",
+          "text": "lo",
+          "start": 11.01,
+          "end": 11.264
+        },
+        {
+          "id": "w36",
+          "text": "que",
+          "start": 11.32,
+          "end": 11.574
+        },
+        {
+          "id": "w37",
+          "text": "se",
+          "start": 11.63,
+          "end": 11.885
+        },
+        {
+          "id": "w38",
+          "text": "haya",
+          "start": 11.94,
+          "end": 12.195
+        },
+        {
+          "id": "w39",
+          "text": "registrado",
+          "start": 12.251,
+          "end": 12.505
+        },
+        {
+          "id": "w40",
+          "text": "después",
+          "start": 12.561,
+          "end": 12.815
+        },
+        {
+          "id": "w41",
+          "text": "de",
+          "start": 12.871,
+          "end": 13.126
+        },
+        {
+          "id": "w42",
+          "text": "esa",
+          "start": 13.181,
+          "end": 13.436
+        },
+        {
+          "id": "w43",
+          "text": "hora.",
+          "start": 13.492,
+          "end": 13.746
+        }
+      ]
+    }
+  ],
+  "sfx": [
+    {
+      "frame": 1,
+      "file": "assets/sfx/soft-riser.mp3",
+      "offset_s": 0,
+      "duration_s": 4.97,
+      "volume": 0.35
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/whoosh-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 1.58,
+      "volume": 0.35
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/pop-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.576,
+      "volume": 0.35
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/chime-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 1.273,
+      "volume": 0.35
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/whoosh-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 1.58,
+      "volume": 0.35
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 8,
+      "file": "assets/sfx/chime-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 1.273,
+      "volume": 0.35
+    },
+    {
+      "frame": 9,
+      "file": "assets/sfx/chime-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 1.273,
+      "volume": 0.35
+    },
+    {
+      "frame": 10,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.264,
+      "volume": 0.35
+    },
+    {
+      "frame": 10,
+      "file": "assets/sfx/whoosh-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 1.58,
+      "volume": 0.35
+    },
+    {
+      "frame": 11,
+      "file": "assets/sfx/soft-outro.mp3",
+      "offset_s": 0,
+      "duration_s": 5.708,
+      "volume": 0.35
+    }
+  ]
+}

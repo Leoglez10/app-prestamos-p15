@@ -1,0 +1,152 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .s9-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .s9-back {
+      position: absolute; left: 100px; top: 70px; width: 1720px; height: 810px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px;
+      filter: blur(7px); opacity: 0.5; padding: 30px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-content: start;
+    }
+    .s9-ghost {
+      height: 150px; border-radius: 14px; padding: 18px 20px;
+      background: rgba(37,99,235,0.07); border: 1.5px solid rgba(37,99,235,0.14);
+    }
+    .s9-ghost b { display: block; font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; color: #0f172a; }
+    .s9-ghost small { display: block; font-family: "Inter", sans-serif; font-size: 16px; color: #5a6a7f; margin-top: 6px; }
+
+    .s9-label {
+      position: absolute; left: 150px; top: 306px; width: 560px;
+      background: #ffffff; border: 2px solid #0f172a; border-radius: 12px; padding: 26px 32px 22px;
+    }
+    .s9-label-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 17px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase; color: #5a6a7f;
+    }
+    .s9-bars { margin-top: 18px; height: 104px; display: flex; align-items: stretch; gap: 5px; }
+    .s9-bars i { display: block; background: #0f172a; }
+    .s9-code {
+      margin-top: 16px; text-align: center;
+      font-family: "Space Grotesk", sans-serif; font-size: 40px; font-weight: 700; letter-spacing: 0.2em; color: #0f172a;
+    }
+    .s9-beam {
+      position: absolute; left: 150px; top: 318px; width: 560px; height: 7px;
+      background: linear-gradient(to right, rgba(220,38,38,0), #dc2626 18%, #dc2626 82%, rgba(220,38,38,0));
+      border-radius: 8px; opacity: 0; z-index: 12;
+    }
+
+    .s9-out {
+      position: absolute; left: 900px; top: 306px; width: 840px; opacity: 0;
+      background: #ffffff; border: 2px solid #2563eb; border-radius: 18px; padding: 28px 32px;
+      box-shadow: 0 26px 54px rgba(15,23,42,0.16);
+    }
+    .s9-out-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #2563eb;
+    }
+    .s9-out-t { font-family: "Space Grotesk", sans-serif; font-size: 36px; font-weight: 600; color: #0f172a; margin-top: 10px; }
+    .s9-out-s { font-family: "Inter", sans-serif; font-size: 21px; color: #5a6a7f; margin-top: 6px; }
+    .s9-field {
+      margin-top: 18px; height: 72px; border-radius: 12px; border: 2px solid rgba(37,99,235,0.24);
+      background: #f8fafc; display: flex; align-items: center; padding: 0 22px; gap: 14px;
+    }
+    .s9-field-lab {
+      font-family: "Space Grotesk", sans-serif; font-size: 15px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: #5a6a7f;
+    }
+    .s9-field-val { font-family: "Space Grotesk", sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 0.14em; color: #2563eb; }
+    .s9-empty {
+      margin-top: 12px; height: 56px; border-radius: 12px;
+      background: rgba(37,99,235,0.04); border: 1.5px dashed rgba(37,99,235,0.2);
+    }
+  </style>
+
+  <div id="root" data-composition-id="09-pistola" data-width="1920" data-height="1080" data-duration="13.535">
+    <div class="clip s9-ground" id="s9-ground" data-start="0" data-duration="13.535" data-track-index="0"></div>
+    <div class="clip s9-back" id="s9-back" data-start="0" data-duration="13.535" data-track-index="1">
+      <div class="s9-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Laptop Dell</b><small>Laptop</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Cable HDMI</b><small>HDMI</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Control Epson</b><small>Control</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Bocinas Logitech</b><small>Bocinas</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Extensi&oacute;n el&eacute;ctrica</b><small>Extension</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Adaptador USB-C</b><small>HDMI</small></div>
+      <div class="s9-ghost" data-layout-allow-overlap><b>Proyector BenQ</b><small>Proyector</small></div>
+    </div>
+
+    <div class="clip s9-label" id="s9-label" data-layout-allow-overlap data-start="0" data-duration="13.535" data-track-index="2">
+      <div class="s9-label-h" data-layout-allow-overlap>Patrimonio UdeG</div>
+      <div class="s9-bars" id="s9-bars"></div>
+      <div class="s9-code" id="s9-code">3382871</div>
+    </div>
+
+    <div class="clip s9-beam" id="s9-beam" data-start="0" data-duration="13.535" data-track-index="3"></div>
+
+    <div class="clip s9-out" id="s9-known" data-layout-allow-overlap data-start="0" data-duration="13.535" data-track-index="4">
+      <div class="s9-out-h" data-layout-allow-overlap>Ya est&aacute; en el inventario</div>
+      <div class="s9-out-t">Proyector Epson X41</div>
+      <div class="s9-out-s">Categor&iacute;a: Proyector &middot; Listo para llevar</div>
+    </div>
+
+    <div class="clip s9-out" id="s9-new" data-layout-allow-overlap data-start="0" data-duration="13.535" data-track-index="5">
+      <div class="s9-out-h" data-layout-allow-overlap>No estaba &mdash; alta nueva</div>
+      <div class="s9-out-t">Nuevo equipo</div>
+      <div class="s9-field">
+        <div class="s9-field-lab">ID de Patrimonio</div>
+        <div class="s9-field-val" id="s9-newcode">9911042</div>
+      </div>
+      <div class="s9-empty"></div>
+      <div class="s9-empty"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Barcode bars, generated deterministically so the render is reproducible. */
+      const bars = document.getElementById("s9-bars");
+      let seed = 3382871;
+      const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+      for (let i = 0; i < 40; i++) {
+        const b = document.createElement("i");
+        b.style.width = (rnd() > 0.62 ? 9 : 4) + "px";
+        bars.appendChild(b);
+      }
+
+      const fire = (at) => {
+        tl.fromTo("#s9-beam", { opacity: 0, y: 0 }, { opacity: 1, duration: 0.14, ease: "power2.out" }, at);
+        tl.to("#s9-beam", { y: 190, duration: 0.6, ease: "power2.inOut" }, at + 0.06);
+        tl.to("#s9-beam", { opacity: 0, duration: 0.2, ease: "power2.in" }, at + 0.66);
+      };
+
+      /* Scene 1 (0–3.3s) — the label arrives over the blurred Inventario tab. */
+      tl.fromTo("#s9-label", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.66, ease: "power3.out" }, 0);
+      tl.fromTo("#s9-bars i", { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.5, ease: "power2.out", stagger: 0.012 }, 0.6);
+      tl.fromTo("#s9-code", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.44, ease: "power3.out" }, 1.5);
+
+      /* Scene 2 (3.3–7.2s) — first shot: the equipment exists, so its record opens. */
+      fire(3.34);
+      tl.fromTo("#s9-known", { opacity: 0, x: 60, scale: 0.95 }, { opacity: 1, x: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 4.2);
+
+      /* Scene 3 (7.2–10.4s) — back to the middle; a second, unknown label. */
+      tl.to("#s9-known", { opacity: 0, x: 40, duration: 0.4, ease: "power2.in" }, 7.22);
+      tl.to("#s9-code", { opacity: 0, duration: 0.2, ease: "power2.in" }, 7.4);
+      tl.call(() => { document.getElementById("s9-code").textContent = "9911042"; }, null, 7.62);
+      tl.to("#s9-code", { opacity: 1, duration: 0.28, ease: "power2.out" }, 7.64);
+      fire(8.6);
+
+      /* Scene 4 (10.4–13s) — the other branch: a blank form with the number already in. */
+      tl.fromTo("#s9-new", { opacity: 0, x: 60, scale: 0.95 }, { opacity: 1, x: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 10.44);
+      tl.fromTo("#s9-newcode", { scale: 1.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, 11.1);
+
+      window.__timelines["09-pistola"] = tl;
+    })();
+  </script>
+</template>

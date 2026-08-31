@@ -1,0 +1,225 @@
+<template id="captions-template" data-composition-id="captions" data-width="1920" data-height="1080">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+
+<style data-brand-tokens>
+      @font-face { font-family: 'Space Grotesk'; src: url('assets/fonts/space-grotesk.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: block; }
+      @font-face { font-family: 'Inter'; src: url('assets/fonts/inter.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: block; }
+      :root {
+      --bg: #f8fafc;
+      --primary: #2563eb;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #9A9A9A;
+      --accent-light: rgba(37, 99, 235, 0.08);
+      --accent-medium: rgba(37, 99, 235, 0.15);
+      --border: rgba(37, 99, 235, 0.2);
+      --card-bg: rgba(37, 99, 235, 0.04);
+      --positive: #15803d;
+      --negative: #dc2626;
+      --cap-ink: #0f172a;
+      --cap-canvas: #f8fafc;
+      --cap-accent: #2563eb;
+      --cap-accent-2: #64748b;
+      --font-display: "Space Grotesk", system-ui, serif;
+      --font-body: "Inter", system-ui, sans-serif;
+      --cap-band-top: 900px;
+      --cap-band-height: 180px;
+      }
+    </style>
+
+<style>
+  #captions-root {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .caption-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+  /* the keep-out band, from captionBand(H) — frame content stays above it */
+  .caption-stage {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: var(--cap-band-top, 900px);
+    height: var(--cap-band-height, 180px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .caption-group {
+    /* every group is absolutely stacked over the SAME band — exactly one shown at a
+       time via opacity. Must be absolute: in-flow groups would lay out side-by-side. */
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+  }
+
+  /* THE tinted card — 4% cobalt fill, 1.5px 20%-cobalt border, soft 14px corners,
+     NO shadow (the tinted card does the lift; cast depth is forbidden) */
+  .caption-pill {
+    max-width: 78%;
+    padding: 20px 44px 24px;
+    background: color-mix(in srgb, var(--cap-accent, #1e2bfa) 4%, var(--cap-canvas, #fdfae7));
+    border: 1.5px solid color-mix(in srgb, var(--cap-accent, #1e2bfa) 20%, transparent);
+    border-radius: 14px;
+  }
+  .caption-line {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.1em 0.34em;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: clamp(40px, 4.4vw, 58px);
+    line-height: 1.16;
+    letter-spacing: -0.02em;
+  }
+
+  /* upcoming — muted gray, no chip */
+  .caption-word {
+    display: inline-block;
+    padding: 0 0.18em;
+    border-radius: 0.32em;
+    color: color-mix(in srgb, var(--cap-ink, #111111) 52%, var(--cap-canvas, #fdfae7));
+  }
+  /* current word — THE solid cobalt chip (the single-accent gesture; pill-rounded
+     fill, NO shadow), cream reading on top */
+  .caption-word.is-active {
+    color: var(--cap-canvas, #fdfae7);
+    background: var(--cap-accent, #1e2bfa);
+    box-shadow: none;
+  }
+  /* already spoken — solid near-black ink, chip cleared */
+  .caption-word.is-spoken {
+    color: var(--cap-ink, #111111);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* optional per-word accents (dormant until a word-classer tags them) */
+  /* brand / key term — cobalt, the system's one accent on a key word */
+  .caption-word.cap-brand {
+    color: var(--cap-accent, #1e2bfa);
+  }
+  /* numerals / data — cobalt 700, the figure voice */
+  .caption-word.cap-num {
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-weight: 700;
+    color: var(--cap-accent, #1e2bfa);
+  }
+  /* emphasis — a directional-red hairline underline (inline only, never a fill) */
+  .caption-word.cap-cta {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--cap-accent-2, #dc2626);
+    text-underline-offset: 0.1em;
+  }
+
+  @media (max-aspect-ratio: 9/16) {
+    .caption-pill {
+      max-width: 92%;
+    }
+    .caption-line {
+      font-size: clamp(34px, 5.4vw, 48px);
+    }
+  }
+</style>
+
+<div
+  id="captions-root"
+  data-composition-id="captions"
+  data-timeline-locked
+  data-start="0"
+  data-duration="139.55"
+  data-fps="30"
+  data-width="1920"
+  data-height="1080"
+>
+  <div class="caption-layer" aria-hidden="true">
+    <div id="caption-stage" class="caption-stage"></div>
+  </div>
+</div>
+
+<script>
+  // captions.mjs injects the engine's scene-aware groups + real duration here.
+  var GROUPS = [{"id":"caption-group-0","frame":1,"start":0.159,"end":0.74,"text":"Antes de","words":[{"id":"caption-word-0-0","text":"Antes","start":0.159,"end":0.579},{"id":"caption-word-0-1","text":"de","start":0.599,"end":0.68}]},{"id":"caption-group-1","frame":1,"start":0.74,"end":1.36,"text":"que nadie","words":[{"id":"caption-word-1-0","text":"que","start":0.74,"end":0.779},{"id":"caption-word-1-1","text":"nadie","start":0.899,"end":1.319}]},{"id":"caption-group-2","frame":1,"start":1.36,"end":1.879,"text":"pida un","words":[{"id":"caption-word-2-0","text":"pida","start":1.36,"end":1.62},{"id":"caption-word-2-1","text":"un","start":1.679,"end":1.819}]},{"id":"caption-group-3","frame":1,"start":1.879,"end":2.679,"text":"solo equipo,","words":[{"id":"caption-word-3-0","text":"solo","start":1.879,"end":2.079},{"id":"caption-word-3-1","text":"equipo,","start":2.119,"end":2.559}]},{"id":"caption-group-4","frame":1,"start":3,"end":3.279,"text":"hay que","words":[{"id":"caption-word-4-0","text":"hay","start":3,"end":3.119},{"id":"caption-word-4-1","text":"que","start":3.179,"end":3.24}]},{"id":"caption-group-5","frame":1,"start":3.279,"end":3.859,"text":"dejar la","words":[{"id":"caption-word-5-0","text":"dejar","start":3.279,"end":3.619},{"id":"caption-word-5-1","text":"la","start":3.659,"end":3.779}]},{"id":"caption-group-6","frame":1,"start":3.859,"end":4.56,"text":"app lista.","words":[{"id":"caption-word-6-0","text":"app","start":3.859,"end":4},{"id":"caption-word-6-1","text":"lista.","start":4.079,"end":4.44}]},{"id":"caption-group-7","frame":1,"start":5.099,"end":5.539,"text":"Se hace","words":[{"id":"caption-word-7-0","text":"Se","start":5.099,"end":5.199},{"id":"caption-word-7-1","text":"hace","start":5.259,"end":5.5}]},{"id":"caption-group-8","frame":1,"start":5.539,"end":6.139,"text":"una vez,","words":[{"id":"caption-word-8-0","text":"una","start":5.539,"end":5.659},{"id":"caption-word-8-1","text":"vez,","start":5.719,"end":6.019}]},{"id":"caption-group-9","frame":1,"start":6.539,"end":6.839,"text":"y se","words":[{"id":"caption-word-9-0","text":"y","start":6.539,"end":6.559},{"id":"caption-word-9-1","text":"se","start":6.659,"end":6.759}]},{"id":"caption-group-10","frame":1,"start":6.839,"end":7.819,"text":"hace desde aquí.","words":[{"id":"caption-word-10-0","text":"hace","start":6.839,"end":7.039},{"id":"caption-word-10-1","text":"desde","start":7.099,"end":7.339},{"id":"caption-word-10-2","text":"aquí.","start":7.379,"end":7.699}]},{"id":"caption-group-11","frame":2,"start":8.12,"end":8.66,"text":"Entra con","words":[{"id":"caption-word-11-0","text":"Entra","start":8.12,"end":8.42},{"id":"caption-word-11-1","text":"con","start":8.501,"end":8.58}]},{"id":"caption-group-12","frame":2,"start":8.66,"end":9.14,"text":"tu código","words":[{"id":"caption-word-12-0","text":"tu","start":8.66,"end":8.76},{"id":"caption-word-12-1","text":"código","start":8.8,"end":9.1}]},{"id":"caption-group-13","frame":2,"start":9.14,"end":9.94,"text":"de profesor","words":[{"id":"caption-word-13-0","text":"de","start":9.14,"end":9.181},{"id":"caption-word-13-1","text":"profesor","start":9.28,"end":9.82}]},{"id":"caption-group-14","frame":2,"start":10.3,"end":10.641,"text":"y tu","words":[{"id":"caption-word-14-0","text":"y","start":10.3,"end":10.36},{"id":"caption-word-14-1","text":"tu","start":10.441,"end":10.54}]},{"id":"caption-group-15","frame":2,"start":10.641,"end":12.061,"text":"PIN de administrador.","words":[{"id":"caption-word-15-0","text":"PIN","start":10.641,"end":10.901},{"id":"caption-word-15-1","text":"de","start":10.98,"end":11.02},{"id":"caption-word-15-2","text":"administrador.","start":11.1,"end":11.941}]},{"id":"caption-group-16","frame":2,"start":12.68,"end":13.96,"text":"Aquí adentro hay","words":[{"id":"caption-word-16-0","text":"Aquí","start":12.68,"end":12.96},{"id":"caption-word-16-1","text":"adentro","start":13.02,"end":13.58},{"id":"caption-word-16-2","text":"hay","start":13.66,"end":13.901}]},{"id":"caption-group-17","frame":2,"start":13.96,"end":15.1,"text":"seis secciones;","words":[{"id":"caption-word-17-0","text":"seis","start":13.96,"end":14.22},{"id":"caption-word-17-1","text":"secciones;","start":14.3,"end":14.98}]},{"id":"caption-group-18","frame":2,"start":15.62,"end":16.161,"text":"para dejar","words":[{"id":"caption-word-18-0","text":"para","start":15.62,"end":15.76},{"id":"caption-word-18-1","text":"dejar","start":15.82,"end":16.12}]},{"id":"caption-group-19","frame":2,"start":16.161,"end":17.321,"text":"la app lista","words":[{"id":"caption-word-19-0","text":"la","start":16.161,"end":16.241},{"id":"caption-word-19-1","text":"app","start":16.3,"end":16.46},{"id":"caption-word-19-2","text":"lista","start":16.54,"end":17.201}]},{"id":"caption-group-20","frame":2,"start":17.34,"end":18.84,"text":"solo necesitas tres.","words":[{"id":"caption-word-20-0","text":"solo","start":17.34,"end":17.52},{"id":"caption-word-20-1","text":"necesitas","start":17.6,"end":18.3},{"id":"caption-word-20-2","text":"tres.","start":18.321,"end":18.72}]},{"id":"caption-group-21","frame":3,"start":19.222,"end":19.922,"text":"En Profesores","words":[{"id":"caption-word-21-0","text":"En","start":19.222,"end":19.302},{"id":"caption-word-21-1","text":"Profesores","start":19.362,"end":19.882}]},{"id":"caption-group-22","frame":3,"start":19.922,"end":20.322,"text":"das de","words":[{"id":"caption-word-22-0","text":"das","start":19.922,"end":20.122},{"id":"caption-word-22-1","text":"de","start":20.143,"end":20.263}]},{"id":"caption-group-23","frame":3,"start":20.322,"end":20.802,"text":"alta a","words":[{"id":"caption-word-23-0","text":"alta","start":20.322,"end":20.642},{"id":"caption-word-23-1","text":"a","start":20.702,"end":20.783}]},{"id":"caption-group-24","frame":3,"start":20.802,"end":21.302,"text":"quien va","words":[{"id":"caption-word-24-0","text":"quien","start":20.802,"end":20.982},{"id":"caption-word-24-1","text":"va","start":21.082,"end":21.283}]},{"id":"caption-group-25","frame":3,"start":21.302,"end":21.743,"text":"a usar","words":[{"id":"caption-word-25-0","text":"a","start":21.302,"end":21.382},{"id":"caption-word-25-1","text":"usar","start":21.422,"end":21.702}]},{"id":"caption-group-26","frame":3,"start":21.743,"end":22.442,"text":"el kiosko.","words":[{"id":"caption-word-26-0","text":"el","start":21.743,"end":21.842},{"id":"caption-word-26-1","text":"kiosko.","start":21.882,"end":22.322}]},{"id":"caption-group-27","frame":3,"start":22.982,"end":24.182,"text":"Su código UDG","words":[{"id":"caption-word-27-0","text":"Su","start":22.982,"end":23.102},{"id":"caption-word-27-1","text":"código","start":23.142,"end":23.503},{"id":"caption-word-27-2","text":"UDG","start":23.642,"end":24.142}]},{"id":"caption-group-28","frame":3,"start":24.182,"end":24.962,"text":"y su nombre;","words":[{"id":"caption-word-28-0","text":"y","start":24.182,"end":24.282},{"id":"caption-word-28-1","text":"su","start":24.342,"end":24.442},{"id":"caption-word-28-2","text":"nombre;","start":24.483,"end":24.842}]},{"id":"caption-group-29","frame":3,"start":25.302,"end":26.002,"text":"nada más.","words":[{"id":"caption-word-29-0","text":"nada","start":25.302,"end":25.543},{"id":"caption-word-29-1","text":"más.","start":25.582,"end":25.882}]},{"id":"caption-group-30","frame":3,"start":26.622,"end":27.282,"text":"Ese código","words":[{"id":"caption-word-30-0","text":"Ese","start":26.622,"end":26.822},{"id":"caption-word-30-1","text":"código","start":26.882,"end":27.222}]},{"id":"caption-group-31","frame":3,"start":27.282,"end":27.582,"text":"es el","words":[{"id":"caption-word-31-0","text":"es","start":27.282,"end":27.383},{"id":"caption-word-31-1","text":"el","start":27.442,"end":27.522}]},{"id":"caption-group-32","frame":3,"start":27.582,"end":27.982,"text":"que va","words":[{"id":"caption-word-32-0","text":"que","start":27.582,"end":27.622},{"id":"caption-word-32-1","text":"va","start":27.722,"end":27.942}]},{"id":"caption-group-33","frame":3,"start":27.982,"end":28.602,"text":"a escribir","words":[{"id":"caption-word-33-0","text":"a","start":27.982,"end":28.043},{"id":"caption-word-33-1","text":"escribir","start":28.082,"end":28.562}]},{"id":"caption-group-34","frame":3,"start":28.602,"end":29.522,"text":"en la terminal.","words":[{"id":"caption-word-34-0","text":"en","start":28.602,"end":28.702},{"id":"caption-word-34-1","text":"la","start":28.742,"end":28.782},{"id":"caption-word-34-2","text":"terminal.","start":28.883,"end":29.402}]},{"id":"caption-group-35","frame":4,"start":29.868,"end":30.548,"text":"Si además","words":[{"id":"caption-word-35-0","text":"Si","start":29.868,"end":29.968},{"id":"caption-word-35-1","text":"además","start":30.008,"end":30.428}]},{"id":"caption-group-36","frame":4,"start":30.548,"end":31.708,"text":"va a administrar,","words":[{"id":"caption-word-36-0","text":"va","start":30.548,"end":30.628},{"id":"caption-word-36-1","text":"a","start":30.688,"end":30.749},{"id":"caption-word-36-2","text":"administrar,","start":30.769,"end":31.588}]},{"id":"caption-group-37","frame":4,"start":32.168,"end":33.288,"text":"marca la casilla","words":[{"id":"caption-word-37-0","text":"marca","start":32.168,"end":32.508},{"id":"caption-word-37-1","text":"la","start":32.548,"end":32.609},{"id":"caption-word-37-2","text":"casilla","start":32.668,"end":33.168}]},{"id":"caption-group-38","frame":4,"start":33.548,"end":34.109,"text":"y aparece","words":[{"id":"caption-word-38-0","text":"y","start":33.548,"end":33.588},{"id":"caption-word-38-1","text":"aparece","start":33.649,"end":34.069}]},{"id":"caption-group-39","frame":4,"start":34.109,"end":34.688,"text":"el campo","words":[{"id":"caption-word-39-0","text":"el","start":34.109,"end":34.268},{"id":"caption-word-39-1","text":"campo","start":34.328,"end":34.649}]},{"id":"caption-group-40","frame":4,"start":34.688,"end":35.308,"text":"del PIN.","words":[{"id":"caption-word-40-0","text":"del","start":34.688,"end":34.808},{"id":"caption-word-40-1","text":"PIN.","start":34.908,"end":35.188}]},{"id":"caption-group-41","frame":4,"start":35.688,"end":36.089,"text":"Y aquí","words":[{"id":"caption-word-41-0","text":"Y","start":35.688,"end":35.708},{"id":"caption-word-41-1","text":"aquí","start":35.768,"end":36.028}]},{"id":"caption-group-42","frame":4,"start":36.089,"end":37.249,"text":"va la advertencia","words":[{"id":"caption-word-42-0","text":"va","start":36.089,"end":36.208},{"id":"caption-word-42-1","text":"la","start":36.288,"end":36.348},{"id":"caption-word-42-2","text":"advertencia","start":36.408,"end":37.129}]},{"id":"caption-group-43","frame":4,"start":37.288,"end":38.369,"text":"más importante de","words":[{"id":"caption-word-43-0","text":"más","start":37.288,"end":37.488},{"id":"caption-word-43-1","text":"importante","start":37.548,"end":38.168},{"id":"caption-word-43-2","text":"de","start":38.248,"end":38.308}]},{"id":"caption-group-44","frame":4,"start":38.369,"end":39.128,"text":"este video:","words":[{"id":"caption-word-44-0","text":"este","start":38.369,"end":38.588},{"id":"caption-word-44-1","text":"video:","start":38.628,"end":39.008}]},{"id":"caption-group-45","frame":4,"start":39.529,"end":40.088,"text":"si dejas","words":[{"id":"caption-word-45-0","text":"si","start":39.529,"end":39.628},{"id":"caption-word-45-1","text":"dejas","start":39.668,"end":40.029}]},{"id":"caption-group-46","frame":4,"start":40.088,"end":41.288,"text":"ese campo vacío,","words":[{"id":"caption-word-46-0","text":"ese","start":40.088,"end":40.288},{"id":"caption-word-46-1","text":"campo","start":40.348,"end":40.628},{"id":"caption-word-46-2","text":"vacío,","start":40.688,"end":41.168}]},{"id":"caption-group-47","frame":4,"start":41.588,"end":42.168,"text":"la app","words":[{"id":"caption-word-47-0","text":"la","start":41.588,"end":41.668},{"id":"caption-word-47-1","text":"app","start":41.768,"end":42.048}]},{"id":"caption-group-48","frame":4,"start":42.208,"end":42.468,"text":"no lo","words":[{"id":"caption-word-48-0","text":"no","start":42.208,"end":42.268},{"id":"caption-word-48-1","text":"lo","start":42.328,"end":42.388}]},{"id":"caption-group-49","frame":4,"start":42.468,"end":43.468,"text":"deja sin PIN.","words":[{"id":"caption-word-49-0","text":"deja","start":42.468,"end":42.728},{"id":"caption-word-49-1","text":"sin","start":42.828,"end":43.048},{"id":"caption-word-49-2","text":"PIN.","start":43.088,"end":43.348}]},{"id":"caption-group-50","frame":4,"start":43.808,"end":44.268,"text":"Le pone","words":[{"id":"caption-word-50-0","text":"Le","start":43.808,"end":43.848},{"id":"caption-word-50-1","text":"pone","start":43.968,"end":44.208}]},{"id":"caption-group-51","frame":4,"start":44.268,"end":45.548,"text":"el de fábrica.","words":[{"id":"caption-word-51-0","text":"el","start":44.268,"end":44.368},{"id":"caption-word-51-1","text":"de","start":44.428,"end":44.548},{"id":"caption-word-51-2","text":"fábrica.","start":44.588,"end":45.488}]},{"id":"caption-group-52","frame":4,"start":45.548,"end":46.888,"text":"Escríbelo siempre.","words":[{"id":"caption-word-52-0","text":"Escríbelo","start":45.548,"end":46.228},{"id":"caption-word-52-1","text":"siempre.","start":46.288,"end":46.768}]},{"id":"caption-group-53","frame":5,"start":47.292,"end":47.912,"text":"La app","words":[{"id":"caption-word-53-0","text":"La","start":47.292,"end":47.452},{"id":"caption-word-53-1","text":"app","start":47.512,"end":47.792}]},{"id":"caption-group-54","frame":5,"start":48.173,"end":48.772,"text":"viene con","words":[{"id":"caption-word-54-0","text":"viene","start":48.173,"end":48.452},{"id":"caption-word-54-1","text":"con","start":48.532,"end":48.712}]},{"id":"caption-group-55","frame":5,"start":48.772,"end":49.392,"text":"una cuenta","words":[{"id":"caption-word-55-0","text":"una","start":48.772,"end":48.912},{"id":"caption-word-55-1","text":"cuenta","start":49.012,"end":49.332}]},{"id":"caption-group-56","frame":5,"start":49.392,"end":51.232,"text":"de administrador ya creada,","words":[{"id":"caption-word-56-0","text":"de","start":49.392,"end":49.452},{"id":"caption-word-56-1","text":"administrador","start":49.513,"end":50.293},{"id":"caption-word-56-2","text":"ya","start":50.432,"end":50.553},{"id":"caption-word-56-3","text":"creada,","start":50.652,"end":51.112}]},{"id":"caption-group-57","frame":5,"start":51.732,"end":52.132,"text":"para que","words":[{"id":"caption-word-57-0","text":"para","start":51.732,"end":51.892},{"id":"caption-word-57-1","text":"que","start":51.973,"end":52.033}]},{"id":"caption-group-58","frame":5,"start":52.132,"end":52.932,"text":"puedas entrar","words":[{"id":"caption-word-58-0","text":"puedas","start":52.132,"end":52.412},{"id":"caption-word-58-1","text":"entrar","start":52.493,"end":52.872}]},{"id":"caption-group-59","frame":5,"start":52.932,"end":54.012,"text":"la primera vez.","words":[{"id":"caption-word-59-0","text":"la","start":52.932,"end":53.033},{"id":"caption-word-59-1","text":"primera","start":53.073,"end":53.432},{"id":"caption-word-59-2","text":"vez.","start":53.493,"end":53.892}]},{"id":"caption-group-60","frame":5,"start":54.772,"end":56.073,"text":"Cámbiale el PIN","words":[{"id":"caption-word-60-0","text":"Cámbiale","start":54.772,"end":55.293},{"id":"caption-word-60-1","text":"el","start":55.453,"end":55.552},{"id":"caption-word-60-2","text":"PIN","start":55.672,"end":55.953}]},{"id":"caption-group-61","frame":5,"start":56.132,"end":56.953,"text":"hoy mismo,","words":[{"id":"caption-word-61-0","text":"hoy","start":56.132,"end":56.293},{"id":"caption-word-61-1","text":"mismo,","start":56.392,"end":56.833}]},{"id":"caption-group-62","frame":5,"start":57.573,"end":58.573,"text":"antes de usarla","words":[{"id":"caption-word-62-0","text":"antes","start":57.573,"end":57.873},{"id":"caption-word-62-1","text":"de","start":57.953,"end":57.993},{"id":"caption-word-62-2","text":"usarla","start":58.073,"end":58.472}]},{"id":"caption-group-63","frame":5,"start":58.573,"end":59.493,"text":"con la escuela.","words":[{"id":"caption-word-63-0","text":"con","start":58.573,"end":58.672},{"id":"caption-word-63-1","text":"la","start":58.732,"end":58.772},{"id":"caption-word-63-2","text":"escuela.","start":58.873,"end":59.373}]},{"id":"caption-group-64","frame":6,"start":59.705,"end":60.865,"text":"En Categorías","words":[{"id":"caption-word-64-0","text":"En","start":59.705,"end":59.866},{"id":"caption-word-64-1","text":"Categorías","start":59.926,"end":60.745}]},{"id":"caption-group-65","frame":6,"start":61.105,"end":62.265,"text":"organizas el equipo:","words":[{"id":"caption-word-65-0","text":"organizas","start":61.105,"end":61.605},{"id":"caption-word-65-1","text":"el","start":61.645,"end":61.685},{"id":"caption-word-65-2","text":"equipo:","start":61.786,"end":62.145}]},{"id":"caption-group-66","frame":6,"start":62.586,"end":63.485,"text":"proyectores,","words":[{"id":"caption-word-66-0","text":"proyectores,","start":62.586,"end":63.365}]},{"id":"caption-group-67","frame":6,"start":63.825,"end":64.525,"text":"laptops,","words":[{"id":"caption-word-67-0","text":"laptops,","start":63.825,"end":64.405}]},{"id":"caption-group-68","frame":6,"start":64.825,"end":65.425,"text":"cables.","words":[{"id":"caption-word-68-0","text":"cables.","start":64.825,"end":65.305}]},{"id":"caption-group-69","frame":6,"start":65.845,"end":66.505,"text":"Un nombre","words":[{"id":"caption-word-69-0","text":"Un","start":65.845,"end":65.945},{"id":"caption-word-69-1","text":"nombre","start":66.026,"end":66.385}]},{"id":"caption-group-70","frame":6,"start":66.785,"end":67.465,"text":"y listo.","words":[{"id":"caption-word-70-0","text":"y","start":66.785,"end":66.825},{"id":"caption-word-70-1","text":"listo.","start":66.905,"end":67.345}]},{"id":"caption-group-71","frame":7,"start":67.831,"end":69.011,"text":"Cada categoría","words":[{"id":"caption-word-71-0","text":"Cada","start":67.831,"end":68.091},{"id":"caption-word-71-1","text":"categoría","start":68.171,"end":68.891}]},{"id":"caption-group-72","frame":7,"start":69.431,"end":70.051,"text":"decide si","words":[{"id":"caption-word-72-0","text":"decide","start":69.431,"end":69.832},{"id":"caption-word-72-1","text":"si","start":69.891,"end":69.971}]},{"id":"caption-group-73","frame":7,"start":70.051,"end":70.771,"text":"se presta","words":[{"id":"caption-word-73-0","text":"se","start":70.051,"end":70.171},{"id":"caption-word-73-1","text":"presta","start":70.211,"end":70.651}]},{"id":"caption-group-74","frame":7,"start":71.191,"end":71.551,"text":"o si","words":[{"id":"caption-word-74-0","text":"o","start":71.191,"end":71.231},{"id":"caption-word-74-1","text":"si","start":71.331,"end":71.431}]},{"id":"caption-group-75","frame":7,"start":71.551,"end":72.771,"text":"solo se inventaría.","words":[{"id":"caption-word-75-0","text":"solo","start":71.551,"end":71.771},{"id":"caption-word-75-1","text":"se","start":71.851,"end":71.911},{"id":"caption-word-75-2","text":"inventaría.","start":71.951,"end":72.651}]},{"id":"caption-group-76","frame":7,"start":73.191,"end":74.951,"text":"En \"Solo inventario\"","words":[{"id":"caption-word-76-0","text":"En","start":73.191,"end":73.371},{"id":"caption-word-76-1","text":"\"Solo","start":73.371,"end":74.151},{"id":"caption-word-76-2","text":"inventario\"","start":74.211,"end":74.831}]},{"id":"caption-group-77","frame":7,"start":75.391,"end":75.951,"text":"el equipo","words":[{"id":"caption-word-77-0","text":"el","start":75.391,"end":75.451},{"id":"caption-word-77-1","text":"equipo","start":75.511,"end":75.852}]},{"id":"caption-group-78","frame":7,"start":75.951,"end":77.052,"text":"sigue existiendo,","words":[{"id":"caption-word-78-0","text":"sigue","start":75.951,"end":76.152},{"id":"caption-word-78-1","text":"existiendo,","start":76.231,"end":76.932}]},{"id":"caption-group-79","frame":7,"start":77.392,"end":78.512,"text":"sigue contándose,","words":[{"id":"caption-word-79-0","text":"sigue","start":77.392,"end":77.611},{"id":"caption-word-79-1","text":"contándose,","start":77.691,"end":78.392}]},{"id":"caption-group-80","frame":7,"start":78.871,"end":79.951,"text":"pero desaparece del","words":[{"id":"caption-word-80-0","text":"pero","start":78.871,"end":79.012},{"id":"caption-word-80-1","text":"desaparece","start":79.071,"end":79.691},{"id":"caption-word-80-2","text":"del","start":79.751,"end":79.891}]},{"id":"caption-group-81","frame":7,"start":79.951,"end":81.391,"text":"catálogo del profesor.","words":[{"id":"caption-word-81-0","text":"catálogo","start":79.951,"end":80.451},{"id":"caption-word-81-1","text":"del","start":80.491,"end":80.612},{"id":"caption-word-81-2","text":"profesor.","start":80.691,"end":81.271}]},{"id":"caption-group-82","frame":7,"start":81.671,"end":82.671,"text":"Es un interruptor","words":[{"id":"caption-word-82-0","text":"Es","start":81.671,"end":81.791},{"id":"caption-word-82-1","text":"un","start":81.851,"end":81.911},{"id":"caption-word-82-2","text":"interruptor","start":81.972,"end":82.632}]},{"id":"caption-group-83","frame":7,"start":82.671,"end":83.531,"text":"por categoría,","words":[{"id":"caption-word-83-0","text":"por","start":82.671,"end":82.751},{"id":"caption-word-83-1","text":"categoría,","start":82.831,"end":83.411}]},{"id":"caption-group-84","frame":7,"start":83.892,"end":84.491,"text":"y apaga","words":[{"id":"caption-word-84-0","text":"y","start":83.892,"end":83.911},{"id":"caption-word-84-1","text":"apaga","start":84.031,"end":84.431}]},{"id":"caption-group-85","frame":7,"start":84.491,"end":85.531,"text":"todos sus equipos","words":[{"id":"caption-word-85-0","text":"todos","start":84.491,"end":84.791},{"id":"caption-word-85-1","text":"sus","start":84.851,"end":84.991},{"id":"caption-word-85-2","text":"equipos","start":85.052,"end":85.472}]},{"id":"caption-group-86","frame":7,"start":85.531,"end":86.151,"text":"de golpe.","words":[{"id":"caption-word-86-0","text":"de","start":85.531,"end":85.572},{"id":"caption-word-86-1","text":"golpe.","start":85.671,"end":86.031}]},{"id":"caption-group-87","frame":8,"start":86.575,"end":87.135,"text":"Un equipo","words":[{"id":"caption-word-87-0","text":"Un","start":86.575,"end":86.655},{"id":"caption-word-87-1","text":"equipo","start":86.715,"end":87.055}]},{"id":"caption-group-88","frame":8,"start":87.135,"end":87.675,"text":"se cuenta","words":[{"id":"caption-word-88-0","text":"se","start":87.135,"end":87.215},{"id":"caption-word-88-1","text":"cuenta","start":87.275,"end":87.635}]},{"id":"caption-group-89","frame":8,"start":87.675,"end":88.035,"text":"de dos","words":[{"id":"caption-word-89-0","text":"de","start":87.675,"end":87.775},{"id":"caption-word-89-1","text":"dos","start":87.816,"end":87.956}]},{"id":"caption-group-90","frame":8,"start":88.035,"end":88.595,"text":"maneras.","words":[{"id":"caption-word-90-0","text":"maneras.","start":88.035,"end":88.595}]},{"id":"caption-group-91","frame":8,"start":88.595,"end":89.655,"text":"\"Equipo","words":[{"id":"caption-word-91-0","text":"\"Equipo","start":88.595,"end":89.535}]},{"id":"caption-group-92","frame":8,"start":89.775,"end":90.275,"text":"único\"","words":[{"id":"caption-word-92-0","text":"único\"","start":89.775,"end":90.155}]},{"id":"caption-group-93","frame":8,"start":90.716,"end":91.055,"text":"para lo","words":[{"id":"caption-word-93-0","text":"para","start":90.716,"end":90.855},{"id":"caption-word-93-1","text":"lo","start":90.935,"end":90.995}]},{"id":"caption-group-94","frame":8,"start":91.055,"end":91.355,"text":"que se","words":[{"id":"caption-word-94-0","text":"que","start":91.055,"end":91.095},{"id":"caption-word-94-1","text":"se","start":91.175,"end":91.296}]},{"id":"caption-group-95","frame":8,"start":91.355,"end":92.355,"text":"presta uno por","words":[{"id":"caption-word-95-0","text":"presta","start":91.355,"end":91.816},{"id":"caption-word-95-1","text":"uno","start":91.895,"end":92.055},{"id":"caption-word-95-2","text":"por","start":92.155,"end":92.296}]},{"id":"caption-group-96","frame":8,"start":92.355,"end":92.675,"text":"uno,","words":[{"id":"caption-word-96-0","text":"uno,","start":92.355,"end":92.555}]},{"id":"caption-group-97","frame":8,"start":93.035,"end":93.415,"text":"con su","words":[{"id":"caption-word-97-0","text":"con","start":93.035,"end":93.175},{"id":"caption-word-97-1","text":"su","start":93.235,"end":93.355}]},{"id":"caption-group-98","frame":8,"start":93.415,"end":94.575,"text":"número de inventario.","words":[{"id":"caption-word-98-0","text":"número","start":93.415,"end":93.715},{"id":"caption-word-98-1","text":"de","start":93.755,"end":93.796},{"id":"caption-word-98-2","text":"inventario.","start":93.855,"end":94.575}]},{"id":"caption-group-99","frame":8,"start":94.575,"end":96.455,"text":"\"Por cantidad\" para cables","words":[{"id":"caption-word-99-0","text":"\"Por","start":94.575,"end":95.176},{"id":"caption-word-99-1","text":"cantidad\"","start":95.256,"end":95.716},{"id":"caption-word-99-2","text":"para","start":95.815,"end":95.955},{"id":"caption-word-99-3","text":"cables","start":96.075,"end":96.395}]},{"id":"caption-group-100","frame":8,"start":96.455,"end":97.256,"text":"y controles,","words":[{"id":"caption-word-100-0","text":"y","start":96.455,"end":96.495},{"id":"caption-word-100-1","text":"controles,","start":96.555,"end":97.136}]},{"id":"caption-group-101","frame":8,"start":97.515,"end":98.635,"text":"donde solo importa","words":[{"id":"caption-word-101-0","text":"donde","start":97.515,"end":97.716},{"id":"caption-word-101-1","text":"solo","start":97.836,"end":98.015},{"id":"caption-word-101-2","text":"importa","start":98.055,"end":98.515}]},{"id":"caption-group-102","frame":8,"start":98.716,"end":99.735,"text":"cuántos quedan.","words":[{"id":"caption-word-102-0","text":"cuántos","start":98.716,"end":99.115},{"id":"caption-word-102-1","text":"quedan.","start":99.195,"end":99.615}]},{"id":"caption-group-103","frame":8,"start":99.975,"end":100.296,"text":"Y si","words":[{"id":"caption-word-103-0","text":"Y","start":99.975,"end":99.995},{"id":"caption-word-103-1","text":"si","start":100.115,"end":100.235}]},{"id":"caption-group-104","frame":8,"start":100.296,"end":101.675,"text":"tienes cinco laptops","words":[{"id":"caption-word-104-0","text":"tienes","start":100.296,"end":100.635},{"id":"caption-word-104-1","text":"cinco","start":100.695,"end":100.995},{"id":"caption-word-104-2","text":"laptops","start":101.095,"end":101.555}]},{"id":"caption-group-105","frame":8,"start":101.675,"end":102.215,"text":"iguales,","words":[{"id":"caption-word-105-0","text":"iguales,","start":101.675,"end":102.095}]},{"id":"caption-group-106","frame":8,"start":102.635,"end":103.855,"text":"no las captures","words":[{"id":"caption-word-106-0","text":"no","start":102.635,"end":102.735},{"id":"caption-word-106-1","text":"las","start":102.795,"end":102.936},{"id":"caption-word-106-2","text":"captures","start":103.035,"end":103.735}]},{"id":"caption-group-107","frame":8,"start":103.856,"end":104.675,"text":"una por una:","words":[{"id":"caption-word-107-0","text":"una","start":103.856,"end":104.016},{"id":"caption-word-107-1","text":"por","start":104.115,"end":104.235},{"id":"caption-word-107-2","text":"una:","start":104.315,"end":104.555}]},{"id":"caption-group-108","frame":8,"start":105.135,"end":106.615,"text":"pon cuántas unidades","words":[{"id":"caption-word-108-0","text":"pon","start":105.135,"end":105.355},{"id":"caption-word-108-1","text":"cuántas","start":105.436,"end":105.836},{"id":"caption-word-108-2","text":"unidades","start":105.915,"end":106.495}]},{"id":"caption-group-109","frame":8,"start":106.895,"end":107.176,"text":"y la","words":[{"id":"caption-word-109-0","text":"y","start":106.895,"end":106.915},{"id":"caption-word-109-1","text":"la","start":107.016,"end":107.075}]},{"id":"caption-group-110","frame":8,"start":107.176,"end":107.695,"text":"app las","words":[{"id":"caption-word-110-0","text":"app","start":107.176,"end":107.375},{"id":"caption-word-110-1","text":"las","start":107.436,"end":107.615}]},{"id":"caption-group-111","frame":8,"start":107.695,"end":108.815,"text":"crea numeradas.","words":[{"id":"caption-word-111-0","text":"crea","start":107.695,"end":107.936},{"id":"caption-word-111-1","text":"numeradas.","start":108.016,"end":108.695}]},{"id":"caption-group-112","frame":9,"start":109.183,"end":110.123,"text":"Y en Inventario","words":[{"id":"caption-word-112-0","text":"Y","start":109.183,"end":109.223},{"id":"caption-word-112-1","text":"en","start":109.264,"end":109.343},{"id":"caption-word-112-2","text":"Inventario","start":109.383,"end":110.003}]},{"id":"caption-group-113","frame":9,"start":110.183,"end":111.483,"text":"no necesitas buscar","words":[{"id":"caption-word-113-0","text":"no","start":110.183,"end":110.263},{"id":"caption-word-113-1","text":"necesitas","start":110.344,"end":110.943},{"id":"caption-word-113-2","text":"buscar","start":111.003,"end":111.363}]},{"id":"caption-group-114","frame":9,"start":111.484,"end":111.903,"text":"nada:","words":[{"id":"caption-word-114-0","text":"nada:","start":111.484,"end":111.783}]},{"id":"caption-group-115","frame":9,"start":112.383,"end":113.683,"text":"apunta la pistola","words":[{"id":"caption-word-115-0","text":"apunta","start":112.383,"end":112.843},{"id":"caption-word-115-1","text":"la","start":112.903,"end":113.003},{"id":"caption-word-115-2","text":"pistola","start":113.043,"end":113.643}]},{"id":"caption-group-116","frame":9,"start":113.683,"end":114.683,"text":"a la etiqueta.","words":[{"id":"caption-word-116-0","text":"a","start":113.683,"end":113.763},{"id":"caption-word-116-1","text":"la","start":113.803,"end":113.864},{"id":"caption-word-116-2","text":"etiqueta.","start":113.944,"end":114.563}]},{"id":"caption-group-117","frame":9,"start":115.083,"end":115.323,"text":"Si el","words":[{"id":"caption-word-117-0","text":"Si","start":115.083,"end":115.143},{"id":"caption-word-117-1","text":"el","start":115.203,"end":115.283}]},{"id":"caption-group-118","frame":9,"start":115.323,"end":116.483,"text":"equipo ya está,","words":[{"id":"caption-word-118-0","text":"equipo","start":115.323,"end":115.683},{"id":"caption-word-118-1","text":"ya","start":115.803,"end":115.924},{"id":"caption-word-118-2","text":"está,","start":115.984,"end":116.363}]},{"id":"caption-group-119","frame":9,"start":116.783,"end":117.263,"text":"te abre","words":[{"id":"caption-word-119-0","text":"te","start":116.783,"end":116.883},{"id":"caption-word-119-1","text":"abre","start":116.964,"end":117.203}]},{"id":"caption-group-120","frame":9,"start":117.263,"end":117.943,"text":"su ficha.","words":[{"id":"caption-word-120-0","text":"su","start":117.263,"end":117.303},{"id":"caption-word-120-1","text":"ficha.","start":117.404,"end":117.823}]},{"id":"caption-group-121","frame":9,"start":118.303,"end":119.104,"text":"Si no está,","words":[{"id":"caption-word-121-0","text":"Si","start":118.303,"end":118.384},{"id":"caption-word-121-1","text":"no","start":118.463,"end":118.563},{"id":"caption-word-121-2","text":"está,","start":118.603,"end":118.984}]},{"id":"caption-group-122","frame":9,"start":119.423,"end":119.883,"text":"te abre","words":[{"id":"caption-word-122-0","text":"te","start":119.423,"end":119.543},{"id":"caption-word-122-1","text":"abre","start":119.643,"end":119.843}]},{"id":"caption-group-123","frame":9,"start":119.883,"end":120.404,"text":"el alta","words":[{"id":"caption-word-123-0","text":"el","start":119.883,"end":120.003},{"id":"caption-word-123-1","text":"alta","start":120.043,"end":120.303}]},{"id":"caption-group-124","frame":9,"start":120.404,"end":120.723,"text":"con el","words":[{"id":"caption-word-124-0","text":"con","start":120.404,"end":120.503},{"id":"caption-word-124-1","text":"el","start":120.563,"end":120.623}]},{"id":"caption-group-125","frame":9,"start":120.723,"end":121.863,"text":"número ya puesto.","words":[{"id":"caption-word-125-0","text":"número","start":120.723,"end":121.003},{"id":"caption-word-125-1","text":"ya","start":121.103,"end":121.183},{"id":"caption-word-125-2","text":"puesto.","start":121.303,"end":121.743}]},{"id":"caption-group-126","frame":10,"start":122.178,"end":122.918,"text":"Por último,","words":[{"id":"caption-word-126-0","text":"Por","start":122.178,"end":122.318},{"id":"caption-word-126-1","text":"último,","start":122.378,"end":122.798}]},{"id":"caption-group-127","frame":10,"start":123.119,"end":124.298,"text":"en Configuración","words":[{"id":"caption-word-127-0","text":"en","start":123.119,"end":123.278},{"id":"caption-word-127-1","text":"Configuración","start":123.318,"end":124.178}]},{"id":"caption-group-128","frame":10,"start":124.558,"end":125.678,"text":"decides qué ve","words":[{"id":"caption-word-128-0","text":"decides","start":124.558,"end":125.058},{"id":"caption-word-128-1","text":"qué","start":125.198,"end":125.318},{"id":"caption-word-128-2","text":"ve","start":125.438,"end":125.598}]},{"id":"caption-group-129","frame":10,"start":125.678,"end":126.439,"text":"el profesor","words":[{"id":"caption-word-129-0","text":"el","start":125.678,"end":125.818},{"id":"caption-word-129-1","text":"profesor","start":125.858,"end":126.379}]},{"id":"caption-group-130","frame":10,"start":126.439,"end":127.298,"text":"en la terminal:","words":[{"id":"caption-word-130-0","text":"en","start":126.439,"end":126.499},{"id":"caption-word-130-1","text":"la","start":126.538,"end":126.578},{"id":"caption-word-130-2","text":"terminal:","start":126.678,"end":127.178}]},{"id":"caption-group-131","frame":10,"start":128.019,"end":128.838,"text":"el catálogo,","words":[{"id":"caption-word-131-0","text":"el","start":128.019,"end":128.078},{"id":"caption-word-131-1","text":"catálogo,","start":128.178,"end":128.718}]},{"id":"caption-group-132","frame":10,"start":129.158,"end":130.119,"text":"sus pendientes,","words":[{"id":"caption-word-132-0","text":"sus","start":129.158,"end":129.298},{"id":"caption-word-132-1","text":"pendientes,","start":129.358,"end":129.999}]},{"id":"caption-group-133","frame":10,"start":130.538,"end":130.698,"text":"o","words":[{"id":"caption-word-133-0","text":"o","start":130.538,"end":130.578}]},{"id":"caption-group-134","frame":10,"start":130.758,"end":131.178,"text":"solo lo","words":[{"id":"caption-word-134-0","text":"solo","start":130.758,"end":130.998},{"id":"caption-word-134-1","text":"lo","start":131.078,"end":131.138}]},{"id":"caption-group-135","frame":10,"start":131.178,"end":132.118,"text":"que necesites.","words":[{"id":"caption-word-135-0","text":"que","start":131.178,"end":131.239},{"id":"caption-word-135-1","text":"necesites.","start":131.298,"end":131.998}]},{"id":"caption-group-136","frame":10,"start":132.738,"end":133.458,"text":"Se apaga","words":[{"id":"caption-word-136-0","text":"Se","start":132.738,"end":132.798},{"id":"caption-word-136-1","text":"apaga","start":132.859,"end":133.338}]},{"id":"caption-group-137","frame":10,"start":133.638,"end":133.918,"text":"y se","words":[{"id":"caption-word-137-0","text":"y","start":133.638,"end":133.678},{"id":"caption-word-137-1","text":"se","start":133.778,"end":133.838}]},{"id":"caption-group-138","frame":10,"start":133.918,"end":135.378,"text":"enciende cuando quieras.","words":[{"id":"caption-word-138-0","text":"enciende","start":133.918,"end":134.418},{"id":"caption-word-138-1","text":"cuando","start":134.519,"end":134.718},{"id":"caption-word-138-2","text":"quieras.","start":134.818,"end":135.258}]}];
+  var DURATION = 139.55;
+
+  (function () {
+    var stage = document.getElementById("caption-stage");
+
+    // build DOM: one .caption-group per group, .caption-word per word
+    GROUPS.forEach(function (group, g) {
+      var groupEl = document.createElement("div");
+      groupEl.className = "caption-group";
+      groupEl.id = "caption-group-" + g;
+      var pill = document.createElement("div");
+      pill.className = "caption-pill";
+      var line = document.createElement("div");
+      line.className = "caption-line";
+      (group.words || []).forEach(function (w, i) {
+        var span = document.createElement("span");
+        span.className = "caption-word";
+        span.id = "caption-word-" + g + "-" + i;
+        span.textContent = String(w.text);
+        line.appendChild(span);
+      });
+      pill.appendChild(line);
+      groupEl.appendChild(pill);
+      stage.appendChild(groupEl);
+    });
+
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+
+    GROUPS.forEach(function (group, g) {
+      var groupEl = document.getElementById("caption-group-" + g);
+      var words = group.words || [];
+      var next = GROUPS[g + 1];
+      var isLast = g === GROUPS.length - 1;
+      var start = Math.max(0, Number(group.start));
+      var end = isLast ? Math.min(DURATION, Number(group.end) + 0.3) : Math.min(Number(next.start), Number(group.end) + 0.3);
+      if (end <= start) end = start + 0.01;
+
+      // group on/off — exactly one group visible at a time
+      tl.set(groupEl, { opacity: 1 }, start);
+      tl.set(groupEl, { opacity: 0 }, end);
+
+      // 3-state karaoke via className SETS — seek-safe (gsap.set applies on the
+      // engine's frame-by-frame seek; .call callbacks would NOT fire).
+      words.forEach(function (w, i) {
+        var el = document.getElementById("caption-word-" + g + "-" + i);
+        var at = Math.max(start, Number(w.start));
+        tl.set(el, { className: "caption-word" }, start); // upcoming (also resets on reverse-seek)
+        tl.set(el, { className: "caption-word is-active" }, at); // current
+        tl.fromTo(el, { scale: 0.985 }, { scale: 1, duration: 0.18, ease: "power1.out" }, at);
+        if (i + 1 < words.length) {
+          var nextAt = Math.max(start, Number(words[i + 1].start));
+          tl.set(el, { className: "caption-word is-spoken" }, nextAt); // demote when next activates
+        }
+      });
+      if (words.length) {
+        var lastEl = document.getElementById("caption-word-" + g + "-" + (words.length - 1));
+        var lastSpoken = Math.min(end, Number(words[words.length - 1].end) + 0.1);
+        tl.set(lastEl, { className: "caption-word is-spoken" }, lastSpoken);
+      }
+    });
+
+    // full-span anchor so the sub-comp timeline spans the whole video
+    tl.to({}, { duration: DURATION }, 0);
+    window.__timelines["captions"] = tl;
+  })();
+</script>
+
+<style>
+  .caption-line { line-height: 1.1 !important; }
+</style>
+</template>

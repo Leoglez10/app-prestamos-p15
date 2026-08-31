@@ -1,0 +1,19 @@
+Un alumno necesita un cable. No tiene código de profesor. Para eso existe el Préstamo Rápido.
+
+Esta pantalla no es para el profesorado: es para quien atiende el mostrador. Se llama Préstamo Rápido porque registra en segundos lo que el kiosko no puede — un préstamo a alguien que no tiene código de profesor.
+
+Se entra con tu código de administrador. Un campo, sin contraseña. Y esta sesión no se cierra sola: cuando termines tu turno, pulsa Cerrar sesión arriba. Si no lo haces, sigue abierta aunque cierres la aplicación.
+
+Primero, para quién es. Al cambiar entre Alumno y Profesor, los campos se renombran solos. Sí: también puedes registrar a un profesor aquí, cuando el préstamo lo autorizas tú en el mostrador y no él desde el kiosko.
+
+Al escribir el nombre, la app propone. Los profesores salen del directorio; los alumnos, de quienes ya pidieron algo antes. Eliges uno y el código se llena solo. Si es la primera vez de esa persona, escribe su nombre y su código completos: la próxima vez ya va a estar en la lista.
+
+Aquí está lo importante. Si eliges el objeto del catálogo, esto no es una libreta aparte: la app lo marca como prestado en el inventario real, igual que si lo hubiera pedido un profesor en el kiosko. Deja de aparecer como disponible, y vuelve cuando lo devuelvas desde aquí.
+
+Puedes agregar varios objetos al mismo préstamo. Cada uno queda como su propio registro, y se devuelve por separado. Y si lo que prestas no está en el inventario, escríbelo tal cual: se guarda como texto, pero ese no descuenta nada. Solo cuenta lo que eliges del catálogo.
+
+Registrar. El formulario se limpia y el cursor vuelve arriba, para el siguiente. Y fíjate en la letra chica de cada registro: la app anota sola quién autorizó el préstamo. No hay que escribirlo, y no se puede cambiar.
+
+El historial abre siempre en lo que está prestado. El chip de "Más de 1 día" te muestra lo que lleva fuera más de veinticuatro horas — esos son los que hay que ir a buscar. Y el buscador encuentra por nombre, por código o por objeto.
+
+Cuando regresen el equipo, Devolver. Eso libera el objeto en el inventario, no solo aquí. Y si intentas borrar un registro que todavía está prestado, la app no te deja: te pide devolverlo primero. Es a propósito — borrarlo dejaría un equipo marcado como prestado para siempre.

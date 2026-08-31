@@ -1,0 +1,156 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .k10-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .k10-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37,99,235,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37,99,235,0.05) 1px, transparent 1px);
+      background-size: 96px 96px;
+    }
+
+    /* Left: the editor. Right: the surface it drives. */
+    .k10-cfg {
+      position: absolute; left: 90px; top: 226px; width: 730px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 32px 36px;
+    }
+    .k10-cfg-h { font-family: "Space Grotesk", sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #0f172a; }
+    .k10-block-h {
+      margin-top: 22px; font-family: "Space Grotesk", sans-serif; font-size: 26px; font-weight: 600; color: #0f172a;
+    }
+    .k10-check {
+      margin-top: 20px; display: flex; align-items: center; gap: 16px;
+      font-family: "Inter", sans-serif; font-size: 23px; color: #0f172a;
+    }
+    .k10-box {
+      width: 36px; height: 36px; flex: 0 0 36px; border-radius: 9px;
+      border: 2.5px solid #2563eb; background: rgba(37,99,235,0.12);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .k10-kiosk {
+      position: absolute; left: 890px; top: 190px; width: 940px; height: 570px;
+      background: #ffffff; border: 2px solid rgba(37,99,235,0.24); border-radius: 20px; padding: 24px 26px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+    .k10-kiosk-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 15px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; color: #2563eb;
+    }
+    .k10-cols { flex: 1; display: flex; gap: 18px; min-height: 0; }
+    .k10-pane {
+      border-radius: 14px; padding: 20px 22px;
+      background: rgba(37,99,235,0.04); border: 1.5px solid rgba(37,99,235,0.14);
+      transform-origin: 50% 50%;
+    }
+    .k10-pend { flex: 0 0 300px; }
+    .k10-cat { flex: 1; }
+    .k10-pane-t { font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; color: #0f172a; }
+    .k10-item {
+      margin-top: 12px; height: 62px; border-radius: 11px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.12);
+    }
+    .k10-min {
+      flex: 1; border-radius: 14px; padding: 26px 24px; text-align: center; opacity: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(37,99,235,0.05); border: 1.5px dashed rgba(37,99,235,0.28);
+      font-family: "Inter", sans-serif; font-size: 21px; color: #5a6a7f;
+    }
+
+    .k10-cursor { position: absolute; left: 400px; top: 960px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+  </style>
+
+  <div id="root" data-composition-id="10-kiosko" data-width="1920" data-height="1080" data-duration="14.031">
+    <div class="clip k10-ground" id="k10-ground" data-start="0" data-duration="14.031" data-track-index="0"></div>
+    <div class="clip k10-grid" id="k10-grid" data-start="0" data-duration="14.031" data-track-index="1"></div>
+
+    <div class="clip k10-cfg" id="k10-cfg" data-start="0" data-duration="14.031" data-track-index="2">
+      <div class="k10-cfg-h">Configuraci&oacute;n</div>
+      <div class="k10-block-h">Kiosko</div>
+      <div class="k10-check">
+        <div class="k10-box" id="k10-box1">
+          <svg id="k10-tick1" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#2563eb" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </div>
+        Mostrar cat&aacute;logo para pr&eacute;stamos
+      </div>
+      <div class="k10-check">
+        <div class="k10-box" id="k10-box2">
+          <svg id="k10-tick2" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#2563eb" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </div>
+        Mostrar pr&eacute;stamos pendientes al profesor
+      </div>
+    </div>
+
+    <div class="clip k10-kiosk" id="k10-kiosk" data-start="0" data-duration="14.031" data-track-index="3">
+      <div class="k10-kiosk-h">Lo que ve el profesor</div>
+      <div class="k10-cols">
+        <div class="k10-pane k10-pend" id="k10-pend">
+          <div class="k10-pane-t">Por devolver</div>
+          <div class="k10-item"></div><div class="k10-item"></div>
+        </div>
+        <div class="k10-pane k10-cat" id="k10-cat">
+          <div class="k10-pane-t">Tomar equipo nuevo</div>
+          <div class="k10-item"></div><div class="k10-item"></div><div class="k10-item"></div>
+        </div>
+      </div>
+      <div class="k10-min" id="k10-min">Terminal m&iacute;nima &mdash; solo identificarse</div>
+    </div>
+
+    <svg class="clip k10-cursor" id="k10-cursor" viewBox="0 0 24 24" data-start="0" data-duration="14.031" data-track-index="4">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const uncheck = (box, tick, at) => {
+        tl.to("#k10-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, at);
+        tl.to("#k10-cursor", { scale: 1, duration: 0.32, ease: "power3.out" }, at + 0.09);
+        tl.to(tick, { opacity: 0, duration: 0.18, ease: "power2.in" }, at + 0.06);
+        tl.to(box, { borderColor: "rgba(148,163,184,0.45)", backgroundColor: "#ffffff", duration: 0.28, ease: "power2.out" }, at + 0.06);
+      };
+      const recheck = (box, tick, at) => {
+        tl.to(tick, { opacity: 1, duration: 0.2, ease: "power2.out" }, at);
+        tl.to(box, { borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,0.12)", duration: 0.28, ease: "power2.out" }, at);
+      };
+
+      /* Scene 1 (0–3.4s) — editor and surface share the frame from the start. */
+      tl.fromTo("#k10-cfg", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.62, ease: "power3.out" }, 0);
+      tl.fromTo("#k10-kiosk", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.62, ease: "power3.out" }, 0.12);
+      tl.fromTo(".k10-pane", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out", stagger: 0.12 }, 0.6);
+
+      /* Scene 2 (3.4–7.2s) — the catalogue goes, live, in the same beat. */
+      tl.to("#k10-cursor", { x: -230, y: -662, duration: 0.72, ease: "power2.inOut" }, 3.44);
+      uncheck("#k10-box1", "#k10-tick1", 4.24);
+      tl.to("#k10-cat", { scaleY: 0.86, opacity: 0, duration: 0.44, ease: "power2.in" }, 4.4);
+      tl.set("#k10-cat", { display: "none" }, 4.86);
+
+      /* Scene 3 (7.2–10.6s) — the pending panel too; a minimal terminal is left. */
+      tl.to("#k10-cursor", { y: -590, duration: 0.5, ease: "power2.inOut" }, 7.24);
+      uncheck("#k10-box2", "#k10-tick2", 7.86);
+      tl.to("#k10-pend", { scaleY: 0.86, opacity: 0, duration: 0.44, ease: "power2.in" }, 8.0);
+      tl.set("#k10-pend", { display: "none" }, 8.46);
+      tl.to("#k10-min", { opacity: 1, duration: 0.42, ease: "power3.out" }, 8.6);
+
+      /* Scene 4 (10.6–13.5s) — both back on: it is a switch, not a one-way door. */
+      recheck("#k10-box1", "#k10-tick1", 10.64);
+      recheck("#k10-box2", "#k10-tick2", 10.86);
+      tl.to("#k10-min", { opacity: 0, duration: 0.3, ease: "power2.in" }, 10.7);
+      tl.set(["#k10-cat", "#k10-pend"], { display: "block" }, 10.9);
+      tl.to("#k10-pend", { scaleY: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, 10.94);
+      tl.to("#k10-cat", { scaleY: 1, opacity: 1, duration: 0.5, ease: "power3.out" }, 11.1);
+      tl.to("#k10-cursor", { opacity: 0, duration: 0.3, ease: "power2.in" }, 11.8);
+
+      window.__timelines["10-kiosko"] = tl;
+    })();
+  </script>
+</template>

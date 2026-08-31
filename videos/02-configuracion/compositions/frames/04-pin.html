@@ -1,0 +1,241 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .n4-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .n4-dim { position: absolute; inset: 0; background: rgba(15,23,42,0.34); opacity: 0; z-index: 15; }
+
+    /* Left: the form. Right: the row it writes to. */
+    .n4-form {
+      position: absolute; left: 110px; top: 120px; width: 940px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 32px 36px;
+    }
+    .n4-form-h { font-family: "Space Grotesk", sans-serif; font-size: 30px; font-weight: 600; color: #0f172a; }
+    .n4-line { display: flex; gap: 16px; margin-top: 20px; }
+    .n4-static {
+      flex: 1; height: 68px; border-radius: 12px; border: 1.5px solid rgba(37,99,235,0.16);
+      background: rgba(37,99,235,0.04); display: flex; align-items: center; padding: 0 20px;
+      font-family: "Inter", sans-serif; font-size: 22px; color: #0f172a;
+    }
+    .n4-check {
+      margin-top: 26px; display: flex; align-items: center; gap: 16px;
+      font-family: "Inter", sans-serif; font-size: 25px; color: #0f172a;
+    }
+    .n4-box {
+      width: 38px; height: 38px; flex: 0 0 38px; border-radius: 9px;
+      border: 2.5px solid rgba(37,99,235,0.4); background: #ffffff;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .n4-tick { opacity: 0; }
+
+    .n4-pinwrap { margin-top: 0; height: 0; overflow: hidden; }
+    .n4-pinlabel {
+      font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: #5a6a7f; margin-bottom: 10px;
+    }
+    .n4-pin {
+      height: 76px; border-radius: 12px; border: 2px solid rgba(37,99,235,0.24);
+      background: #ffffff; display: flex; align-items: center; padding: 0 22px; gap: 3px;
+    }
+    .n4-pin-ph { font-family: "Inter", sans-serif; font-size: 22px; color: #9A9A9A; }
+    .n4-pin-val { font-family: "Space Grotesk", sans-serif; font-size: 32px; letter-spacing: 0.3em; color: #0f172a; opacity: 0; }
+    .n4-caret { display: inline-block; width: 3px; height: 30px; background: #2563eb; margin-left: 4px; vertical-align: -5px; }
+
+    .n4-save {
+      margin-top: 26px; border-radius: 12px; background: #2563eb; color: #ffffff;
+      height: 76px; display: flex; align-items: center; justify-content: center;
+      font-family: "Space Grotesk", sans-serif; font-size: 24px; font-weight: 600;
+      transform-origin: 50% 50%;
+    }
+
+    .n4-rowcard {
+      position: absolute; left: 1110px; top: 120px; width: 700px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 30px 32px;
+    }
+    .n4-rowcard-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #5a6a7f;
+    }
+    .n4-row {
+      margin-top: 18px; border-radius: 14px; padding: 22px 24px;
+      background: rgba(37,99,235,0.04); border: 1.5px solid rgba(37,99,235,0.16);
+    }
+    .n4-row b { display: block; font-family: "Space Grotesk", sans-serif; font-size: 28px; font-weight: 600; color: #0f172a; }
+    .n4-row small { display: block; font-family: "Inter", sans-serif; font-size: 19px; color: #5a6a7f; margin-top: 4px; }
+    .n4-role {
+      display: inline-block; margin-top: 16px; border-radius: 100px; padding: 8px 22px;
+      font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700;
+      background: rgba(37,99,235,0.1); border: 1.5px solid rgba(37,99,235,0.3); color: #2563eb;
+    }
+
+    /* The warning. This is the reason the video exists. */
+    .n4-warn {
+      position: absolute; left: 150px; top: 690px; width: 860px; z-index: 20; opacity: 0;
+      background: #ffffff; border: 3px solid #dc2626; border-radius: 18px; padding: 26px 32px;
+      box-shadow: 0 24px 52px rgba(15,23,42,0.2);
+    }
+    .n4-warn-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 17px; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #dc2626;
+    }
+    .n4-warn-t { font-family: "Space Grotesk", sans-serif; font-size: 34px; font-weight: 600; color: #0f172a; margin-top: 8px; line-height: 1.25; }
+    .n4-ok {
+      position: absolute; left: 150px; top: 690px; width: 860px; z-index: 20; opacity: 0;
+      background: #ffffff; border: 3px solid #22c55e; border-radius: 18px; padding: 26px 32px;
+      box-shadow: 0 24px 52px rgba(15,23,42,0.2);
+    }
+    .n4-ok-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 17px; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #147b3b;
+    }
+    .n4-ok-t { font-family: "Space Grotesk", sans-serif; font-size: 34px; font-weight: 600; color: #0f172a; margin-top: 8px; }
+
+    .n4-link { position: absolute; left: 300px; top: 470px; width: 320px; height: 230px; z-index: 19; opacity: 0; }
+    .n4-link path { fill: none; stroke: #dc2626; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 14 12; }
+
+    .n4-cursor { position: absolute; left: 1600px; top: 960px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+    .n4-ripple {
+      position: absolute; left: 0; top: 0; width: 140px; height: 140px; margin-left: -70px; margin-top: -70px;
+      border-radius: 50%; border: 3px solid #2563eb; opacity: 0; z-index: 30;
+    }
+  </style>
+
+  <div id="root" data-composition-id="04-pin" data-width="1920" data-height="1080">
+    <div class="clip n4-ground" id="n4-ground" data-start="0" data-duration="17.424" data-track-index="0"></div>
+
+    <div class="clip n4-form" id="n4-form" data-layout-allow-overlap data-start="0" data-duration="17.424" data-track-index="1">
+      <div class="n4-form-h">Editar Profesor</div>
+      <div class="n4-line">
+        <div class="n4-static">2958101</div>
+        <div class="n4-static">Ana Ram&iacute;rez</div>
+      </div>
+      <div class="n4-check">
+        <div class="n4-box" id="n4-box">
+          <svg class="n4-tick" id="n4-tick" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#2563eb" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        </div>
+        Hacer administrador
+      </div>
+      <div class="n4-pinwrap" id="n4-pinwrap">
+        <div class="n4-pinlabel">PIN de administrador</div>
+        <div class="n4-pin" id="n4-pinfield">
+          <div class="n4-pin-ph" id="n4-pin-ph">PIN de administrador</div>
+          <div class="n4-pin-val" id="n4-pin-val"><span id="n4-pin-dots"></span><span class="n4-caret" id="n4-caret"></span></div>
+        </div>
+      </div>
+      <div class="n4-save" id="n4-save">Guardar</div>
+    </div>
+
+    <div class="clip n4-rowcard" id="n4-rowcard" data-layout-allow-overlap data-start="0" data-duration="17.424" data-track-index="2">
+      <div class="n4-rowcard-h">Directorio de Profesores</div>
+      <div class="n4-row">
+        <b>Ana Ram&iacute;rez</b>
+        <small>2958101</small>
+        <span class="n4-role" id="n4-role">Profesor</span>
+      </div>
+    </div>
+
+    <div class="clip n4-dim" id="n4-dim" data-start="0" data-duration="17.424" data-track-index="3"></div>
+
+    <svg class="clip n4-link" id="n4-link" viewBox="0 0 320 230" data-start="0" data-duration="17.424" data-track-index="4">
+      <path id="n4-link-path" d="M40 10 C10 90 30 150 96 206" />
+    </svg>
+
+    <div class="clip n4-warn" id="n4-warn" data-layout-allow-overlap data-start="0" data-duration="17.424" data-track-index="5">
+      <div class="n4-warn-h">Cuidado</div>
+      <div class="n4-warn-t">Sin PIN propio &rarr; queda con el PIN de f&aacute;brica</div>
+    </div>
+
+    <div class="clip n4-ok" id="n4-ok" data-layout-allow-overlap data-start="0" data-duration="17.424" data-track-index="6">
+      <div class="n4-ok-h">As&iacute; s&iacute;</div>
+      <div class="n4-ok-t">PIN propio, guardado</div>
+    </div>
+
+    <div class="clip n4-ripple" id="n4-ripple" data-start="0" data-duration="17.424" data-track-index="7"></div>
+
+    <svg class="clip n4-cursor" id="n4-cursor" viewBox="0 0 24 24" data-start="0" data-duration="17.424" data-track-index="8">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const link = document.getElementById("n4-link-path");
+      const lLen = link && link.getTotalLength ? link.getTotalLength() : 320;
+      gsap.set(link, { strokeDasharray: "14 12", strokeDashoffset: lLen });
+
+      const press = (target, at) => {
+        tl.to("#n4-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, at);
+        tl.to("#n4-cursor", { scale: 1, duration: 0.34, ease: "power3.out" }, at + 0.09);
+        tl.to(target, { scale: 0.95, duration: 0.09, ease: "power1.in" }, at);
+        tl.to(target, { scale: 1, duration: 0.5, ease: "power3.out" }, at + 0.09);
+      };
+
+      /* Scene 1 (0–3.3s) — the checkbox opens the PIN field, and it is EMPTY. */
+      tl.fromTo("#n4-form", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0);
+      tl.fromTo("#n4-rowcard", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.12);
+      tl.to("#n4-cursor", { x: -1420, y: -640, duration: 0.82, ease: "power2.inOut" }, 1.0);
+      press("#n4-box", 1.9);
+      tl.to("#n4-tick", { opacity: 1, duration: 0.2, ease: "power2.out" }, 2.02);
+      tl.to("#n4-box", { borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,0.12)", duration: 0.3, ease: "power2.out" }, 2.02);
+      tl.set("#n4-pinwrap", { marginTop: 24 }, 2.2);
+      tl.to("#n4-pinwrap", { height: 124, duration: 0.5, ease: "power3.out" }, 2.2);
+
+      /* Scene 2 (3.3–6.8s) — saved with the field untouched. Everything LOOKS fine. */
+      tl.to("#n4-cursor", { x: -1130, y: -226, duration: 0.72, ease: "power2.inOut" }, 3.4);
+      press("#n4-save", 4.3);
+      tl.set("#n4-ripple", { x: 578, y: 800 }, 0);
+      tl.fromTo("#n4-ripple", { scale: 0, opacity: 0.9 }, { scale: 3.6, opacity: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, 4.34);
+      tl.to("#n4-role", { backgroundColor: "rgba(21,128,61,0.12)", borderColor: "#22c55e", color: "#147b3b", duration: 0.4, ease: "power2.out" }, 4.9);
+      tl.call(() => { document.getElementById("n4-role").textContent = "Administrador"; }, null, 4.9);
+      tl.to("#n4-role", { scale: 1.14, duration: 0.24, ease: "power2.out" }, 4.9);
+      tl.to("#n4-role", { scale: 1, duration: 0.42, ease: "power3.out" }, 5.14);
+
+      /* Scene 3 (6.8–11.6s) — the warning. The frame dims and the empty field is named. */
+      tl.to("#n4-cursor", { opacity: 0, duration: 0.26, ease: "power2.in" }, 6.8);
+      tl.to("#n4-dim", { opacity: 1, duration: 0.5, ease: "power2.out" }, 6.84);
+      tl.to("#n4-pinfield", { borderColor: "#dc2626", borderWidth: 3, duration: 0.4, ease: "power2.out" }, 7.1);
+      tl.set("#n4-form", { zIndex: 18 }, 6.84);
+      tl.set("#n4-link", { opacity: 1 }, 7.5);
+      tl.to(link, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, 7.54);
+      tl.fromTo("#n4-warn", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" }, 8.3);
+
+      /* Scene 4 (11.6–14.9s) — the fix: a PIN of its own, typed as dots. */
+      tl.to("#n4-cursor", { opacity: 1, duration: 0.24, ease: "power2.out" }, 11.62);
+      tl.to("#n4-cursor", { x: -1120, y: -430, duration: 0.66, ease: "power2.inOut" }, 11.64);
+      tl.to("#n4-pin-ph", { opacity: 0, duration: 0.2, ease: "power2.in" }, 12.34);
+      tl.to("#n4-pin-val", { opacity: 1, duration: 0.01 }, 12.34);
+      tl.to("#n4-pinfield", { borderColor: "#22c55e", duration: 0.34, ease: "power2.out" }, 12.34);
+      const dotsEl = document.getElementById("n4-pin-dots");
+      const DOTS = "••••••";
+      const d = { t: 0 };
+      tl.to(d, {
+        t: 1, duration: 1.0, ease: "none",
+        onUpdate: () => {
+          const n = Math.min(DOTS.length, Math.floor(d.t * (DOTS.length + 0.4)));
+          const next = DOTS.slice(0, n);
+          if (dotsEl.textContent !== next) dotsEl.textContent = next;
+        },
+      }, 12.44);
+      const b = { p: 0 };
+      tl.to(b, {
+        p: Math.PI * 2 * 4, duration: 2.2, ease: "none",
+        onUpdate: () => { gsap.set("#n4-caret", { opacity: Math.sin(b.p) > 0 ? 1 : 0.15 }); },
+      }, 12.34);
+      tl.to(link, { strokeDashoffset: lLen, duration: 0.5, ease: "power2.inOut" }, 13.4);
+      tl.to("#n4-warn", { scale: 0.88, opacity: 0, duration: 0.44, ease: "power2.in" }, 13.6);
+      tl.fromTo("#n4-ok", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.54, ease: "power3.out" }, 13.9);
+
+      /* Scene 5 (14.9–17.4s) — held on the corrected state. This is the image that has to stay. */
+      tl.to("#n4-cursor", { opacity: 0, duration: 0.3, ease: "power2.in" }, 14.92);
+
+      window.__timelines["04-pin"] = tl;
+    })();
+  </script>
+</template>

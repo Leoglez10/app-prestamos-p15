@@ -1,0 +1,73 @@
+{
+  "provider": "auto",
+  "speed": 1,
+  "lines": [
+    {
+      "id": "01",
+      "text": "Este video es para quien administra el inventario. Vamos a cuadrar el estante contra la app."
+    },
+    {
+      "id": "02",
+      "text": "La app dice que la prepa tiene ciento veinte equipos. ¿Siguen ahí? ¿En la misma aula? La toma física es caminar el edificio con la pistola y contestar eso con nombre y fecha."
+    },
+    {
+      "id": "03",
+      "text": "Entra como administrador con tu código y tu PIN, y abre la segunda pestaña: Toma de inventario."
+    },
+    {
+      "id": "04",
+      "text": "Una campaña es un recorrido completo del edificio. Antes de empezar uno nuevo, toca “Iniciar campaña nueva”: el conteo vuelve a cero, pero no se borra nada. Es un solo clic de confirmación, así que léelo antes de aceptar."
+    },
+    {
+      "id": "05",
+      "text": "Si es tu primera vez, prende el modo prueba: escanea y suena igual, pero no marca nada. Para todo lo demás, apágalo."
+    },
+    {
+      "id": "06",
+      "text": "El área se elige una sola vez, no equipo por equipo. Usa los botones de donde ya estuviste: escribirla a mano termina en “Aula doce”, “aula doce” y “Aula12”, tres aulas distintas para la app."
+    },
+    {
+      "id": "07",
+      "text": "Ahora es apuntar y disparar. Cada escaneo deja escrito qué equipo es, quién lo vio, cuándo, y en qué aula estaba. Sin teclear y sin cambiar de pantalla."
+    },
+    {
+      "id": "08",
+      "text": "Y si estaba registrado en otra aula, te lo dice: se movió, de dónde, a dónde. Se corrige con solo escanearlo aquí."
+    },
+    {
+      "id": "09",
+      "text": "Si disparas dos veces sobre lo mismo, avisa y no pasa nada. Y si le atinaste a la etiqueta equivocada, “Deshacer” lo regresa como estaba; apúrate, la tarjeta dura dos segundos."
+    },
+    {
+      "id": "10",
+      "text": "Ojo con esto: si el cursor se sale del campo, la pistola dispara y no se guarda nada. La app te avisa. Si ves esa franja, toca “Recuperarlo” antes de seguir."
+    },
+    {
+      "id": "11",
+      "text": "A veces la etiqueta no corresponde a nada. Si el equipo ya existe pero sin etiqueta, búscalo y liga las dos cosas."
+    },
+    {
+      "id": "12",
+      "text": "Y si nunca se dio de alta, lo das de alta ahí mismo, sin soltar la pistola."
+    },
+    {
+      "id": "13",
+      "text": "La columna de la derecha es lo que debería estar en esta aula. Cuando se vacía, terminaste. Sin esa lista, uno dispara hasta que se cansa."
+    },
+    {
+      "id": "14",
+      "text": "Antes de irte, la app te pregunta por lo que no apareció. Decídelo aquí, parado en el aula. “No localizada” es una afirmación con tu nombre y la fecha: la buscaste y no estaba. Dejarlo pendiente dice otra cosa: que nadie llegó todavía."
+    },
+    {
+      "id": "15",
+      "text": "Al terminar, exporta el reporte. Se guarda solo, la carpeta se abre sola, y el archivo se abre en Excel con las mismas columnas que usa Patrimonio."
+    }
+  ],
+  "bgm": {
+    "mode": "retrieve",
+    "query": "calm",
+    "blob": "La toma física permite saber qué hay, dónde está y qué falta de verdad, con evidencia firmada para Patrimonio",
+    "arc": "Alcance → Campaña → Ensayo → Área → Escaneo → Incidencias → Cierre del área → Reporte → Principio"
+  },
+  "voice": "001248bb63f847888d37b766ee8b3a47"
+}

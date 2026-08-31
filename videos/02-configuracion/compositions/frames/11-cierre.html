@@ -1,0 +1,121 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("assets/fonts/space-grotesk.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Inter";
+      src: url("assets/fonts/inter.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+
+    .c11-ground {
+      position: absolute;
+      inset: 0;
+      background: #f8fafc;
+    }
+    .c11-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 99, 235, 0.08) 1px, transparent 1px);
+      background-size: 96px 96px;
+    }
+    .c11-halo {
+      position: absolute;
+      left: 50%;
+      top: 420px;
+      width: 1500px;
+      height: 1100px;
+      margin-left: -750px;
+      margin-top: -550px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(37, 99, 235, 0) 62%);
+    }
+
+    .c11-stack {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 288px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 52px;
+    }
+    .c11-logo {
+      width: 178px;
+      height: 178px;
+      object-fit: contain;
+    }
+    .c11-line {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 76px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      color: #0f172a;
+      text-align: center;
+    }
+    .c11-word {
+      display: inline-block;
+      margin-right: 0.24em;
+    }
+    .c11-rule {
+      width: 168px;
+      height: 3px;
+      background: #2563eb;
+      border-radius: 6px;
+    }
+  </style>
+
+  <div id="root" data-composition-id="11-cierre" data-width="1920" data-height="1080">
+    <div class="clip c11-ground" id="c11-ground" data-start="0" data-duration="4" data-track-index="0"></div>
+    <div class="clip c11-grid" id="c11-grid" data-start="0" data-duration="4" data-track-index="1"></div>
+    <div class="clip c11-halo" id="c11-halo" data-start="0" data-duration="4" data-track-index="2"></div>
+
+    <div class="clip c11-stack" id="c11-stack" data-start="0" data-duration="4" data-track-index="3">
+      <img class="c11-logo" id="c11-logo" src="public/logo-p15.png" alt="" />
+      <div class="c11-rule" id="c11-rule"></div>
+      <div class="c11-line" id="c11-line">
+        <span class="c11-word">Se</span><span class="c11-word">configura</span><span class="c11-word">una</span><span class="c11-word">vez.</span><br /><span class="c11-word">Se</span><span class="c11-word">usa</span><span class="c11-word">todos</span><span class="c11-word">los</span><span class="c11-word">d&iacute;as.</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Scene 1 (0–1.2s) — the logo returns, rhyming with the opening card. */
+      tl.fromTo("#c11-logo", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.72, ease: "power3.out" }, 0.08);
+      tl.fromTo("#c11-rule", { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.48, ease: "power3.out" }, 0.78);
+
+      /* Scene 2 (1.2–3s) — the promise from frame 1, now kept. Then full stillness. */
+      tl.fromTo(
+        "#c11-line .c11-word",
+        { y: 34, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power3.out", stagger: 0.08 },
+        1.6
+      );
+
+      window.__timelines["11-cierre"] = tl;
+    })();
+  </script>
+</template>

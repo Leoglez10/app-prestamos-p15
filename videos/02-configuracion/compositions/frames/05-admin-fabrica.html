@@ -1,0 +1,157 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .f5-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .f5-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37,99,235,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37,99,235,0.05) 1px, transparent 1px);
+      background-size: 96px 96px;
+    }
+
+    .f5-app {
+      position: absolute; left: 240px; top: 128px; width: 1440px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 32px 38px;
+    }
+    .f5-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 19px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #5a6a7f;
+    }
+    .f5-table { margin-top: 20px; border-radius: 16px; border: 1.5px solid rgba(37,99,235,0.14); overflow: hidden; }
+    .f5-th, .f5-tr { display: flex; align-items: center; padding: 20px 26px; }
+    .f5-th {
+      background: rgba(37,99,235,0.05); font-family: "Space Grotesk", sans-serif;
+      font-size: 17px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5a6a7f;
+    }
+    .f5-tr { border-top: 1.5px solid rgba(37,99,235,0.1); font-family: "Inter", sans-serif; font-size: 23px; color: #0f172a; }
+    .f5-c1 { flex: 0 0 300px; font-family: "Space Grotesk", sans-serif; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+    .f5-c2 { flex: 1; }
+    .f5-c3 { flex: 0 0 250px; }
+    .f5-pill {
+      display: inline-block; border-radius: 100px; padding: 7px 20px;
+      font-family: "Space Grotesk", sans-serif; font-size: 17px; font-weight: 700;
+      background: rgba(37,99,235,0.1); border: 1.5px solid rgba(37,99,235,0.3); color: #2563eb;
+    }
+
+    /* The seeded admin's code is deliberately unreadable — this is a scope decision. */
+    .f5-target { position: relative; background: rgba(37,99,235,0.05); }
+    .f5-blur { filter: blur(9px); user-select: none; }
+    .f5-lock { width: 26px; height: 26px; flex: 0 0 26px; }
+
+    .f5-pinrow {
+      margin-top: 0; height: 0; overflow: hidden;
+      display: flex; align-items: center; gap: 18px; padding: 0 26px;
+    }
+    .f5-pinlabel {
+      font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: #5a6a7f; flex: 0 0 auto;
+    }
+    .f5-pin {
+      flex: 1; height: 70px; border-radius: 12px; border: 2px solid rgba(37,99,235,0.24);
+      background: #ffffff; display: flex; align-items: center; padding: 0 22px; gap: 3px;
+    }
+    .f5-pin-val { font-family: "Space Grotesk", sans-serif; font-size: 30px; letter-spacing: 0.3em; color: #0f172a; }
+    .f5-caret { display: inline-block; width: 3px; height: 28px; background: #2563eb; margin-left: 4px; vertical-align: -5px; }
+
+    .f5-stamp {
+      position: absolute; left: 1180px; top: 268px; z-index: 25; opacity: 0;
+      border: 4px solid #2563eb; border-radius: 14px; padding: 14px 30px;
+      font-family: "Space Grotesk", sans-serif; font-size: 34px; font-weight: 800;
+      letter-spacing: 0.04em; text-transform: uppercase; color: #2563eb; background: rgba(248,250,252,0.94);
+    }
+
+    .f5-cursor { position: absolute; left: 1620px; top: 900px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+  </style>
+
+  <div id="root" data-composition-id="05-admin-fabrica" data-width="1920" data-height="1080" data-duration="13.013">
+    <div class="clip f5-ground" id="f5-ground" data-start="0" data-duration="13.013" data-track-index="0"></div>
+    <div class="clip f5-grid" id="f5-grid" data-start="0" data-duration="13.013" data-track-index="1"></div>
+
+    <div class="clip f5-app" id="f5-app" data-start="0" data-duration="13.013" data-track-index="2">
+      <div class="f5-h">Directorio de Profesores</div>
+      <div class="f5-table">
+        <div class="f5-th"><div class="f5-c1">C&oacute;digo</div><div class="f5-c2">Nombre</div><div class="f5-c3">Rol</div></div>
+        <div class="f5-tr"><div class="f5-c1">2947210</div><div class="f5-c2">Janette Aguilar</div><div class="f5-c3"><span class="f5-pill">Profesor</span></div></div>
+        <div class="f5-tr f5-target" id="f5-target">
+          <div class="f5-c1">
+            <svg class="f5-lock" viewBox="0 0 24 24" fill="none" stroke="#5a6a7f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <span class="f5-blur">2239926</span>
+          </div>
+          <div class="f5-c2">Administrador P15</div>
+          <div class="f5-c3"><span class="f5-pill" id="f5-role">Administrador</span></div>
+        </div>
+        <div class="f5-pinrow" id="f5-pinrow">
+          <div class="f5-pinlabel">PIN de administrador</div>
+          <div class="f5-pin" id="f5-pinfield"><span class="f5-pin-val" id="f5-dots"></span><span class="f5-caret" id="f5-caret"></span></div>
+        </div>
+        <div class="f5-tr"><div class="f5-c1">2951884</div><div class="f5-c2">Ricardo Fuentes</div><div class="f5-c3"><span class="f5-pill">Profesor</span></div></div>
+      </div>
+    </div>
+
+    <div class="clip f5-stamp" id="f5-stamp" data-layout-allow-overlap data-start="0" data-duration="13.013" data-track-index="3">C&aacute;mbialo hoy</div>
+
+    <svg class="clip f5-cursor" id="f5-cursor" viewBox="0 0 24 24" data-start="0" data-duration="13.013" data-track-index="4">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Scene 1 (0–3.1s) — the seeded row, its code already unreadable. */
+      tl.fromTo("#f5-app", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.66, ease: "power3.out" }, 0);
+      tl.fromTo(".f5-tr", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out", stagger: 0.12 }, 0.5);
+
+      /* Scene 2 (3.1–6.5s) — it is called out: this one came with the app. */
+      tl.to("#f5-target", { backgroundColor: "rgba(37,99,235,0.1)", duration: 0.44, ease: "power2.out" }, 3.14);
+      tl.to("#f5-role", { scale: 1.16, duration: 0.26, ease: "power2.out" }, 3.9);
+      tl.to("#f5-role", { scale: 1, duration: 0.46, ease: "power3.out" }, 4.16);
+      tl.to("#f5-role", { boxShadow: "0 0 0 8px rgba(37,99,235,0.16)", duration: 0.4, ease: "power2.out" }, 3.9);
+
+      /* Scene 3 (6.5–9.8s) — a PIN of its own, typed as dots. */
+      tl.to("#f5-cursor", { x: -560, y: -560, duration: 0.72, ease: "power2.inOut" }, 6.52);
+      tl.to("#f5-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, 7.32);
+      tl.to("#f5-cursor", { scale: 1, duration: 0.34, ease: "power3.out" }, 7.41);
+      tl.set("#f5-pinrow", { marginTop: 6, paddingTop: 12, paddingBottom: 12 }, 7.5);
+      tl.to("#f5-pinrow", { height: 94, duration: 0.48, ease: "power3.out" }, 7.5);
+      const dotsEl = document.getElementById("f5-dots");
+      const DOTS = "••••••••";
+      const d = { t: 0 };
+      tl.to(d, {
+        t: 1, duration: 1.1, ease: "none",
+        onUpdate: () => {
+          const n = Math.min(DOTS.length, Math.floor(d.t * (DOTS.length + 0.4)));
+          const next = DOTS.slice(0, n);
+          if (dotsEl.textContent !== next) dotsEl.textContent = next;
+        },
+      }, 8.2);
+      const b = { p: 0 };
+      tl.to(b, {
+        p: Math.PI * 2 * 4, duration: 2.4, ease: "none",
+        onUpdate: () => { gsap.set("#f5-caret", { opacity: Math.sin(b.p) > 0 ? 1 : 0.15 }); },
+      }, 7.7);
+      tl.to("#f5-pinfield", { borderColor: "#22c55e", duration: 0.36, ease: "power2.out" }, 9.2);
+
+      /* Scene 4 (9.8–12.5s) — the stamp lands and the frame holds. */
+      tl.to("#f5-cursor", { opacity: 0, duration: 0.26, ease: "power2.in" }, 9.8);
+      tl.fromTo("#f5-stamp", { scale: 0, opacity: 0, rotation: -9 }, { scale: 1, opacity: 1, rotation: -6, duration: 0.56, ease: "power3.out" }, 9.9);
+      const jitter = { p: 0 };
+      tl.to(jitter, {
+        p: Math.PI * 4, duration: 1.6, ease: "none",
+        onUpdate: () => { gsap.set("#f5-stamp", { y: Math.sin(jitter.p) * 2.2 }); },
+      }, 10.7);
+
+      window.__timelines["05-admin-fabrica"] = tl;
+    })();
+  </script>
+</template>

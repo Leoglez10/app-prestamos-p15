@@ -1,0 +1,199 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Space Grotesk";
+      src: url("assets/fonts/space-grotesk.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+    @font-face {
+      font-family: "Inter";
+      src: url("assets/fonts/inter.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: block;
+    }
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+    }
+
+    .p1-ground {
+      position: absolute;
+      inset: 0;
+      background: #f8fafc;
+    }
+    .p1-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37, 99, 235, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 99, 235, 0.08) 1px, transparent 1px);
+      background-size: 96px 96px;
+    }
+    .p1-halo {
+      position: absolute;
+      left: 50%;
+      top: 400px;
+      width: 1500px;
+      height: 1100px;
+      margin-left: -750px;
+      margin-top: -550px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(37, 99, 235, 0) 62%);
+    }
+
+    .p1-stack {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 232px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 34px;
+    }
+
+    .p1-eyebrow {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #2563eb;
+    }
+
+    .p1-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 132px;
+      font-weight: 700;
+      line-height: 1.04;
+      letter-spacing: -0.025em;
+      color: #0f172a;
+      text-align: center;
+      max-width: 1240px;
+    }
+    .p1-word {
+      display: inline-block;
+      margin-right: 0.24em;
+    }
+
+    .p1-lockup {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 636px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 26px;
+    }
+    .p1-logo-wrap {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .p1-logo-glow {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 340px;
+      height: 340px;
+      margin-left: -170px;
+      margin-top: -170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, rgba(37, 99, 235, 0) 68%);
+      opacity: 0;
+    }
+    .p1-logo {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+    }
+    .p1-rule {
+      width: 2px;
+      height: 76px;
+      background: rgba(37, 99, 235, 0.28);
+    }
+    .p1-school {
+      font-family: "Inter", sans-serif;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #64748b;
+      letter-spacing: 0.01em;
+    }
+  </style>
+
+  <div id="root" data-composition-id="01-portada" data-width="1920" data-height="1080" data-duration="7.396">
+    <div class="clip p1-ground" id="p1-ground" data-start="0" data-duration="7.396" data-track-index="0"></div>
+    <div class="clip p1-grid" id="p1-grid" data-start="0" data-duration="7.396" data-track-index="1"></div>
+    <div class="clip p1-halo" id="p1-halo" data-start="0" data-duration="7.396" data-track-index="2"></div>
+
+    <div class="clip p1-stack" id="p1-stack" data-start="0" data-duration="7.396" data-track-index="3">
+      <div class="p1-eyebrow" id="p1-eyebrow">Video 1 de 5 &middot; Kiosko</div>
+      <div class="p1-title" id="p1-title">
+        <span class="p1-word">Prestar</span><span class="p1-word">y</span><span class="p1-word">devolver</span><span class="p1-word">equipo</span>
+      </div>
+    </div>
+
+    <div class="clip p1-lockup" id="p1-lockup" data-start="0" data-duration="7.396" data-track-index="4">
+      <div class="p1-logo-wrap">
+        <div class="p1-logo-glow" id="p1-logo-glow"></div>
+        <img class="p1-logo" id="p1-logo" src="public/logo-p15.png" alt="" />
+      </div>
+      <div class="p1-rule" id="p1-rule"></div>
+      <div class="p1-school" id="p1-school">Preparatoria Quince</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Scene 1 (0–1.6s) — only the eyebrow, the beat the VO opens on. */
+      tl.fromTo("#p1-eyebrow", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.62, ease: "power3.out" }, 0.18);
+
+      /* Scene 2 (1.6–4.1s) — the promise assembles word by word. */
+      tl.fromTo(
+        "#p1-title .p1-word",
+        { y: 46, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.72, ease: "power3.out", stagger: 0.14 },
+        1.62
+      );
+
+      /* Scene 3 (4.1–6.9s) — the lockup lands, the glow blooms, then it holds still. */
+      tl.fromTo("#p1-logo", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.66, ease: "power3.out" }, 4.14);
+      tl.fromTo("#p1-logo-glow", { scale: 0.72, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.0, ease: "power2.out" }, 4.2);
+      tl.fromTo("#p1-rule", { scaleY: 0, opacity: 0 }, { scaleY: 1, opacity: 1, duration: 0.42, ease: "power3.out" }, 4.52);
+      tl.fromTo("#p1-school", { x: -26, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 4.66);
+
+      /* Held read: one low-amplitude jitter pass on the logo. Deterministic, no repeat/yoyo. */
+      const jitter = { p: 0 };
+      tl.to(
+        jitter,
+        {
+          p: Math.PI * 4,
+          duration: 1.5,
+          ease: "none",
+          onUpdate: () => {
+            gsap.set("#p1-logo", { y: Math.sin(jitter.p) * 2.4 });
+          },
+        },
+        5.36
+      );
+
+      window.__timelines["01-portada"] = tl;
+    })();
+  </script>
+</template>

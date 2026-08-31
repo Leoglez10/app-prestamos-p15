@@ -1,0 +1,1 @@
+Al aplicar, lo primero que hace la app es guardar un respaldo completo. Después escribe todo de un solo golpe: o entra completo, o no entra nada. Nunca a medias.

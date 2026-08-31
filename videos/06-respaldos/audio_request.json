@@ -1,0 +1,57 @@
+{
+  "provider": "auto",
+  "speed": 1,
+  "lines": [
+    {
+      "id": "01",
+      "text": "Este es el video que evita el desastre: cómo se respalda la app, cómo se recupera, y cómo trabajar en dos computadoras sin perder nada."
+    },
+    {
+      "id": "02",
+      "text": "Guárdate esta imagen. El archivo punto d-b es la base completa: cuando entra, reemplaza todo. El archivo c-s-v es solo el resultado de un recorrido: cuando entra, se fusiona con lo que ya hay. Confundirlos es la única forma de perder trabajo en esta app."
+    },
+    {
+      "id": "03",
+      "text": "Hay tres tipos de respaldo, y los distingues por el nombre del archivo. El automático lo hace la app sola. El manual lo haces tú. Y el de “previo a restaurar” lo crea la app justo antes de sobrescribir algo, sin que se lo pidas: esa es tu red de seguridad."
+    },
+    {
+      "id": "04",
+      "text": "El respaldo automático viene encendido de fábrica, cada doce horas. Puedes cambiarlo a seis horas, un día o una semana. Se conservan los últimos veinte automáticos: los viejos se van borrando. Ojo con esto, porque los manuales no se borran nunca."
+    },
+    {
+      "id": "05",
+      "text": "Una advertencia importante: la app revisa cada quince minutos si ya toca respaldar, pero solo mientras está abierta. No hay nada corriendo por detrás. Si la computadora está apagada, no se respalda nada."
+    },
+    {
+      "id": "06",
+      "text": "Para que los respaldos también queden en la nube, se conecta Google Drive con el correo de la escuela y se agregan dos carpetas: “backups”, y también “reportes”, que es donde caen los reportes de la toma física. Son carpetas hermanas: hay que agregarlas por separado. Y nunca, nunca agregues la carpeta que las contiene: ahí vive la base de datos viva, y Drive la corrompe."
+    },
+    {
+      "id": "07",
+      "text": "Antes de algo grande —importar el Excel, actualizar la app, cerrar el ciclo escolar— haz uno a mano con “Crear respaldo”. Ese no se borra solo. Con “Abrir carpeta” llegas al archivo para copiarlo a una USB."
+    },
+    {
+      "id": "08",
+      "text": "Para volver atrás, cada fila de la tabla trae su botón “Restaurar”. Y si el archivo viene de fuera —de una USB o descargado de Drive— usa “Importar respaldo”. En los dos casos la app te avisa qué va a pasar, guarda ese respaldo de seguridad previo, y se recarga sola al terminar."
+    },
+    {
+      "id": "09",
+      "text": "Aquí está la trampa. Si la segunda computadora te devuelve su base completa, borra todos los préstamos que la principal registró mientras tanto. El punto d-b sirve para montar la segunda computadora, una sola vez. Para traer el trabajo de vuelta, nunca."
+    },
+    {
+      "id": "10",
+      "text": "Lo que sí vuelve es el reporte. En la segunda computadora, “Exportar reporte”. En la principal, pestaña Inventario, hasta abajo: “Traer la toma física de otra computadora”. Eliges el archivo y la app te muestra qué va a pasar antes de tocar nada: cuántos aparecieron, cuántos no, y cuántos ya estaban al día. Confirmas, y listo. Solo escribe lo del recorrido. Los préstamos no se tocan."
+    },
+    {
+      "id": "11",
+      "text": "Una sola cosa queda pendiente: los equipos que se dieron de alta al vuelo allá todavía no existen aquí. La app te los lista para que los des de alta a mano, porque el reporte no trae su categoría y elegirla por ti sería adivinar."
+    }
+  ],
+  "bgm": {
+    "mode": "retrieve",
+    "query": "calm",
+    "blob": "El archivo .db reemplaza toda la base; el CSV de toma física fusiona solo el recorrido",
+    "arc": "Promesa → Regla de oro → Red de seguridad → Automatización → Límite → Nube segura → Manual → Restaurar → Riesgo → Fusión → Pendientes → Recordatorio"
+  },
+  "voice": "001248bb63f847888d37b766ee8b3a47"
+}

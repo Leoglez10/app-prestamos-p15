@@ -1,0 +1,4021 @@
+{
+  "total_duration_s": 171.36,
+  "width": 1920,
+  "height": 1080,
+  "groups": [
+    {
+      "id": "caption-group-0",
+      "frame": 1,
+      "start": 0.13,
+      "end": 1.37,
+      "text": "Un alumno necesita",
+      "words": [
+        {
+          "id": "caption-word-0-0",
+          "text": "Un",
+          "start": 0.13,
+          "end": 0.17
+        },
+        {
+          "id": "caption-word-0-1",
+          "text": "alumno",
+          "start": 0.17,
+          "end": 0.68
+        },
+        {
+          "id": "caption-word-0-2",
+          "text": "necesita",
+          "start": 0.68,
+          "end": 1.37
+        }
+      ]
+    },
+    {
+      "id": "caption-group-1",
+      "frame": 1,
+      "start": 1.37,
+      "end": 2.16,
+      "text": "un cable,",
+      "words": [
+        {
+          "id": "caption-word-1-0",
+          "text": "un",
+          "start": 1.37,
+          "end": 1.52
+        },
+        {
+          "id": "caption-word-1-1",
+          "text": "cable,",
+          "start": 1.56,
+          "end": 2.04
+        }
+      ]
+    },
+    {
+      "id": "caption-group-2",
+      "frame": 1,
+      "start": 2.27,
+      "end": 3.46,
+      "text": "no tiene código",
+      "words": [
+        {
+          "id": "caption-word-2-0",
+          "text": "no",
+          "start": 2.27,
+          "end": 2.38
+        },
+        {
+          "id": "caption-word-2-1",
+          "text": "tiene",
+          "start": 2.49,
+          "end": 2.87
+        },
+        {
+          "id": "caption-word-2-2",
+          "text": "código",
+          "start": 2.87,
+          "end": 3.46
+        }
+      ]
+    },
+    {
+      "id": "caption-group-3",
+      "frame": 1,
+      "start": 3.46,
+      "end": 4.76,
+      "text": "de profesor,",
+      "words": [
+        {
+          "id": "caption-word-3-0",
+          "text": "de",
+          "start": 3.46,
+          "end": 3.58
+        },
+        {
+          "id": "caption-word-3-1",
+          "text": "profesor,",
+          "start": 3.65,
+          "end": 4.64
+        }
+      ]
+    },
+    {
+      "id": "caption-group-4",
+      "frame": 1,
+      "start": 4.78,
+      "end": 5.2,
+      "text": "para eso",
+      "words": [
+        {
+          "id": "caption-word-4-0",
+          "text": "para",
+          "start": 4.78,
+          "end": 4.96
+        },
+        {
+          "id": "caption-word-4-1",
+          "text": "eso",
+          "start": 4.96,
+          "end": 5.18
+        }
+      ]
+    },
+    {
+      "id": "caption-group-5",
+      "frame": 1,
+      "start": 5.2,
+      "end": 6.52,
+      "text": "existe el préstamo",
+      "words": [
+        {
+          "id": "caption-word-5-0",
+          "text": "existe",
+          "start": 5.2,
+          "end": 5.68
+        },
+        {
+          "id": "caption-word-5-1",
+          "text": "el",
+          "start": 5.68,
+          "end": 5.84
+        },
+        {
+          "id": "caption-word-5-2",
+          "text": "préstamo",
+          "start": 5.84,
+          "end": 6.52
+        }
+      ]
+    },
+    {
+      "id": "caption-group-6",
+      "frame": 1,
+      "start": 6.52,
+      "end": 7.23,
+      "text": "rápido.",
+      "words": [
+        {
+          "id": "caption-word-6-0",
+          "text": "rápido.",
+          "start": 6.52,
+          "end": 7.11
+        }
+      ]
+    },
+    {
+      "id": "caption-group-7",
+      "frame": 2,
+      "start": 7.281,
+      "end": 8.311,
+      "text": "Esta pantalla",
+      "words": [
+        {
+          "id": "caption-word-7-0",
+          "text": "Esta",
+          "start": 7.281,
+          "end": 7.521
+        },
+        {
+          "id": "caption-word-7-1",
+          "text": "pantalla",
+          "start": 7.591,
+          "end": 8.191
+        }
+      ]
+    },
+    {
+      "id": "caption-group-8",
+      "frame": 2,
+      "start": 8.401,
+      "end": 8.651,
+      "text": "no es",
+      "words": [
+        {
+          "id": "caption-word-8-0",
+          "text": "no",
+          "start": 8.401,
+          "end": 8.471
+        },
+        {
+          "id": "caption-word-8-1",
+          "text": "es",
+          "start": 8.471,
+          "end": 8.651
+        }
+      ]
+    },
+    {
+      "id": "caption-group-9",
+      "frame": 2,
+      "start": 8.651,
+      "end": 10.501,
+      "text": "para el profesorado,",
+      "words": [
+        {
+          "id": "caption-word-9-0",
+          "text": "para",
+          "start": 8.651,
+          "end": 9.011
+        },
+        {
+          "id": "caption-word-9-1",
+          "text": "el",
+          "start": 9.011,
+          "end": 9.191
+        },
+        {
+          "id": "caption-word-9-2",
+          "text": "profesorado,",
+          "start": 9.191,
+          "end": 10.451
+        }
+      ]
+    },
+    {
+      "id": "caption-group-10",
+      "frame": 2,
+      "start": 10.501,
+      "end": 10.871,
+      "text": "es para",
+      "words": [
+        {
+          "id": "caption-word-10-0",
+          "text": "es",
+          "start": 10.501,
+          "end": 10.591
+        },
+        {
+          "id": "caption-word-10-1",
+          "text": "para",
+          "start": 10.591,
+          "end": 10.871
+        }
+      ]
+    },
+    {
+      "id": "caption-group-11",
+      "frame": 2,
+      "start": 10.871,
+      "end": 11.711,
+      "text": "quien atiende",
+      "words": [
+        {
+          "id": "caption-word-11-0",
+          "text": "quien",
+          "start": 10.871,
+          "end": 11.221
+        },
+        {
+          "id": "caption-word-11-1",
+          "text": "atiende",
+          "start": 11.221,
+          "end": 11.711
+        }
+      ]
+    },
+    {
+      "id": "caption-group-12",
+      "frame": 2,
+      "start": 11.711,
+      "end": 13.081,
+      "text": "el mostrador.",
+      "words": [
+        {
+          "id": "caption-word-12-0",
+          "text": "el",
+          "start": 11.711,
+          "end": 11.851
+        },
+        {
+          "id": "caption-word-12-1",
+          "text": "mostrador.",
+          "start": 11.851,
+          "end": 13.011
+        }
+      ]
+    },
+    {
+      "id": "caption-group-13",
+      "frame": 2,
+      "start": 13.081,
+      "end": 14.131,
+      "text": "Se llama préstamo",
+      "words": [
+        {
+          "id": "caption-word-13-0",
+          "text": "Se",
+          "start": 13.081,
+          "end": 13.161
+        },
+        {
+          "id": "caption-word-13-1",
+          "text": "llama",
+          "start": 13.161,
+          "end": 13.531
+        },
+        {
+          "id": "caption-word-13-2",
+          "text": "préstamo",
+          "start": 13.531,
+          "end": 14.011
+        }
+      ]
+    },
+    {
+      "id": "caption-group-14",
+      "frame": 2,
+      "start": 14.201,
+      "end": 15.651,
+      "text": "rápido porque registra",
+      "words": [
+        {
+          "id": "caption-word-14-0",
+          "text": "rápido",
+          "start": 14.201,
+          "end": 14.571
+        },
+        {
+          "id": "caption-word-14-1",
+          "text": "porque",
+          "start": 14.571,
+          "end": 15.021
+        },
+        {
+          "id": "caption-word-14-2",
+          "text": "registra",
+          "start": 15.021,
+          "end": 15.651
+        }
+      ]
+    },
+    {
+      "id": "caption-group-15",
+      "frame": 2,
+      "start": 15.651,
+      "end": 15.841,
+      "text": "en",
+      "words": [
+        {
+          "id": "caption-word-15-0",
+          "text": "en",
+          "start": 15.651,
+          "end": 15.721
+        }
+      ]
+    },
+    {
+      "id": "caption-group-16",
+      "frame": 2,
+      "start": 16.301,
+      "end": 16.761,
+      "text": "segundos lo",
+      "words": [
+        {
+          "id": "caption-word-16-0",
+          "text": "segundos",
+          "start": 16.301,
+          "end": 16.571
+        },
+        {
+          "id": "caption-word-16-1",
+          "text": "lo",
+          "start": 16.571,
+          "end": 16.701
+        }
+      ]
+    },
+    {
+      "id": "caption-group-17",
+      "frame": 2,
+      "start": 16.761,
+      "end": 17.171,
+      "text": "que el",
+      "words": [
+        {
+          "id": "caption-word-17-0",
+          "text": "que",
+          "start": 16.761,
+          "end": 17.001
+        },
+        {
+          "id": "caption-word-17-1",
+          "text": "el",
+          "start": 17.001,
+          "end": 17.171
+        }
+      ]
+    },
+    {
+      "id": "caption-group-18",
+      "frame": 2,
+      "start": 17.171,
+      "end": 18.441,
+      "text": "kiosco no puede,",
+      "words": [
+        {
+          "id": "caption-word-18-0",
+          "text": "kiosco",
+          "start": 17.171,
+          "end": 17.681
+        },
+        {
+          "id": "caption-word-18-1",
+          "text": "no",
+          "start": 17.681,
+          "end": 17.851
+        },
+        {
+          "id": "caption-word-18-2",
+          "text": "puede,",
+          "start": 17.851,
+          "end": 18.321
+        }
+      ]
+    },
+    {
+      "id": "caption-group-19",
+      "frame": 2,
+      "start": 18.561,
+      "end": 19.241,
+      "text": "un préstamo",
+      "words": [
+        {
+          "id": "caption-word-19-0",
+          "text": "un",
+          "start": 18.561,
+          "end": 18.641
+        },
+        {
+          "id": "caption-word-19-1",
+          "text": "préstamo",
+          "start": 18.641,
+          "end": 19.241
+        }
+      ]
+    },
+    {
+      "id": "caption-group-20",
+      "frame": 2,
+      "start": 19.241,
+      "end": 19.841,
+      "text": "a alguien",
+      "words": [
+        {
+          "id": "caption-word-20-0",
+          "text": "a",
+          "start": 19.241,
+          "end": 19.311
+        },
+        {
+          "id": "caption-word-20-1",
+          "text": "alguien",
+          "start": 19.311,
+          "end": 19.841
+        }
+      ]
+    },
+    {
+      "id": "caption-group-21",
+      "frame": 2,
+      "start": 19.841,
+      "end": 20.221,
+      "text": "que no",
+      "words": [
+        {
+          "id": "caption-word-21-0",
+          "text": "que",
+          "start": 19.841,
+          "end": 20.061
+        },
+        {
+          "id": "caption-word-21-1",
+          "text": "no",
+          "start": 20.151,
+          "end": 20.221
+        }
+      ]
+    },
+    {
+      "id": "caption-group-22",
+      "frame": 2,
+      "start": 20.221,
+      "end": 21.051,
+      "text": "tiene código",
+      "words": [
+        {
+          "id": "caption-word-22-0",
+          "text": "tiene",
+          "start": 20.221,
+          "end": 20.541
+        },
+        {
+          "id": "caption-word-22-1",
+          "text": "código",
+          "start": 20.611,
+          "end": 21.051
+        }
+      ]
+    },
+    {
+      "id": "caption-group-23",
+      "frame": 2,
+      "start": 21.051,
+      "end": 22.15,
+      "text": "de profesor.",
+      "words": [
+        {
+          "id": "caption-word-23-0",
+          "text": "de",
+          "start": 21.051,
+          "end": 21.171
+        },
+        {
+          "id": "caption-word-23-1",
+          "text": "profesor.",
+          "start": 21.171,
+          "end": 22.081
+        }
+      ]
+    },
+    {
+      "id": "caption-group-24",
+      "frame": 3,
+      "start": 22.15,
+      "end": 22.61,
+      "text": "Se entra",
+      "words": [
+        {
+          "id": "caption-word-24-0",
+          "text": "Se",
+          "start": 22.15,
+          "end": 22.23
+        },
+        {
+          "id": "caption-word-24-1",
+          "text": "entra",
+          "start": 22.23,
+          "end": 22.61
+        }
+      ]
+    },
+    {
+      "id": "caption-group-25",
+      "frame": 3,
+      "start": 22.61,
+      "end": 22.99,
+      "text": "con tu",
+      "words": [
+        {
+          "id": "caption-word-25-0",
+          "text": "con",
+          "start": 22.61,
+          "end": 22.84
+        },
+        {
+          "id": "caption-word-25-1",
+          "text": "tu",
+          "start": 22.84,
+          "end": 22.99
+        }
+      ]
+    },
+    {
+      "id": "caption-group-26",
+      "frame": 3,
+      "start": 22.99,
+      "end": 25.08,
+      "text": "código de administrador,",
+      "words": [
+        {
+          "id": "caption-word-26-0",
+          "text": "código",
+          "start": 22.99,
+          "end": 23.45
+        },
+        {
+          "id": "caption-word-26-1",
+          "text": "de",
+          "start": 23.45,
+          "end": 23.6
+        },
+        {
+          "id": "caption-word-26-2",
+          "text": "administrador,",
+          "start": 23.6,
+          "end": 25.08
+        }
+      ]
+    },
+    {
+      "id": "caption-group-27",
+      "frame": 3,
+      "start": 25.08,
+      "end": 26.08,
+      "text": "un campo sin",
+      "words": [
+        {
+          "id": "caption-word-27-0",
+          "text": "un",
+          "start": 25.08,
+          "end": 25.23
+        },
+        {
+          "id": "caption-word-27-1",
+          "text": "campo",
+          "start": 25.29,
+          "end": 25.76
+        },
+        {
+          "id": "caption-word-27-2",
+          "text": "sin",
+          "start": 25.78,
+          "end": 26.08
+        }
+      ]
+    },
+    {
+      "id": "caption-group-28",
+      "frame": 3,
+      "start": 26.08,
+      "end": 27.48,
+      "text": "contraseña,",
+      "words": [
+        {
+          "id": "caption-word-28-0",
+          "text": "contraseña,",
+          "start": 26.08,
+          "end": 27.48
+        }
+      ]
+    },
+    {
+      "id": "caption-group-29",
+      "frame": 3,
+      "start": 27.48,
+      "end": 27.87,
+      "text": "y esta",
+      "words": [
+        {
+          "id": "caption-word-29-0",
+          "text": "y",
+          "start": 27.48,
+          "end": 27.56
+        },
+        {
+          "id": "caption-word-29-1",
+          "text": "esta",
+          "start": 27.56,
+          "end": 27.87
+        }
+      ]
+    },
+    {
+      "id": "caption-group-30",
+      "frame": 3,
+      "start": 27.87,
+      "end": 28.59,
+      "text": "sesión no",
+      "words": [
+        {
+          "id": "caption-word-30-0",
+          "text": "sesión",
+          "start": 27.87,
+          "end": 28.36
+        },
+        {
+          "id": "caption-word-30-1",
+          "text": "no",
+          "start": 28.36,
+          "end": 28.52
+        }
+      ]
+    },
+    {
+      "id": "caption-group-31",
+      "frame": 3,
+      "start": 28.59,
+      "end": 29.74,
+      "text": "se cierra sola,",
+      "words": [
+        {
+          "id": "caption-word-31-0",
+          "text": "se",
+          "start": 28.59,
+          "end": 28.69
+        },
+        {
+          "id": "caption-word-31-1",
+          "text": "cierra",
+          "start": 28.69,
+          "end": 29.22
+        },
+        {
+          "id": "caption-word-31-2",
+          "text": "sola,",
+          "start": 29.22,
+          "end": 29.74
+        }
+      ]
+    },
+    {
+      "id": "caption-group-32",
+      "frame": 3,
+      "start": 29.74,
+      "end": 31.12,
+      "text": "cuando termines tu",
+      "words": [
+        {
+          "id": "caption-word-32-0",
+          "text": "cuando",
+          "start": 29.74,
+          "end": 30.27
+        },
+        {
+          "id": "caption-word-32-1",
+          "text": "termines",
+          "start": 30.27,
+          "end": 30.88
+        },
+        {
+          "id": "caption-word-32-2",
+          "text": "tu",
+          "start": 30.97,
+          "end": 31
+        }
+      ]
+    },
+    {
+      "id": "caption-group-33",
+      "frame": 3,
+      "start": 31.49,
+      "end": 31.74,
+      "text": "turno,",
+      "words": [
+        {
+          "id": "caption-word-33-0",
+          "text": "turno,",
+          "start": 31.49,
+          "end": 31.73
+        }
+      ]
+    },
+    {
+      "id": "caption-group-34",
+      "frame": 3,
+      "start": 31.74,
+      "end": 33.21,
+      "text": "pulsa cerrar sesión",
+      "words": [
+        {
+          "id": "caption-word-34-0",
+          "text": "pulsa",
+          "start": 31.74,
+          "end": 32.16
+        },
+        {
+          "id": "caption-word-34-1",
+          "text": "cerrar",
+          "start": 32.17,
+          "end": 32.69
+        },
+        {
+          "id": "caption-word-34-2",
+          "text": "sesión",
+          "start": 32.69,
+          "end": 33.21
+        }
+      ]
+    },
+    {
+      "id": "caption-group-35",
+      "frame": 3,
+      "start": 33.21,
+      "end": 34.23,
+      "text": "arriba.",
+      "words": [
+        {
+          "id": "caption-word-35-0",
+          "text": "arriba.",
+          "start": 33.21,
+          "end": 34.16
+        }
+      ]
+    },
+    {
+      "id": "caption-group-36",
+      "frame": 3,
+      "start": 34.23,
+      "end": 34.48,
+      "text": "Si no",
+      "words": [
+        {
+          "id": "caption-word-36-0",
+          "text": "Si",
+          "start": 34.23,
+          "end": 34.32
+        },
+        {
+          "id": "caption-word-36-1",
+          "text": "no",
+          "start": 34.32,
+          "end": 34.48
+        }
+      ]
+    },
+    {
+      "id": "caption-group-37",
+      "frame": 3,
+      "start": 34.48,
+      "end": 35.18,
+      "text": "lo haces,",
+      "words": [
+        {
+          "id": "caption-word-37-0",
+          "text": "lo",
+          "start": 34.48,
+          "end": 34.63
+        },
+        {
+          "id": "caption-word-37-1",
+          "text": "haces,",
+          "start": 34.63,
+          "end": 35.18
+        }
+      ]
+    },
+    {
+      "id": "caption-group-38",
+      "frame": 3,
+      "start": 35.18,
+      "end": 37.15,
+      "text": "sigue abierta aunque cierres",
+      "words": [
+        {
+          "id": "caption-word-38-0",
+          "text": "sigue",
+          "start": 35.18,
+          "end": 35.58
+        },
+        {
+          "id": "caption-word-38-1",
+          "text": "abierta",
+          "start": 35.58,
+          "end": 36.09
+        },
+        {
+          "id": "caption-word-38-2",
+          "text": "aunque",
+          "start": 36.18,
+          "end": 36.52
+        },
+        {
+          "id": "caption-word-38-3",
+          "text": "cierres",
+          "start": 36.58,
+          "end": 37.14
+        }
+      ]
+    },
+    {
+      "id": "caption-group-39",
+      "frame": 3,
+      "start": 37.15,
+      "end": 38.313,
+      "text": "la aplicación.",
+      "words": [
+        {
+          "id": "caption-word-39-0",
+          "text": "la",
+          "start": 37.15,
+          "end": 37.3
+        },
+        {
+          "id": "caption-word-39-1",
+          "text": "aplicación.",
+          "start": 37.3,
+          "end": 38.2
+        }
+      ]
+    },
+    {
+      "id": "caption-group-40",
+      "frame": 4,
+      "start": 38.313,
+      "end": 39.793,
+      "text": "Primero,¿para quién",
+      "words": [
+        {
+          "id": "caption-word-40-0",
+          "text": "Primero,¿para",
+          "start": 38.313,
+          "end": 39.363
+        },
+        {
+          "id": "caption-word-40-1",
+          "text": "quién",
+          "start": 39.363,
+          "end": 39.673
+        }
+      ]
+    },
+    {
+      "id": "caption-group-41",
+      "frame": 4,
+      "start": 39.903,
+      "end": 40.173,
+      "text": "es?",
+      "words": [
+        {
+          "id": "caption-word-41-0",
+          "text": "es?",
+          "start": 39.903,
+          "end": 40.173
+        }
+      ]
+    },
+    {
+      "id": "caption-group-42",
+      "frame": 4,
+      "start": 40.173,
+      "end": 41.263,
+      "text": "Al cambiar entre",
+      "words": [
+        {
+          "id": "caption-word-42-0",
+          "text": "Al",
+          "start": 40.173,
+          "end": 40.263
+        },
+        {
+          "id": "caption-word-42-1",
+          "text": "cambiar",
+          "start": 40.323,
+          "end": 40.863
+        },
+        {
+          "id": "caption-word-42-2",
+          "text": "entre",
+          "start": 40.873,
+          "end": 41.263
+        }
+      ]
+    },
+    {
+      "id": "caption-group-43",
+      "frame": 4,
+      "start": 41.263,
+      "end": 42.663,
+      "text": "alumno y profesor,",
+      "words": [
+        {
+          "id": "caption-word-43-0",
+          "text": "alumno",
+          "start": 41.263,
+          "end": 41.723
+        },
+        {
+          "id": "caption-word-43-1",
+          "text": "y",
+          "start": 41.723,
+          "end": 41.783
+        },
+        {
+          "id": "caption-word-43-2",
+          "text": "profesor,",
+          "start": 41.873,
+          "end": 42.613
+        }
+      ]
+    },
+    {
+      "id": "caption-group-44",
+      "frame": 4,
+      "start": 42.663,
+      "end": 43.253,
+      "text": "los campos",
+      "words": [
+        {
+          "id": "caption-word-44-0",
+          "text": "los",
+          "start": 42.663,
+          "end": 42.813
+        },
+        {
+          "id": "caption-word-44-1",
+          "text": "campos",
+          "start": 42.873,
+          "end": 43.253
+        }
+      ]
+    },
+    {
+      "id": "caption-group-45",
+      "frame": 4,
+      "start": 43.253,
+      "end": 45.173,
+      "text": "se renombran solos.",
+      "words": [
+        {
+          "id": "caption-word-45-0",
+          "text": "se",
+          "start": 43.253,
+          "end": 43.393
+        },
+        {
+          "id": "caption-word-45-1",
+          "text": "renombran",
+          "start": 43.393,
+          "end": 43.973
+        },
+        {
+          "id": "caption-word-45-2",
+          "text": "solos.",
+          "start": 43.973,
+          "end": 45.153
+        }
+      ]
+    },
+    {
+      "id": "caption-group-46",
+      "frame": 4,
+      "start": 45.173,
+      "end": 45.493,
+      "text": "Sí,",
+      "words": [
+        {
+          "id": "caption-word-46-0",
+          "text": "Sí,",
+          "start": 45.173,
+          "end": 45.493
+        }
+      ]
+    },
+    {
+      "id": "caption-group-47",
+      "frame": 4,
+      "start": 45.493,
+      "end": 46.643,
+      "text": "también puedes",
+      "words": [
+        {
+          "id": "caption-word-47-0",
+          "text": "también",
+          "start": 45.493,
+          "end": 46.123
+        },
+        {
+          "id": "caption-word-47-1",
+          "text": "puedes",
+          "start": 46.123,
+          "end": 46.523
+        }
+      ]
+    },
+    {
+      "id": "caption-group-48",
+      "frame": 4,
+      "start": 47.033,
+      "end": 47.533,
+      "text": "registrar a",
+      "words": [
+        {
+          "id": "caption-word-48-0",
+          "text": "registrar",
+          "start": 47.033,
+          "end": 47.443
+        },
+        {
+          "id": "caption-word-48-1",
+          "text": "a",
+          "start": 47.443,
+          "end": 47.533
+        }
+      ]
+    },
+    {
+      "id": "caption-group-49",
+      "frame": 4,
+      "start": 47.533,
+      "end": 49.013,
+      "text": "un profesor aquí,",
+      "words": [
+        {
+          "id": "caption-word-49-0",
+          "text": "un",
+          "start": 47.533,
+          "end": 47.683
+        },
+        {
+          "id": "caption-word-49-1",
+          "text": "profesor",
+          "start": 47.723,
+          "end": 48.413
+        },
+        {
+          "id": "caption-word-49-2",
+          "text": "aquí,",
+          "start": 48.413,
+          "end": 49.013
+        }
+      ]
+    },
+    {
+      "id": "caption-group-50",
+      "frame": 4,
+      "start": 49.013,
+      "end": 49.523,
+      "text": "cuando el",
+      "words": [
+        {
+          "id": "caption-word-50-0",
+          "text": "cuando",
+          "start": 49.013,
+          "end": 49.183
+        },
+        {
+          "id": "caption-word-50-1",
+          "text": "el",
+          "start": 49.183,
+          "end": 49.523
+        }
+      ]
+    },
+    {
+      "id": "caption-group-51",
+      "frame": 4,
+      "start": 49.523,
+      "end": 50.743,
+      "text": "préstamo lo autorizas",
+      "words": [
+        {
+          "id": "caption-word-51-0",
+          "text": "préstamo",
+          "start": 49.523,
+          "end": 49.893
+        },
+        {
+          "id": "caption-word-51-1",
+          "text": "lo",
+          "start": 49.893,
+          "end": 50.053
+        },
+        {
+          "id": "caption-word-51-2",
+          "text": "autorizas",
+          "start": 50.053,
+          "end": 50.743
+        }
+      ]
+    },
+    {
+      "id": "caption-group-52",
+      "frame": 4,
+      "start": 50.743,
+      "end": 51.113,
+      "text": "tú en",
+      "words": [
+        {
+          "id": "caption-word-52-0",
+          "text": "tú",
+          "start": 50.743,
+          "end": 50.933
+        },
+        {
+          "id": "caption-word-52-1",
+          "text": "en",
+          "start": 50.953,
+          "end": 51.113
+        }
+      ]
+    },
+    {
+      "id": "caption-group-53",
+      "frame": 4,
+      "start": 51.113,
+      "end": 52.323,
+      "text": "el mostrador y no",
+      "words": [
+        {
+          "id": "caption-word-53-0",
+          "text": "el",
+          "start": 51.113,
+          "end": 51.293
+        },
+        {
+          "id": "caption-word-53-1",
+          "text": "mostrador",
+          "start": 51.293,
+          "end": 52.073
+        },
+        {
+          "id": "caption-word-53-2",
+          "text": "y",
+          "start": 52.173,
+          "end": 52.193
+        },
+        {
+          "id": "caption-word-53-3",
+          "text": "no",
+          "start": 52.193,
+          "end": 52.323
+        }
+      ]
+    },
+    {
+      "id": "caption-group-54",
+      "frame": 4,
+      "start": 52.323,
+      "end": 53.003,
+      "text": "él desde",
+      "words": [
+        {
+          "id": "caption-word-54-0",
+          "text": "él",
+          "start": 52.323,
+          "end": 52.813
+        },
+        {
+          "id": "caption-word-54-1",
+          "text": "desde",
+          "start": 52.813,
+          "end": 53.003
+        }
+      ]
+    },
+    {
+      "id": "caption-group-55",
+      "frame": 4,
+      "start": 53.003,
+      "end": 54.173,
+      "text": "el kiosco.",
+      "words": [
+        {
+          "id": "caption-word-55-0",
+          "text": "el",
+          "start": 53.003,
+          "end": 53.183
+        },
+        {
+          "id": "caption-word-55-1",
+          "text": "kiosco.",
+          "start": 53.183,
+          "end": 54.053
+        }
+      ]
+    },
+    {
+      "id": "caption-group-56",
+      "frame": 5,
+      "start": 54.232,
+      "end": 54.792,
+      "text": "Al escribir",
+      "words": [
+        {
+          "id": "caption-word-56-0",
+          "text": "Al",
+          "start": 54.232,
+          "end": 54.252
+        },
+        {
+          "id": "caption-word-56-1",
+          "text": "escribir",
+          "start": 54.252,
+          "end": 54.792
+        }
+      ]
+    },
+    {
+      "id": "caption-group-57",
+      "frame": 5,
+      "start": 54.792,
+      "end": 55.482,
+      "text": "el nombre,",
+      "words": [
+        {
+          "id": "caption-word-57-0",
+          "text": "el",
+          "start": 54.792,
+          "end": 54.922
+        },
+        {
+          "id": "caption-word-57-1",
+          "text": "nombre,",
+          "start": 54.922,
+          "end": 55.482
+        }
+      ]
+    },
+    {
+      "id": "caption-group-58",
+      "frame": 5,
+      "start": 55.482,
+      "end": 57.112,
+      "text": "la app propone.",
+      "words": [
+        {
+          "id": "caption-word-58-0",
+          "text": "la",
+          "start": 55.482,
+          "end": 55.722
+        },
+        {
+          "id": "caption-word-58-1",
+          "text": "app",
+          "start": 55.722,
+          "end": 56.082
+        },
+        {
+          "id": "caption-word-58-2",
+          "text": "propone.",
+          "start": 56.082,
+          "end": 57.002
+        }
+      ]
+    },
+    {
+      "id": "caption-group-59",
+      "frame": 5,
+      "start": 57.112,
+      "end": 58.372,
+      "text": "Los profesores salen",
+      "words": [
+        {
+          "id": "caption-word-59-0",
+          "text": "Los",
+          "start": 57.112,
+          "end": 57.232
+        },
+        {
+          "id": "caption-word-59-1",
+          "text": "profesores",
+          "start": 57.232,
+          "end": 57.992
+        },
+        {
+          "id": "caption-word-59-2",
+          "text": "salen",
+          "start": 57.992,
+          "end": 58.372
+        }
+      ]
+    },
+    {
+      "id": "caption-group-60",
+      "frame": 5,
+      "start": 58.372,
+      "end": 59.562,
+      "text": "del directorio,",
+      "words": [
+        {
+          "id": "caption-word-60-0",
+          "text": "del",
+          "start": 58.372,
+          "end": 58.602
+        },
+        {
+          "id": "caption-word-60-1",
+          "text": "directorio,",
+          "start": 58.602,
+          "end": 59.442
+        }
+      ]
+    },
+    {
+      "id": "caption-group-61",
+      "frame": 5,
+      "start": 59.792,
+      "end": 60.712,
+      "text": "los alumnos,",
+      "words": [
+        {
+          "id": "caption-word-61-0",
+          "text": "los",
+          "start": 59.792,
+          "end": 59.872
+        },
+        {
+          "id": "caption-word-61-1",
+          "text": "alumnos,",
+          "start": 59.962,
+          "end": 60.602
+        }
+      ]
+    },
+    {
+      "id": "caption-group-62",
+      "frame": 5,
+      "start": 60.712,
+      "end": 61.362,
+      "text": "de quienes",
+      "words": [
+        {
+          "id": "caption-word-62-0",
+          "text": "de",
+          "start": 60.712,
+          "end": 60.772
+        },
+        {
+          "id": "caption-word-62-1",
+          "text": "quienes",
+          "start": 60.772,
+          "end": 61.362
+        }
+      ]
+    },
+    {
+      "id": "caption-group-63",
+      "frame": 5,
+      "start": 61.362,
+      "end": 62.542,
+      "text": "ya pidieron algo",
+      "words": [
+        {
+          "id": "caption-word-63-0",
+          "text": "ya",
+          "start": 61.362,
+          "end": 61.532
+        },
+        {
+          "id": "caption-word-63-1",
+          "text": "pidieron",
+          "start": 61.532,
+          "end": 62.202
+        },
+        {
+          "id": "caption-word-63-2",
+          "text": "algo",
+          "start": 62.202,
+          "end": 62.542
+        }
+      ]
+    },
+    {
+      "id": "caption-group-64",
+      "frame": 5,
+      "start": 62.542,
+      "end": 63.162,
+      "text": "antes.",
+      "words": [
+        {
+          "id": "caption-word-64-0",
+          "text": "antes.",
+          "start": 62.542,
+          "end": 63.042
+        }
+      ]
+    },
+    {
+      "id": "caption-group-65",
+      "frame": 5,
+      "start": 63.352,
+      "end": 64.132,
+      "text": "Eliges uno",
+      "words": [
+        {
+          "id": "caption-word-65-0",
+          "text": "Eliges",
+          "start": 63.352,
+          "end": 63.832
+        },
+        {
+          "id": "caption-word-65-1",
+          "text": "uno",
+          "start": 63.832,
+          "end": 64.132
+        }
+      ]
+    },
+    {
+      "id": "caption-group-66",
+      "frame": 5,
+      "start": 64.132,
+      "end": 64.422,
+      "text": "y el",
+      "words": [
+        {
+          "id": "caption-word-66-0",
+          "text": "y",
+          "start": 64.132,
+          "end": 64.232
+        },
+        {
+          "id": "caption-word-66-1",
+          "text": "el",
+          "start": 64.232,
+          "end": 64.422
+        }
+      ]
+    },
+    {
+      "id": "caption-group-67",
+      "frame": 5,
+      "start": 64.422,
+      "end": 65.702,
+      "text": "código se llena",
+      "words": [
+        {
+          "id": "caption-word-67-0",
+          "text": "código",
+          "start": 64.422,
+          "end": 65.012
+        },
+        {
+          "id": "caption-word-67-1",
+          "text": "se",
+          "start": 65.032,
+          "end": 65.222
+        },
+        {
+          "id": "caption-word-67-2",
+          "text": "llena",
+          "start": 65.222,
+          "end": 65.582
+        }
+      ]
+    },
+    {
+      "id": "caption-group-68",
+      "frame": 5,
+      "start": 66.042,
+      "end": 66.552,
+      "text": "solo.",
+      "words": [
+        {
+          "id": "caption-word-68-0",
+          "text": "solo.",
+          "start": 66.042,
+          "end": 66.442
+        }
+      ]
+    },
+    {
+      "id": "caption-group-69",
+      "frame": 5,
+      "start": 66.552,
+      "end": 66.762,
+      "text": "Si es",
+      "words": [
+        {
+          "id": "caption-word-69-0",
+          "text": "Si",
+          "start": 66.552,
+          "end": 66.602
+        },
+        {
+          "id": "caption-word-69-1",
+          "text": "es",
+          "start": 66.602,
+          "end": 66.762
+        }
+      ]
+    },
+    {
+      "id": "caption-group-70",
+      "frame": 5,
+      "start": 66.762,
+      "end": 67.492,
+      "text": "la primera",
+      "words": [
+        {
+          "id": "caption-word-70-0",
+          "text": "la",
+          "start": 66.762,
+          "end": 66.922
+        },
+        {
+          "id": "caption-word-70-1",
+          "text": "primera",
+          "start": 66.922,
+          "end": 67.492
+        }
+      ]
+    },
+    {
+      "id": "caption-group-71",
+      "frame": 5,
+      "start": 67.492,
+      "end": 67.892,
+      "text": "vez de",
+      "words": [
+        {
+          "id": "caption-word-71-0",
+          "text": "vez",
+          "start": 67.492,
+          "end": 67.732
+        },
+        {
+          "id": "caption-word-71-1",
+          "text": "de",
+          "start": 67.732,
+          "end": 67.892
+        }
+      ]
+    },
+    {
+      "id": "caption-group-72",
+      "frame": 5,
+      "start": 67.892,
+      "end": 68.902,
+      "text": "esa persona,",
+      "words": [
+        {
+          "id": "caption-word-72-0",
+          "text": "esa",
+          "start": 67.892,
+          "end": 68.082
+        },
+        {
+          "id": "caption-word-72-1",
+          "text": "persona,",
+          "start": 68.202,
+          "end": 68.782
+        }
+      ]
+    },
+    {
+      "id": "caption-group-73",
+      "frame": 5,
+      "start": 69.032,
+      "end": 70.192,
+      "text": "escribe su nombre",
+      "words": [
+        {
+          "id": "caption-word-73-0",
+          "text": "escribe",
+          "start": 69.032,
+          "end": 69.512
+        },
+        {
+          "id": "caption-word-73-1",
+          "text": "su",
+          "start": 69.512,
+          "end": 69.682
+        },
+        {
+          "id": "caption-word-73-2",
+          "text": "nombre",
+          "start": 69.682,
+          "end": 70.192
+        }
+      ]
+    },
+    {
+      "id": "caption-group-74",
+      "frame": 5,
+      "start": 70.192,
+      "end": 70.442,
+      "text": "y su",
+      "words": [
+        {
+          "id": "caption-word-74-0",
+          "text": "y",
+          "start": 70.192,
+          "end": 70.272
+        },
+        {
+          "id": "caption-word-74-1",
+          "text": "su",
+          "start": 70.272,
+          "end": 70.432
+        }
+      ]
+    },
+    {
+      "id": "caption-group-75",
+      "frame": 5,
+      "start": 70.442,
+      "end": 72.112,
+      "text": "código completos.",
+      "words": [
+        {
+          "id": "caption-word-75-0",
+          "text": "código",
+          "start": 70.442,
+          "end": 70.932
+        },
+        {
+          "id": "caption-word-75-1",
+          "text": "completos.",
+          "start": 71.022,
+          "end": 72.002
+        }
+      ]
+    },
+    {
+      "id": "caption-group-76",
+      "frame": 5,
+      "start": 72.112,
+      "end": 73.402,
+      "text": "La próxima vez",
+      "words": [
+        {
+          "id": "caption-word-76-0",
+          "text": "La",
+          "start": 72.112,
+          "end": 72.232
+        },
+        {
+          "id": "caption-word-76-1",
+          "text": "próxima",
+          "start": 72.232,
+          "end": 73.052
+        },
+        {
+          "id": "caption-word-76-2",
+          "text": "vez",
+          "start": 73.052,
+          "end": 73.402
+        }
+      ]
+    },
+    {
+      "id": "caption-group-77",
+      "frame": 5,
+      "start": 73.402,
+      "end": 73.892,
+      "text": "ya va",
+      "words": [
+        {
+          "id": "caption-word-77-0",
+          "text": "ya",
+          "start": 73.402,
+          "end": 73.632
+        },
+        {
+          "id": "caption-word-77-1",
+          "text": "va",
+          "start": 73.632,
+          "end": 73.802
+        }
+      ]
+    },
+    {
+      "id": "caption-group-78",
+      "frame": 5,
+      "start": 73.892,
+      "end": 74.482,
+      "text": "a estar",
+      "words": [
+        {
+          "id": "caption-word-78-0",
+          "text": "a",
+          "start": 73.892,
+          "end": 73.972
+        },
+        {
+          "id": "caption-word-78-1",
+          "text": "estar",
+          "start": 73.972,
+          "end": 74.362
+        }
+      ]
+    },
+    {
+      "id": "caption-group-79",
+      "frame": 5,
+      "start": 74.652,
+      "end": 74.902,
+      "text": "en",
+      "words": [
+        {
+          "id": "caption-word-79-0",
+          "text": "en",
+          "start": 74.652,
+          "end": 74.782
+        }
+      ]
+    },
+    {
+      "id": "caption-group-80",
+      "frame": 5,
+      "start": 74.962,
+      "end": 75.096,
+      "text": "la lista.",
+      "words": [
+        {
+          "id": "caption-word-80-0",
+          "text": "la",
+          "start": 74.962,
+          "end": 75.012
+        },
+        {
+          "id": "caption-word-80-1",
+          "text": "lista.",
+          "start": 75.012,
+          "end": 76.002
+        }
+      ]
+    },
+    {
+      "id": "caption-group-81",
+      "frame": 6,
+      "start": 75.096,
+      "end": 75.786,
+      "text": "Aquí está",
+      "words": [
+        {
+          "id": "caption-word-81-0",
+          "text": "Aquí",
+          "start": 75.096,
+          "end": 75.386
+        },
+        {
+          "id": "caption-word-81-1",
+          "text": "está",
+          "start": 75.386,
+          "end": 75.786
+        }
+      ]
+    },
+    {
+      "id": "caption-group-82",
+      "frame": 6,
+      "start": 75.786,
+      "end": 77.176,
+      "text": "lo importante.",
+      "words": [
+        {
+          "id": "caption-word-82-0",
+          "text": "lo",
+          "start": 75.786,
+          "end": 75.926
+        },
+        {
+          "id": "caption-word-82-1",
+          "text": "importante.",
+          "start": 75.976,
+          "end": 77.066
+        }
+      ]
+    },
+    {
+      "id": "caption-group-83",
+      "frame": 6,
+      "start": 77.176,
+      "end": 77.786,
+      "text": "Si eliges",
+      "words": [
+        {
+          "id": "caption-word-83-0",
+          "text": "Si",
+          "start": 77.176,
+          "end": 77.246
+        },
+        {
+          "id": "caption-word-83-1",
+          "text": "eliges",
+          "start": 77.246,
+          "end": 77.786
+        }
+      ]
+    },
+    {
+      "id": "caption-group-84",
+      "frame": 6,
+      "start": 77.786,
+      "end": 78.786,
+      "text": "el objeto del",
+      "words": [
+        {
+          "id": "caption-word-84-0",
+          "text": "el",
+          "start": 77.786,
+          "end": 77.966
+        },
+        {
+          "id": "caption-word-84-1",
+          "text": "objeto",
+          "start": 77.966,
+          "end": 78.466
+        },
+        {
+          "id": "caption-word-84-2",
+          "text": "del",
+          "start": 78.536,
+          "end": 78.666
+        }
+      ]
+    },
+    {
+      "id": "caption-group-85",
+      "frame": 6,
+      "start": 78.826,
+      "end": 79.756,
+      "text": "catálogo,",
+      "words": [
+        {
+          "id": "caption-word-85-0",
+          "text": "catálogo,",
+          "start": 78.826,
+          "end": 79.646
+        }
+      ]
+    },
+    {
+      "id": "caption-group-86",
+      "frame": 6,
+      "start": 79.756,
+      "end": 80.186,
+      "text": "esto no",
+      "words": [
+        {
+          "id": "caption-word-86-0",
+          "text": "esto",
+          "start": 79.756,
+          "end": 80.026
+        },
+        {
+          "id": "caption-word-86-1",
+          "text": "no",
+          "start": 80.026,
+          "end": 80.166
+        }
+      ]
+    },
+    {
+      "id": "caption-group-87",
+      "frame": 6,
+      "start": 80.186,
+      "end": 80.586,
+      "text": "es una",
+      "words": [
+        {
+          "id": "caption-word-87-0",
+          "text": "es",
+          "start": 80.186,
+          "end": 80.346
+        },
+        {
+          "id": "caption-word-87-1",
+          "text": "una",
+          "start": 80.346,
+          "end": 80.586
+        }
+      ]
+    },
+    {
+      "id": "caption-group-88",
+      "frame": 6,
+      "start": 80.586,
+      "end": 82.016,
+      "text": "libreta aparte.",
+      "words": [
+        {
+          "id": "caption-word-88-0",
+          "text": "libreta",
+          "start": 80.586,
+          "end": 81.136
+        },
+        {
+          "id": "caption-word-88-1",
+          "text": "aparte.",
+          "start": 81.136,
+          "end": 81.906
+        }
+      ]
+    },
+    {
+      "id": "caption-group-89",
+      "frame": 6,
+      "start": 82.016,
+      "end": 82.336,
+      "text": "La app",
+      "words": [
+        {
+          "id": "caption-word-89-0",
+          "text": "La",
+          "start": 82.016,
+          "end": 82.076
+        },
+        {
+          "id": "caption-word-89-1",
+          "text": "app",
+          "start": 82.076,
+          "end": 82.336
+        }
+      ]
+    },
+    {
+      "id": "caption-group-90",
+      "frame": 6,
+      "start": 82.336,
+      "end": 82.936,
+      "text": "lo marca",
+      "words": [
+        {
+          "id": "caption-word-90-0",
+          "text": "lo",
+          "start": 82.336,
+          "end": 82.426
+        },
+        {
+          "id": "caption-word-90-1",
+          "text": "marca",
+          "start": 82.506,
+          "end": 82.936
+        }
+      ]
+    },
+    {
+      "id": "caption-group-91",
+      "frame": 6,
+      "start": 82.936,
+      "end": 84.296,
+      "text": "como prestado en el",
+      "words": [
+        {
+          "id": "caption-word-91-0",
+          "text": "como",
+          "start": 82.936,
+          "end": 83.276
+        },
+        {
+          "id": "caption-word-91-1",
+          "text": "prestado",
+          "start": 83.276,
+          "end": 83.936
+        },
+        {
+          "id": "caption-word-91-2",
+          "text": "en",
+          "start": 84.066,
+          "end": 84.126
+        },
+        {
+          "id": "caption-word-91-3",
+          "text": "el",
+          "start": 84.126,
+          "end": 84.296
+        }
+      ]
+    },
+    {
+      "id": "caption-group-92",
+      "frame": 6,
+      "start": 84.296,
+      "end": 85.656,
+      "text": "inventario real,",
+      "words": [
+        {
+          "id": "caption-word-92-0",
+          "text": "inventario",
+          "start": 84.296,
+          "end": 85.146
+        },
+        {
+          "id": "caption-word-92-1",
+          "text": "real,",
+          "start": 85.146,
+          "end": 85.546
+        }
+      ]
+    },
+    {
+      "id": "caption-group-93",
+      "frame": 6,
+      "start": 85.656,
+      "end": 86.226,
+      "text": "igual que",
+      "words": [
+        {
+          "id": "caption-word-93-0",
+          "text": "igual",
+          "start": 85.656,
+          "end": 85.976
+        },
+        {
+          "id": "caption-word-93-1",
+          "text": "que",
+          "start": 85.976,
+          "end": 86.226
+        }
+      ]
+    },
+    {
+      "id": "caption-group-94",
+      "frame": 6,
+      "start": 86.226,
+      "end": 86.576,
+      "text": "si lo",
+      "words": [
+        {
+          "id": "caption-word-94-0",
+          "text": "si",
+          "start": 86.226,
+          "end": 86.406
+        },
+        {
+          "id": "caption-word-94-1",
+          "text": "lo",
+          "start": 86.406,
+          "end": 86.576
+        }
+      ]
+    },
+    {
+      "id": "caption-group-95",
+      "frame": 6,
+      "start": 86.576,
+      "end": 88.536,
+      "text": "hubiera pedido un profesor",
+      "words": [
+        {
+          "id": "caption-word-95-0",
+          "text": "hubiera",
+          "start": 86.576,
+          "end": 87.116
+        },
+        {
+          "id": "caption-word-95-1",
+          "text": "pedido",
+          "start": 87.166,
+          "end": 87.686
+        },
+        {
+          "id": "caption-word-95-2",
+          "text": "un",
+          "start": 87.716,
+          "end": 87.856
+        },
+        {
+          "id": "caption-word-95-3",
+          "text": "profesor",
+          "start": 87.856,
+          "end": 88.536
+        }
+      ]
+    },
+    {
+      "id": "caption-group-96",
+      "frame": 6,
+      "start": 88.536,
+      "end": 89.816,
+      "text": "en el kiosco.",
+      "words": [
+        {
+          "id": "caption-word-96-0",
+          "text": "en",
+          "start": 88.536,
+          "end": 88.586
+        },
+        {
+          "id": "caption-word-96-1",
+          "text": "el",
+          "start": 88.736,
+          "end": 88.846
+        },
+        {
+          "id": "caption-word-96-2",
+          "text": "kiosco.",
+          "start": 88.896,
+          "end": 89.706
+        }
+      ]
+    },
+    {
+      "id": "caption-group-97",
+      "frame": 6,
+      "start": 89.816,
+      "end": 90.906,
+      "text": "Deja de aparecer",
+      "words": [
+        {
+          "id": "caption-word-97-0",
+          "text": "Deja",
+          "start": 89.816,
+          "end": 90.046
+        },
+        {
+          "id": "caption-word-97-1",
+          "text": "de",
+          "start": 90.046,
+          "end": 90.216
+        },
+        {
+          "id": "caption-word-97-2",
+          "text": "aparecer",
+          "start": 90.216,
+          "end": 90.906
+        }
+      ]
+    },
+    {
+      "id": "caption-group-98",
+      "frame": 6,
+      "start": 90.906,
+      "end": 92.916,
+      "text": "como disponible y vuelve",
+      "words": [
+        {
+          "id": "caption-word-98-0",
+          "text": "como",
+          "start": 90.906,
+          "end": 91.256
+        },
+        {
+          "id": "caption-word-98-1",
+          "text": "disponible",
+          "start": 91.256,
+          "end": 92.186
+        },
+        {
+          "id": "caption-word-98-2",
+          "text": "y",
+          "start": 92.186,
+          "end": 92.286
+        },
+        {
+          "id": "caption-word-98-3",
+          "text": "vuelve",
+          "start": 92.286,
+          "end": 92.806
+        }
+      ]
+    },
+    {
+      "id": "caption-group-99",
+      "frame": 6,
+      "start": 92.916,
+      "end": 94.076,
+      "text": "cuando lo devuelvas",
+      "words": [
+        {
+          "id": "caption-word-99-0",
+          "text": "cuando",
+          "start": 92.916,
+          "end": 93.266
+        },
+        {
+          "id": "caption-word-99-1",
+          "text": "lo",
+          "start": 93.316,
+          "end": 93.426
+        },
+        {
+          "id": "caption-word-99-2",
+          "text": "devuelvas",
+          "start": 93.496,
+          "end": 93.956
+        }
+      ]
+    },
+    {
+      "id": "caption-group-100",
+      "frame": 6,
+      "start": 94.316,
+      "end": 94.886,
+      "text": "desde aquí.",
+      "words": [
+        {
+          "id": "caption-word-100-0",
+          "text": "desde",
+          "start": 94.316,
+          "end": 94.336
+        },
+        {
+          "id": "caption-word-100-1",
+          "text": "aquí.",
+          "start": 94.336,
+          "end": 94.786
+        }
+      ]
+    },
+    {
+      "id": "caption-group-101",
+      "frame": 7,
+      "start": 94.886,
+      "end": 97.186,
+      "text": "Puedes agregar varios objetos",
+      "words": [
+        {
+          "id": "caption-word-101-0",
+          "text": "Puedes",
+          "start": 94.886,
+          "end": 95.366
+        },
+        {
+          "id": "caption-word-101-1",
+          "text": "agregar",
+          "start": 95.366,
+          "end": 95.996
+        },
+        {
+          "id": "caption-word-101-2",
+          "text": "varios",
+          "start": 95.996,
+          "end": 96.546
+        },
+        {
+          "id": "caption-word-101-3",
+          "text": "objetos",
+          "start": 96.546,
+          "end": 97.186
+        }
+      ]
+    },
+    {
+      "id": "caption-group-102",
+      "frame": 7,
+      "start": 97.186,
+      "end": 98.726,
+      "text": "al mismo préstamo.",
+      "words": [
+        {
+          "id": "caption-word-102-0",
+          "text": "al",
+          "start": 97.186,
+          "end": 97.366
+        },
+        {
+          "id": "caption-word-102-1",
+          "text": "mismo",
+          "start": 97.366,
+          "end": 97.816
+        },
+        {
+          "id": "caption-word-102-2",
+          "text": "préstamo.",
+          "start": 97.816,
+          "end": 98.666
+        }
+      ]
+    },
+    {
+      "id": "caption-group-103",
+      "frame": 7,
+      "start": 98.726,
+      "end": 99.236,
+      "text": "Cada uno",
+      "words": [
+        {
+          "id": "caption-word-103-0",
+          "text": "Cada",
+          "start": 98.726,
+          "end": 98.996
+        },
+        {
+          "id": "caption-word-103-1",
+          "text": "uno",
+          "start": 98.996,
+          "end": 99.236
+        }
+      ]
+    },
+    {
+      "id": "caption-group-104",
+      "frame": 7,
+      "start": 99.236,
+      "end": 99.976,
+      "text": "queda como",
+      "words": [
+        {
+          "id": "caption-word-104-0",
+          "text": "queda",
+          "start": 99.236,
+          "end": 99.646
+        },
+        {
+          "id": "caption-word-104-1",
+          "text": "como",
+          "start": 99.646,
+          "end": 99.976
+        }
+      ]
+    },
+    {
+      "id": "caption-group-105",
+      "frame": 7,
+      "start": 99.976,
+      "end": 101.306,
+      "text": "su propio registro",
+      "words": [
+        {
+          "id": "caption-word-105-0",
+          "text": "su",
+          "start": 99.976,
+          "end": 100.136
+        },
+        {
+          "id": "caption-word-105-1",
+          "text": "propio",
+          "start": 100.136,
+          "end": 100.626
+        },
+        {
+          "id": "caption-word-105-2",
+          "text": "registro",
+          "start": 100.626,
+          "end": 101.246
+        }
+      ]
+    },
+    {
+      "id": "caption-group-106",
+      "frame": 7,
+      "start": 101.306,
+      "end": 101.516,
+      "text": "y se",
+      "words": [
+        {
+          "id": "caption-word-106-0",
+          "text": "y",
+          "start": 101.306,
+          "end": 101.376
+        },
+        {
+          "id": "caption-word-106-1",
+          "text": "se",
+          "start": 101.376,
+          "end": 101.516
+        }
+      ]
+    },
+    {
+      "id": "caption-group-107",
+      "frame": 7,
+      "start": 101.516,
+      "end": 102.426,
+      "text": "devuelve por",
+      "words": [
+        {
+          "id": "caption-word-107-0",
+          "text": "devuelve",
+          "start": 101.516,
+          "end": 102.076
+        },
+        {
+          "id": "caption-word-107-1",
+          "text": "por",
+          "start": 102.076,
+          "end": 102.306
+        }
+      ]
+    },
+    {
+      "id": "caption-group-108",
+      "frame": 7,
+      "start": 102.506,
+      "end": 103.606,
+      "text": "separado.",
+      "words": [
+        {
+          "id": "caption-word-108-0",
+          "text": "separado.",
+          "start": 102.506,
+          "end": 103.546
+        }
+      ]
+    },
+    {
+      "id": "caption-group-109",
+      "frame": 7,
+      "start": 103.606,
+      "end": 103.916,
+      "text": "Ysi lo",
+      "words": [
+        {
+          "id": "caption-word-109-0",
+          "text": "Ysi",
+          "start": 103.606,
+          "end": 103.766
+        },
+        {
+          "id": "caption-word-109-1",
+          "text": "lo",
+          "start": 103.766,
+          "end": 103.916
+        }
+      ]
+    },
+    {
+      "id": "caption-group-110",
+      "frame": 7,
+      "start": 103.916,
+      "end": 104.676,
+      "text": "que prestas",
+      "words": [
+        {
+          "id": "caption-word-110-0",
+          "text": "que",
+          "start": 103.916,
+          "end": 104.146
+        },
+        {
+          "id": "caption-word-110-1",
+          "text": "prestas",
+          "start": 104.146,
+          "end": 104.676
+        }
+      ]
+    },
+    {
+      "id": "caption-group-111",
+      "frame": 7,
+      "start": 104.676,
+      "end": 105.176,
+      "text": "no está",
+      "words": [
+        {
+          "id": "caption-word-111-0",
+          "text": "no",
+          "start": 104.676,
+          "end": 104.826
+        },
+        {
+          "id": "caption-word-111-1",
+          "text": "está",
+          "start": 104.826,
+          "end": 105.056
+        }
+      ]
+    },
+    {
+      "id": "caption-group-112",
+      "frame": 7,
+      "start": 105.216,
+      "end": 106.446,
+      "text": "en el inventario,",
+      "words": [
+        {
+          "id": "caption-word-112-0",
+          "text": "en",
+          "start": 105.216,
+          "end": 105.276
+        },
+        {
+          "id": "caption-word-112-1",
+          "text": "el",
+          "start": 105.276,
+          "end": 105.416
+        },
+        {
+          "id": "caption-word-112-2",
+          "text": "inventario,",
+          "start": 105.426,
+          "end": 106.386
+        }
+      ]
+    },
+    {
+      "id": "caption-group-113",
+      "frame": 7,
+      "start": 106.446,
+      "end": 108.286,
+      "text": "escríbelo tal cual.",
+      "words": [
+        {
+          "id": "caption-word-113-0",
+          "text": "escríbelo",
+          "start": 106.446,
+          "end": 107.246
+        },
+        {
+          "id": "caption-word-113-1",
+          "text": "tal",
+          "start": 107.246,
+          "end": 107.526
+        },
+        {
+          "id": "caption-word-113-2",
+          "text": "cual.",
+          "start": 107.526,
+          "end": 108.176
+        }
+      ]
+    },
+    {
+      "id": "caption-group-114",
+      "frame": 7,
+      "start": 108.286,
+      "end": 109.336,
+      "text": "Se guarda como",
+      "words": [
+        {
+          "id": "caption-word-114-0",
+          "text": "Se",
+          "start": 108.286,
+          "end": 108.396
+        },
+        {
+          "id": "caption-word-114-1",
+          "text": "guarda",
+          "start": 108.416,
+          "end": 108.966
+        },
+        {
+          "id": "caption-word-114-2",
+          "text": "como",
+          "start": 108.966,
+          "end": 109.336
+        }
+      ]
+    },
+    {
+      "id": "caption-group-115",
+      "frame": 7,
+      "start": 109.336,
+      "end": 109.986,
+      "text": "texto,",
+      "words": [
+        {
+          "id": "caption-word-115-0",
+          "text": "texto,",
+          "start": 109.336,
+          "end": 109.986
+        }
+      ]
+    },
+    {
+      "id": "caption-group-116",
+      "frame": 7,
+      "start": 109.986,
+      "end": 110.636,
+      "text": "pero ese",
+      "words": [
+        {
+          "id": "caption-word-116-0",
+          "text": "pero",
+          "start": 109.986,
+          "end": 110.356
+        },
+        {
+          "id": "caption-word-116-1",
+          "text": "ese",
+          "start": 110.356,
+          "end": 110.636
+        }
+      ]
+    },
+    {
+      "id": "caption-group-117",
+      "frame": 7,
+      "start": 110.636,
+      "end": 111.566,
+      "text": "no descuenta",
+      "words": [
+        {
+          "id": "caption-word-117-0",
+          "text": "no",
+          "start": 110.636,
+          "end": 110.806
+        },
+        {
+          "id": "caption-word-117-1",
+          "text": "descuenta",
+          "start": 110.866,
+          "end": 111.446
+        }
+      ]
+    },
+    {
+      "id": "caption-group-118",
+      "frame": 7,
+      "start": 112.016,
+      "end": 112.446,
+      "text": "nada.",
+      "words": [
+        {
+          "id": "caption-word-118-0",
+          "text": "nada.",
+          "start": 112.016,
+          "end": 112.386
+        }
+      ]
+    },
+    {
+      "id": "caption-group-119",
+      "frame": 7,
+      "start": 112.446,
+      "end": 113.506,
+      "text": "Solo cuenta lo",
+      "words": [
+        {
+          "id": "caption-word-119-0",
+          "text": "Solo",
+          "start": 112.446,
+          "end": 112.756
+        },
+        {
+          "id": "caption-word-119-1",
+          "text": "cuenta",
+          "start": 112.756,
+          "end": 113.306
+        },
+        {
+          "id": "caption-word-119-2",
+          "text": "lo",
+          "start": 113.316,
+          "end": 113.506
+        }
+      ]
+    },
+    {
+      "id": "caption-group-120",
+      "frame": 7,
+      "start": 113.506,
+      "end": 114.626,
+      "text": "que eliges del",
+      "words": [
+        {
+          "id": "caption-word-120-0",
+          "text": "que",
+          "start": 113.506,
+          "end": 113.786
+        },
+        {
+          "id": "caption-word-120-1",
+          "text": "eliges",
+          "start": 113.786,
+          "end": 114.346
+        },
+        {
+          "id": "caption-word-120-2",
+          "text": "del",
+          "start": 114.346,
+          "end": 114.626
+        }
+      ]
+    },
+    {
+      "id": "caption-group-121",
+      "frame": 7,
+      "start": 114.626,
+      "end": 114.919,
+      "text": "catálogo.",
+      "words": [
+        {
+          "id": "caption-word-121-0",
+          "text": "catálogo.",
+          "start": 114.626,
+          "end": 115.606
+        }
+      ]
+    },
+    {
+      "id": "caption-group-122",
+      "frame": 8,
+      "start": 114.919,
+      "end": 116.119,
+      "text": "Registrar.",
+      "words": [
+        {
+          "id": "caption-word-122-0",
+          "text": "Registrar.",
+          "start": 114.919,
+          "end": 116.089
+        }
+      ]
+    },
+    {
+      "id": "caption-group-123",
+      "frame": 8,
+      "start": 116.119,
+      "end": 116.929,
+      "text": "El formulario",
+      "words": [
+        {
+          "id": "caption-word-123-0",
+          "text": "El",
+          "start": 116.119,
+          "end": 116.219
+        },
+        {
+          "id": "caption-word-123-1",
+          "text": "formulario",
+          "start": 116.299,
+          "end": 116.929
+        }
+      ]
+    },
+    {
+      "id": "caption-group-124",
+      "frame": 8,
+      "start": 116.929,
+      "end": 117.519,
+      "text": "se limpia",
+      "words": [
+        {
+          "id": "caption-word-124-0",
+          "text": "se",
+          "start": 116.929,
+          "end": 117.069
+        },
+        {
+          "id": "caption-word-124-1",
+          "text": "limpia",
+          "start": 117.069,
+          "end": 117.519
+        }
+      ]
+    },
+    {
+      "id": "caption-group-125",
+      "frame": 8,
+      "start": 117.519,
+      "end": 117.779,
+      "text": "y el",
+      "words": [
+        {
+          "id": "caption-word-125-0",
+          "text": "y",
+          "start": 117.519,
+          "end": 117.599
+        },
+        {
+          "id": "caption-word-125-1",
+          "text": "el",
+          "start": 117.599,
+          "end": 117.739
+        }
+      ]
+    },
+    {
+      "id": "caption-group-126",
+      "frame": 8,
+      "start": 117.779,
+      "end": 119.139,
+      "text": "cursor vuelve arriba",
+      "words": [
+        {
+          "id": "caption-word-126-0",
+          "text": "cursor",
+          "start": 117.779,
+          "end": 118.239
+        },
+        {
+          "id": "caption-word-126-1",
+          "text": "vuelve",
+          "start": 118.239,
+          "end": 118.679
+        },
+        {
+          "id": "caption-word-126-2",
+          "text": "arriba",
+          "start": 118.679,
+          "end": 119.139
+        }
+      ]
+    },
+    {
+      "id": "caption-group-127",
+      "frame": 8,
+      "start": 119.139,
+      "end": 120.619,
+      "text": "para el siguiente.",
+      "words": [
+        {
+          "id": "caption-word-127-0",
+          "text": "para",
+          "start": 119.139,
+          "end": 119.509
+        },
+        {
+          "id": "caption-word-127-1",
+          "text": "el",
+          "start": 119.509,
+          "end": 119.689
+        },
+        {
+          "id": "caption-word-127-2",
+          "text": "siguiente.",
+          "start": 119.689,
+          "end": 120.579
+        }
+      ]
+    },
+    {
+      "id": "caption-group-128",
+      "frame": 8,
+      "start": 120.619,
+      "end": 121.619,
+      "text": "Yfíjate en la",
+      "words": [
+        {
+          "id": "caption-word-128-0",
+          "text": "Yfíjate",
+          "start": 120.619,
+          "end": 121.139
+        },
+        {
+          "id": "caption-word-128-1",
+          "text": "en",
+          "start": 121.139,
+          "end": 121.239
+        },
+        {
+          "id": "caption-word-128-2",
+          "text": "la",
+          "start": 121.239,
+          "end": 121.619
+        }
+      ]
+    },
+    {
+      "id": "caption-group-129",
+      "frame": 8,
+      "start": 121.619,
+      "end": 122.259,
+      "text": "letra chica",
+      "words": [
+        {
+          "id": "caption-word-129-0",
+          "text": "letra",
+          "start": 121.619,
+          "end": 121.859
+        },
+        {
+          "id": "caption-word-129-1",
+          "text": "chica",
+          "start": 121.859,
+          "end": 122.259
+        }
+      ]
+    },
+    {
+      "id": "caption-group-130",
+      "frame": 8,
+      "start": 122.259,
+      "end": 123.699,
+      "text": "de cada registro.",
+      "words": [
+        {
+          "id": "caption-word-130-0",
+          "text": "de",
+          "start": 122.259,
+          "end": 122.419
+        },
+        {
+          "id": "caption-word-130-1",
+          "text": "cada",
+          "start": 122.419,
+          "end": 122.739
+        },
+        {
+          "id": "caption-word-130-2",
+          "text": "registro.",
+          "start": 122.739,
+          "end": 123.659
+        }
+      ]
+    },
+    {
+      "id": "caption-group-131",
+      "frame": 8,
+      "start": 123.699,
+      "end": 124.459,
+      "text": "La app anota",
+      "words": [
+        {
+          "id": "caption-word-131-0",
+          "text": "La",
+          "start": 123.699,
+          "end": 123.799
+        },
+        {
+          "id": "caption-word-131-1",
+          "text": "app",
+          "start": 123.889,
+          "end": 124.029
+        },
+        {
+          "id": "caption-word-131-2",
+          "text": "anota",
+          "start": 124.119,
+          "end": 124.339
+        }
+      ]
+    },
+    {
+      "id": "caption-group-132",
+      "frame": 8,
+      "start": 124.889,
+      "end": 125.079,
+      "text": "solo a",
+      "words": [
+        {
+          "id": "caption-word-132-0",
+          "text": "solo",
+          "start": 124.889,
+          "end": 124.919
+        },
+        {
+          "id": "caption-word-132-1",
+          "text": "a",
+          "start": 124.919,
+          "end": 124.999
+        }
+      ]
+    },
+    {
+      "id": "caption-group-133",
+      "frame": 8,
+      "start": 125.079,
+      "end": 127.419,
+      "text": "quien autorizó el préstamo.",
+      "words": [
+        {
+          "id": "caption-word-133-0",
+          "text": "quien",
+          "start": 125.079,
+          "end": 125.459
+        },
+        {
+          "id": "caption-word-133-1",
+          "text": "autorizó",
+          "start": 125.459,
+          "end": 126.179
+        },
+        {
+          "id": "caption-word-133-2",
+          "text": "el",
+          "start": 126.179,
+          "end": 126.359
+        },
+        {
+          "id": "caption-word-133-3",
+          "text": "préstamo.",
+          "start": 126.359,
+          "end": 127.369
+        }
+      ]
+    },
+    {
+      "id": "caption-group-134",
+      "frame": 8,
+      "start": 127.419,
+      "end": 127.839,
+      "text": "No hay",
+      "words": [
+        {
+          "id": "caption-word-134-0",
+          "text": "No",
+          "start": 127.419,
+          "end": 127.519
+        },
+        {
+          "id": "caption-word-134-1",
+          "text": "hay",
+          "start": 127.599,
+          "end": 127.749
+        }
+      ]
+    },
+    {
+      "id": "caption-group-135",
+      "frame": 8,
+      "start": 127.839,
+      "end": 128.799,
+      "text": "que escribirlo",
+      "words": [
+        {
+          "id": "caption-word-135-0",
+          "text": "que",
+          "start": 127.839,
+          "end": 127.989
+        },
+        {
+          "id": "caption-word-135-1",
+          "text": "escribirlo",
+          "start": 127.989,
+          "end": 128.719
+        }
+      ]
+    },
+    {
+      "id": "caption-group-136",
+      "frame": 8,
+      "start": 128.799,
+      "end": 128.979,
+      "text": "y no",
+      "words": [
+        {
+          "id": "caption-word-136-0",
+          "text": "y",
+          "start": 128.799,
+          "end": 128.829
+        },
+        {
+          "id": "caption-word-136-1",
+          "text": "no",
+          "start": 128.829,
+          "end": 128.979
+        }
+      ]
+    },
+    {
+      "id": "caption-group-137",
+      "frame": 8,
+      "start": 128.979,
+      "end": 130.499,
+      "text": "se puede cambiar.",
+      "words": [
+        {
+          "id": "caption-word-137-0",
+          "text": "se",
+          "start": 128.979,
+          "end": 129.129
+        },
+        {
+          "id": "caption-word-137-1",
+          "text": "puede",
+          "start": 129.129,
+          "end": 129.519
+        },
+        {
+          "id": "caption-word-137-2",
+          "text": "cambiar.",
+          "start": 129.519,
+          "end": 130.379
+        }
+      ]
+    },
+    {
+      "id": "caption-group-138",
+      "frame": 9,
+      "start": 130.584,
+      "end": 131.614,
+      "text": "El historial abre",
+      "words": [
+        {
+          "id": "caption-word-138-0",
+          "text": "El",
+          "start": 130.584,
+          "end": 130.624
+        },
+        {
+          "id": "caption-word-138-1",
+          "text": "historial",
+          "start": 130.624,
+          "end": 131.314
+        },
+        {
+          "id": "caption-word-138-2",
+          "text": "abre",
+          "start": 131.314,
+          "end": 131.614
+        }
+      ]
+    },
+    {
+      "id": "caption-group-139",
+      "frame": 9,
+      "start": 131.614,
+      "end": 132.294,
+      "text": "siempre lo",
+      "words": [
+        {
+          "id": "caption-word-139-0",
+          "text": "siempre",
+          "start": 131.614,
+          "end": 132.144
+        },
+        {
+          "id": "caption-word-139-1",
+          "text": "lo",
+          "start": 132.144,
+          "end": 132.294
+        }
+      ]
+    },
+    {
+      "id": "caption-group-140",
+      "frame": 9,
+      "start": 132.294,
+      "end": 134.044,
+      "text": "que está prestado.",
+      "words": [
+        {
+          "id": "caption-word-140-0",
+          "text": "que",
+          "start": 132.294,
+          "end": 132.524
+        },
+        {
+          "id": "caption-word-140-1",
+          "text": "está",
+          "start": 132.524,
+          "end": 132.824
+        },
+        {
+          "id": "caption-word-140-2",
+          "text": "prestado.",
+          "start": 132.824,
+          "end": 133.934
+        }
+      ]
+    },
+    {
+      "id": "caption-group-141",
+      "frame": 9,
+      "start": 134.044,
+      "end": 134.624,
+      "text": "El chip",
+      "words": [
+        {
+          "id": "caption-word-141-0",
+          "text": "El",
+          "start": 134.044,
+          "end": 134.164
+        },
+        {
+          "id": "caption-word-141-1",
+          "text": "chip",
+          "start": 134.164,
+          "end": 134.624
+        }
+      ]
+    },
+    {
+      "id": "caption-group-142",
+      "frame": 9,
+      "start": 134.624,
+      "end": 135.194,
+      "text": "de más",
+      "words": [
+        {
+          "id": "caption-word-142-0",
+          "text": "de",
+          "start": 134.624,
+          "end": 134.814
+        },
+        {
+          "id": "caption-word-142-1",
+          "text": "más",
+          "start": 134.914,
+          "end": 135.194
+        }
+      ]
+    },
+    {
+      "id": "caption-group-143",
+      "frame": 9,
+      "start": 135.194,
+      "end": 135.654,
+      "text": "de un",
+      "words": [
+        {
+          "id": "caption-word-143-0",
+          "text": "de",
+          "start": 135.194,
+          "end": 135.424
+        },
+        {
+          "id": "caption-word-143-1",
+          "text": "un",
+          "start": 135.424,
+          "end": 135.654
+        }
+      ]
+    },
+    {
+      "id": "caption-group-144",
+      "frame": 9,
+      "start": 135.654,
+      "end": 136.144,
+      "text": "día te",
+      "words": [
+        {
+          "id": "caption-word-144-0",
+          "text": "día",
+          "start": 135.654,
+          "end": 136.014
+        },
+        {
+          "id": "caption-word-144-1",
+          "text": "te",
+          "start": 136.014,
+          "end": 136.144
+        }
+      ]
+    },
+    {
+      "id": "caption-group-145",
+      "frame": 9,
+      "start": 136.144,
+      "end": 136.764,
+      "text": "muestra lo",
+      "words": [
+        {
+          "id": "caption-word-145-0",
+          "text": "muestra",
+          "start": 136.144,
+          "end": 136.634
+        },
+        {
+          "id": "caption-word-145-1",
+          "text": "lo",
+          "start": 136.634,
+          "end": 136.704
+        }
+      ]
+    },
+    {
+      "id": "caption-group-146",
+      "frame": 9,
+      "start": 136.764,
+      "end": 137.034,
+      "text": "que lleva",
+      "words": [
+        {
+          "id": "caption-word-146-0",
+          "text": "que",
+          "start": 136.764,
+          "end": 136.834
+        },
+        {
+          "id": "caption-word-146-1",
+          "text": "lleva",
+          "start": 136.904,
+          "end": 136.914
+        }
+      ]
+    },
+    {
+      "id": "caption-group-147",
+      "frame": 9,
+      "start": 137.414,
+      "end": 138.134,
+      "text": "afuera más",
+      "words": [
+        {
+          "id": "caption-word-147-0",
+          "text": "afuera",
+          "start": 137.414,
+          "end": 137.804
+        },
+        {
+          "id": "caption-word-147-1",
+          "text": "más",
+          "start": 137.824,
+          "end": 138.134
+        }
+      ]
+    },
+    {
+      "id": "caption-group-148",
+      "frame": 9,
+      "start": 138.134,
+      "end": 139.704,
+      "text": "de 24 horas.",
+      "words": [
+        {
+          "id": "caption-word-148-0",
+          "text": "de",
+          "start": 138.134,
+          "end": 138.324
+        },
+        {
+          "id": "caption-word-148-1",
+          "text": "24",
+          "start": 138.334,
+          "end": 138.954
+        },
+        {
+          "id": "caption-word-148-2",
+          "text": "horas.",
+          "start": 138.954,
+          "end": 139.594
+        }
+      ]
+    },
+    {
+      "id": "caption-group-149",
+      "frame": 9,
+      "start": 139.704,
+      "end": 140.334,
+      "text": "Esos son",
+      "words": [
+        {
+          "id": "caption-word-149-0",
+          "text": "Esos",
+          "start": 139.704,
+          "end": 140.014
+        },
+        {
+          "id": "caption-word-149-1",
+          "text": "son",
+          "start": 140.014,
+          "end": 140.334
+        }
+      ]
+    },
+    {
+      "id": "caption-group-150",
+      "frame": 9,
+      "start": 140.334,
+      "end": 140.974,
+      "text": "los que",
+      "words": [
+        {
+          "id": "caption-word-150-0",
+          "text": "los",
+          "start": 140.334,
+          "end": 140.654
+        },
+        {
+          "id": "caption-word-150-1",
+          "text": "que",
+          "start": 140.654,
+          "end": 140.974
+        }
+      ]
+    },
+    {
+      "id": "caption-group-151",
+      "frame": 9,
+      "start": 140.974,
+      "end": 141.614,
+      "text": "hay que",
+      "words": [
+        {
+          "id": "caption-word-151-0",
+          "text": "hay",
+          "start": 140.974,
+          "end": 141.294
+        },
+        {
+          "id": "caption-word-151-1",
+          "text": "que",
+          "start": 141.294,
+          "end": 141.614
+        }
+      ]
+    },
+    {
+      "id": "caption-group-152",
+      "frame": 9,
+      "start": 141.614,
+      "end": 142.764,
+      "text": "ir a buscar.",
+      "words": [
+        {
+          "id": "caption-word-152-0",
+          "text": "ir",
+          "start": 141.614,
+          "end": 141.824
+        },
+        {
+          "id": "caption-word-152-1",
+          "text": "a",
+          "start": 141.824,
+          "end": 141.864
+        },
+        {
+          "id": "caption-word-152-2",
+          "text": "buscar.",
+          "start": 141.934,
+          "end": 142.694
+        }
+      ]
+    },
+    {
+      "id": "caption-group-153",
+      "frame": 9,
+      "start": 142.764,
+      "end": 144.204,
+      "text": "Yel buscador encuentra",
+      "words": [
+        {
+          "id": "caption-word-153-0",
+          "text": "Yel",
+          "start": 142.764,
+          "end": 142.914
+        },
+        {
+          "id": "caption-word-153-1",
+          "text": "buscador",
+          "start": 142.914,
+          "end": 143.514
+        },
+        {
+          "id": "caption-word-153-2",
+          "text": "encuentra",
+          "start": 143.514,
+          "end": 144.204
+        }
+      ]
+    },
+    {
+      "id": "caption-group-154",
+      "frame": 9,
+      "start": 144.204,
+      "end": 145.074,
+      "text": "por nombre,",
+      "words": [
+        {
+          "id": "caption-word-154-0",
+          "text": "por",
+          "start": 144.204,
+          "end": 144.434
+        },
+        {
+          "id": "caption-word-154-1",
+          "text": "nombre,",
+          "start": 144.434,
+          "end": 145.074
+        }
+      ]
+    },
+    {
+      "id": "caption-group-155",
+      "frame": 9,
+      "start": 145.074,
+      "end": 145.714,
+      "text": "por código",
+      "words": [
+        {
+          "id": "caption-word-155-0",
+          "text": "por",
+          "start": 145.074,
+          "end": 145.344
+        },
+        {
+          "id": "caption-word-155-1",
+          "text": "código",
+          "start": 145.344,
+          "end": 145.594
+        }
+      ]
+    },
+    {
+      "id": "caption-group-156",
+      "frame": 9,
+      "start": 145.894,
+      "end": 147.075,
+      "text": "o por objeto.",
+      "words": [
+        {
+          "id": "caption-word-156-0",
+          "text": "o",
+          "start": 145.894,
+          "end": 145.964
+        },
+        {
+          "id": "caption-word-156-1",
+          "text": "por",
+          "start": 145.964,
+          "end": 146.264
+        },
+        {
+          "id": "caption-word-156-2",
+          "text": "objeto.",
+          "start": 146.264,
+          "end": 146.994
+        }
+      ]
+    },
+    {
+      "id": "caption-group-157",
+      "frame": 10,
+      "start": 147.075,
+      "end": 148.975,
+      "text": "Cuando regresen el equipo",
+      "words": [
+        {
+          "id": "caption-word-157-0",
+          "text": "Cuando",
+          "start": 147.075,
+          "end": 147.505
+        },
+        {
+          "id": "caption-word-157-1",
+          "text": "regresen",
+          "start": 147.515,
+          "end": 148.245
+        },
+        {
+          "id": "caption-word-157-2",
+          "text": "el",
+          "start": 148.245,
+          "end": 148.415
+        },
+        {
+          "id": "caption-word-157-3",
+          "text": "equipo",
+          "start": 148.425,
+          "end": 148.975
+        }
+      ]
+    },
+    {
+      "id": "caption-group-158",
+      "frame": 10,
+      "start": 148.975,
+      "end": 149.225,
+      "text": "de",
+      "words": [
+        {
+          "id": "caption-word-158-0",
+          "text": "de",
+          "start": 148.975,
+          "end": 149.105
+        }
+      ]
+    },
+    {
+      "id": "caption-group-159",
+      "frame": 10,
+      "start": 149.425,
+      "end": 149.845,
+      "text": "Volver,",
+      "words": [
+        {
+          "id": "caption-word-159-0",
+          "text": "Volver,",
+          "start": 149.425,
+          "end": 149.845
+        }
+      ]
+    },
+    {
+      "id": "caption-group-160",
+      "frame": 10,
+      "start": 149.845,
+      "end": 150.405,
+      "text": "eso libera",
+      "words": [
+        {
+          "id": "caption-word-160-0",
+          "text": "eso",
+          "start": 149.845,
+          "end": 150.025
+        },
+        {
+          "id": "caption-word-160-1",
+          "text": "libera",
+          "start": 150.025,
+          "end": 150.405
+        }
+      ]
+    },
+    {
+      "id": "caption-group-161",
+      "frame": 10,
+      "start": 150.405,
+      "end": 151.065,
+      "text": "el objeto",
+      "words": [
+        {
+          "id": "caption-word-161-0",
+          "text": "el",
+          "start": 150.405,
+          "end": 150.565
+        },
+        {
+          "id": "caption-word-161-1",
+          "text": "objeto",
+          "start": 150.565,
+          "end": 151.065
+        }
+      ]
+    },
+    {
+      "id": "caption-group-162",
+      "frame": 10,
+      "start": 151.065,
+      "end": 152.365,
+      "text": "en el inventario,",
+      "words": [
+        {
+          "id": "caption-word-162-0",
+          "text": "en",
+          "start": 151.065,
+          "end": 151.165
+        },
+        {
+          "id": "caption-word-162-1",
+          "text": "el",
+          "start": 151.165,
+          "end": 151.335
+        },
+        {
+          "id": "caption-word-162-2",
+          "text": "inventario,",
+          "start": 151.335,
+          "end": 152.305
+        }
+      ]
+    },
+    {
+      "id": "caption-group-163",
+      "frame": 10,
+      "start": 152.365,
+      "end": 153.485,
+      "text": "no solo aquí.",
+      "words": [
+        {
+          "id": "caption-word-163-0",
+          "text": "no",
+          "start": 152.365,
+          "end": 152.425
+        },
+        {
+          "id": "caption-word-163-1",
+          "text": "solo",
+          "start": 152.425,
+          "end": 152.885
+        },
+        {
+          "id": "caption-word-163-2",
+          "text": "aquí.",
+          "start": 152.885,
+          "end": 153.365
+        }
+      ]
+    },
+    {
+      "id": "caption-group-164",
+      "frame": 10,
+      "start": 153.805,
+      "end": 155.075,
+      "text": "Ysi intentas borrar",
+      "words": [
+        {
+          "id": "caption-word-164-0",
+          "text": "Ysi",
+          "start": 153.805,
+          "end": 153.965
+        },
+        {
+          "id": "caption-word-164-1",
+          "text": "intentas",
+          "start": 153.965,
+          "end": 154.605
+        },
+        {
+          "id": "caption-word-164-2",
+          "text": "borrar",
+          "start": 154.605,
+          "end": 155.075
+        }
+      ]
+    },
+    {
+      "id": "caption-group-165",
+      "frame": 10,
+      "start": 155.075,
+      "end": 156.025,
+      "text": "un registro que",
+      "words": [
+        {
+          "id": "caption-word-165-0",
+          "text": "un",
+          "start": 155.075,
+          "end": 155.245
+        },
+        {
+          "id": "caption-word-165-1",
+          "text": "registro",
+          "start": 155.245,
+          "end": 155.865
+        },
+        {
+          "id": "caption-word-165-2",
+          "text": "que",
+          "start": 155.885,
+          "end": 155.905
+        }
+      ]
+    },
+    {
+      "id": "caption-group-166",
+      "frame": 10,
+      "start": 156.585,
+      "end": 157.925,
+      "text": "todavía está prestado,",
+      "words": [
+        {
+          "id": "caption-word-166-0",
+          "text": "todavía",
+          "start": 156.585,
+          "end": 156.695
+        },
+        {
+          "id": "caption-word-166-1",
+          "text": "está",
+          "start": 156.695,
+          "end": 156.965
+        },
+        {
+          "id": "caption-word-166-2",
+          "text": "prestado,",
+          "start": 157.015,
+          "end": 157.925
+        }
+      ]
+    },
+    {
+      "id": "caption-group-167",
+      "frame": 10,
+      "start": 157.925,
+      "end": 158.455,
+      "text": "la app",
+      "words": [
+        {
+          "id": "caption-word-167-0",
+          "text": "la",
+          "start": 157.925,
+          "end": 158.125
+        },
+        {
+          "id": "caption-word-167-1",
+          "text": "app",
+          "start": 158.125,
+          "end": 158.385
+        }
+      ]
+    },
+    {
+      "id": "caption-group-168",
+      "frame": 10,
+      "start": 158.455,
+      "end": 158.915,
+      "text": "no te",
+      "words": [
+        {
+          "id": "caption-word-168-0",
+          "text": "no",
+          "start": 158.455,
+          "end": 158.625
+        },
+        {
+          "id": "caption-word-168-1",
+          "text": "te",
+          "start": 158.625,
+          "end": 158.795
+        }
+      ]
+    },
+    {
+      "id": "caption-group-169",
+      "frame": 10,
+      "start": 159.125,
+      "end": 159.445,
+      "text": "deja,",
+      "words": [
+        {
+          "id": "caption-word-169-0",
+          "text": "deja,",
+          "start": 159.125,
+          "end": 159.445
+        }
+      ]
+    },
+    {
+      "id": "caption-group-170",
+      "frame": 10,
+      "start": 159.445,
+      "end": 160.135,
+      "text": "te pide",
+      "words": [
+        {
+          "id": "caption-word-170-0",
+          "text": "te",
+          "start": 159.445,
+          "end": 159.645
+        },
+        {
+          "id": "caption-word-170-1",
+          "text": "pide",
+          "start": 159.645,
+          "end": 160.015
+        }
+      ]
+    },
+    {
+      "id": "caption-group-171",
+      "frame": 10,
+      "start": 160.175,
+      "end": 161.915,
+      "text": "de volverlo primero.",
+      "words": [
+        {
+          "id": "caption-word-171-0",
+          "text": "de",
+          "start": 160.175,
+          "end": 160.235
+        },
+        {
+          "id": "caption-word-171-1",
+          "text": "volverlo",
+          "start": 160.235,
+          "end": 160.925
+        },
+        {
+          "id": "caption-word-171-2",
+          "text": "primero.",
+          "start": 160.925,
+          "end": 161.805
+        }
+      ]
+    },
+    {
+      "id": "caption-group-172",
+      "frame": 10,
+      "start": 161.915,
+      "end": 162.045,
+      "text": "Es a",
+      "words": [
+        {
+          "id": "caption-word-172-0",
+          "text": "Es",
+          "start": 161.915,
+          "end": 161.965
+        },
+        {
+          "id": "caption-word-172-1",
+          "text": "a",
+          "start": 161.965,
+          "end": 162.045
+        }
+      ]
+    },
+    {
+      "id": "caption-group-173",
+      "frame": 10,
+      "start": 162.045,
+      "end": 163.975,
+      "text": "propósito borrarlo dejaría un",
+      "words": [
+        {
+          "id": "caption-word-173-0",
+          "text": "propósito",
+          "start": 162.045,
+          "end": 162.765
+        },
+        {
+          "id": "caption-word-173-1",
+          "text": "borrarlo",
+          "start": 162.765,
+          "end": 163.405
+        },
+        {
+          "id": "caption-word-173-2",
+          "text": "dejaría",
+          "start": 163.455,
+          "end": 163.945
+        },
+        {
+          "id": "caption-word-173-3",
+          "text": "un",
+          "start": 163.965,
+          "end": 163.975
+        }
+      ]
+    },
+    {
+      "id": "caption-group-174",
+      "frame": 10,
+      "start": 163.975,
+      "end": 166.125,
+      "text": "equipo marcado como prestado",
+      "words": [
+        {
+          "id": "caption-word-174-0",
+          "text": "equipo",
+          "start": 163.975,
+          "end": 164.665
+        },
+        {
+          "id": "caption-word-174-1",
+          "text": "marcado",
+          "start": 164.665,
+          "end": 165.165
+        },
+        {
+          "id": "caption-word-174-2",
+          "text": "como",
+          "start": 165.165,
+          "end": 165.475
+        },
+        {
+          "id": "caption-word-174-3",
+          "text": "prestado",
+          "start": 165.475,
+          "end": 166.125
+        }
+      ]
+    },
+    {
+      "id": "caption-group-175",
+      "frame": 10,
+      "start": 166.125,
+      "end": 167.405,
+      "text": "para siempre.",
+      "words": [
+        {
+          "id": "caption-word-175-0",
+          "text": "para",
+          "start": 166.125,
+          "end": 166.445
+        },
+        {
+          "id": "caption-word-175-1",
+          "text": "siempre.",
+          "start": 166.445,
+          "end": 167.285
+        }
+      ]
+    }
+  ]
+}

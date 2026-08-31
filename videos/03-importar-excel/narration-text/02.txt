@@ -1,0 +1,1 @@
+Es el listado que entrega la Coordinación de Patrimonio: miles de renglones, uno por cada bien de la escuela. De todas sus columnas, la app necesita dos: el Id y el Clasificador. Las busca por nombre, así que no importa en qué orden vengan.

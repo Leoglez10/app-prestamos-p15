@@ -1,0 +1,170 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .c3-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .c3-halo {
+      position: absolute; left: 50%; top: 470px; width: 1500px; height: 1100px;
+      margin-left: -750px; margin-top: -550px;
+      background: radial-gradient(circle, rgba(37,99,235,0.14) 0%, rgba(37,99,235,0) 62%);
+    }
+
+    .c3-nav { position: absolute; left: 150px; top: 84px; display: flex; align-items: center; gap: 16px; }
+    .c3-nav img { width: 58px; height: 58px; object-fit: contain; }
+    .c3-nav span { font-family: "Space Grotesk", sans-serif; font-size: 26px; font-weight: 600; color: #0f172a; }
+
+    /* The login card — the whole frame is this one surface. */
+    .c3-card {
+      position: absolute; left: 510px; top: 236px; width: 900px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 22px;
+      padding: 62px 76px 66px; text-align: center;
+    }
+    .c3-h1 { font-family: "Space Grotesk", sans-serif; font-size: 72px; font-weight: 700; letter-spacing: -0.02em; color: #0f172a; }
+    .c3-sub { font-family: "Inter", sans-serif; font-size: 24px; color: #64748b; margin-top: 16px; }
+    .c3-field {
+      margin-top: 54px; height: 108px; border-radius: 16px;
+      border: 2px solid rgba(37,99,235,0.2); background: #f8fafc;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .c3-value { font-family: "Space Grotesk", sans-serif; font-size: 46px; font-weight: 600; letter-spacing: 0.14em; color: #0f172a; }
+    .c3-ph { font-family: "Inter", sans-serif; font-size: 30px; color: #9A9A9A; }
+    .c3-caret { display: inline-block; width: 4px; height: 46px; background: #2563eb; margin-left: 8px; vertical-align: -8px; }
+    .c3-btn {
+      margin-top: 34px; height: 96px; border-radius: 16px; background: #2563eb;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Space Grotesk", sans-serif; font-size: 32px; font-weight: 600; color: #ffffff;
+      transform-origin: 50% 50%;
+    }
+
+    /* The signed-in bar that replaces the card at the payoff. */
+    .c3-session {
+      position: absolute; left: 510px; top: 356px; width: 900px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 22px;
+      padding: 44px 56px; display: flex; align-items: baseline; gap: 22px; opacity: 0;
+    }
+    .c3-session b { font-family: "Space Grotesk", sans-serif; font-size: 46px; font-weight: 600; color: #0f172a; }
+    .c3-session span { font-family: "Inter", sans-serif; font-size: 24px; color: #64748b; }
+
+    .c3-nopass {
+      position: absolute; left: 0; right: 0; top: 620px; text-align: center; opacity: 0;
+    }
+    .c3-nopass-inner { position: relative; display: inline-block; }
+    .c3-nopass-word { font-family: "Space Grotesk", sans-serif; font-size: 44px; font-weight: 600; color: #9A9A9A; }
+    .c3-strike { position: absolute; left: -14px; top: 34px; width: 260px; height: 22px; }
+    .c3-strike path { fill: none; stroke: #dc2626; stroke-width: 6; stroke-linecap: round; }
+    .c3-nopass-label { font-family: "Inter", sans-serif; font-size: 26px; color: #64748b; margin-top: 22px; }
+
+    .c3-cursor { position: absolute; left: 1330px; top: 900px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+    .c3-ripple {
+      position: absolute; left: 0; top: 0; width: 150px; height: 150px; margin-left: -75px; margin-top: -75px;
+      border-radius: 50%; border: 3px solid #2563eb; opacity: 0; z-index: 30;
+    }
+  </style>
+
+  <div id="root" data-composition-id="03-codigo" data-width="1920" data-height="1080" data-duration="9.904">
+    <div class="clip c3-ground" id="c3-ground" data-start="0" data-duration="9.904" data-track-index="0"></div>
+    <div class="clip c3-halo" id="c3-halo" data-start="0" data-duration="9.904" data-track-index="1"></div>
+
+    <div class="clip c3-nav" id="c3-nav" data-start="0" data-duration="9.904" data-track-index="2">
+      <img src="public/logo-p15.png" alt="" />
+      <span>Preparatoria 15</span>
+    </div>
+
+    <div class="clip c3-card" id="c3-card" data-start="0" data-duration="9.904" data-track-index="3">
+      <div class="c3-h1" id="c3-h1">Ingresa tu C&oacute;digo</div>
+      <div class="c3-sub" id="c3-sub">Por favor ingresa tu c&oacute;digo de profesor.</div>
+      <div class="c3-field" id="c3-field">
+        <div class="c3-ph" id="c3-ph">C&oacute;digo (Ej. 2958101)</div>
+        <div class="c3-value" id="c3-value" style="opacity: 0"><span id="c3-digits"></span><span class="c3-caret" id="c3-caret"></span></div>
+      </div>
+      <div class="c3-btn" id="c3-btn">Identificarse</div>
+    </div>
+
+    <div class="clip c3-session" id="c3-session" data-start="0" data-duration="9.904" data-track-index="4">
+      <b>Prof. Ana Ram&iacute;rez</b><span>ID: 2958101</span>
+    </div>
+
+    <div class="clip c3-nopass" id="c3-nopass" data-start="0" data-duration="9.904" data-track-index="5">
+      <div class="c3-nopass-inner">
+        <span class="c3-nopass-word">contrase&ntilde;a</span>
+        <svg class="c3-strike" viewBox="0 0 260 22"><path id="c3-strike-path" d="M6 15 C70 4 140 20 254 7" /></svg>
+      </div>
+      <div class="c3-nopass-label">no hace falta</div>
+    </div>
+
+    <div class="clip c3-ripple" id="c3-ripple" data-start="0" data-duration="9.904" data-track-index="6"></div>
+
+    <svg class="clip c3-cursor" id="c3-cursor" viewBox="0 0 24 24" data-start="0" data-duration="9.904" data-track-index="7">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const strike = document.getElementById("c3-strike-path");
+      const sLen = strike && strike.getTotalLength ? strike.getTotalLength() : 300;
+      gsap.set(strike, { strokeDasharray: sLen, strokeDashoffset: sLen });
+
+      /* Scene 1 (0–1.9s) — the login card is the only thing on screen. */
+      tl.fromTo("#c3-card", { opacity: 0, y: 30, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.72, ease: "power3.out" }, 0);
+      tl.fromTo("#c3-h1", { y: 22, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.34);
+      tl.fromTo("#c3-sub", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.46, ease: "power3.out" }, 0.5);
+
+      /* Scene 2 (1.9–4.5s) — the code types in, digit by digit. */
+      const CODE = "2958101";
+      const digitsEl = document.getElementById("c3-digits");
+      const TYPE_START = 1.98, TYPE_DUR = 1.72;
+      tl.to("#c3-ph", { opacity: 0, duration: 0.22, ease: "power2.in" }, TYPE_START - 0.16);
+      tl.to("#c3-value", { opacity: 1, duration: 0.01 }, TYPE_START - 0.16);
+      tl.to("#c3-field", { borderColor: "#2563eb", backgroundColor: "#ffffff", duration: 0.34, ease: "power2.out" }, TYPE_START - 0.16);
+      const typer = { t: 0 };
+      tl.to(
+        typer,
+        {
+          t: 1, duration: TYPE_DUR, ease: "none",
+          onUpdate: () => {
+            const n = Math.min(CODE.length, Math.floor(typer.t * (CODE.length + 0.4)));
+            const next = CODE.slice(0, n);
+            if (digitsEl.textContent !== next) digitsEl.textContent = next;
+          },
+        },
+        TYPE_START
+      );
+      /* Deterministic caret blink — a sin square wave, never a CSS animation. */
+      const blink = { p: 0 };
+      tl.to(
+        blink,
+        {
+          p: Math.PI * 2 * 7, duration: 4.2, ease: "none",
+          onUpdate: () => { gsap.set("#c3-caret", { opacity: Math.sin(blink.p) > 0 ? 1 : 0.15 }); },
+        },
+        TYPE_START - 0.16
+      );
+
+      /* Scene 3 (4.5–6.3s) — the cursor presses Identificarse. */
+      tl.to("#c3-cursor", { x: -370, y: -212, duration: 0.82, ease: "power2.inOut" }, 4.54);
+      tl.to("#c3-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, 5.44);
+      tl.to("#c3-cursor", { scale: 1, duration: 0.34, ease: "power3.out" }, 5.53);
+      tl.to("#c3-btn", { scale: 0.955, duration: 0.09, ease: "power1.in" }, 5.44);
+      tl.to("#c3-btn", { scale: 1, duration: 0.5, ease: "power3.out" }, 5.53);
+      tl.set("#c3-ripple", { x: 960, y: 692 }, 0);
+      tl.fromTo("#c3-ripple", { scale: 0, opacity: 0.9 }, { scale: 4, opacity: 0, duration: 0.8, ease: "power2.out", immediateRender: false }, 5.48);
+
+      /* Scene 4 (6.3–9.4s) — the card hands off to the session bar; "contraseña" gets struck out. */
+      tl.to("#c3-card", { scale: 0.88, opacity: 0, duration: 0.52, ease: "power2.in" }, 6.34);
+      tl.to("#c3-cursor", { opacity: 0, duration: 0.3, ease: "power2.in" }, 6.34);
+      tl.fromTo("#c3-session", { scale: 0.9, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" }, 6.6);
+      tl.to("#c3-nopass", { opacity: 1, duration: 0.4, ease: "power2.out" }, 7.34);
+      tl.to(strike, { strokeDashoffset: 0, duration: 0.6, ease: "power2.inOut" }, 7.62);
+
+      window.__timelines["03-codigo"] = tl;
+    })();
+  </script>
+</template>

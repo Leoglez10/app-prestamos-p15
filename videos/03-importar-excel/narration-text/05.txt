@@ -1,0 +1,1 @@
+Si algo del archivo viene raro —un Id repetido, una fecha que no se entiende, un renglón sin tipo de equipo— aparece aquí en vez de entrar callado a la base. Léelos: no son errores de la app, son cosas del archivo.

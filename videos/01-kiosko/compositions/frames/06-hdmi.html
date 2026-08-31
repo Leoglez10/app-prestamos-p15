@@ -1,0 +1,204 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .h6-ground { position: absolute; inset: 0; background: #f8fafc; }
+
+    .h6-app {
+      position: absolute; left: 100px; top: 70px; width: 1720px; height: 810px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 30px 34px;
+    }
+    .h6-h { font-family: "Space Grotesk", sans-serif; font-size: 28px; font-weight: 600; color: #0f172a; }
+    .h6-grid { margin-top: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .h6-item {
+      border-radius: 14px; padding: 22px 24px; min-height: 176px;
+      background: rgba(37,99,235,0.04); border: 1.5px solid rgba(37,99,235,0.16);
+      display: flex; flex-direction: column; justify-content: space-between; transform-origin: 50% 50%;
+    }
+    .h6-item b { font-family: "Space Grotesk", sans-serif; font-size: 24px; font-weight: 600; color: #0f172a; line-height: 1.22; }
+    .h6-item small { display: block; font-family: "Inter", sans-serif; font-size: 17px; color: #64748b; margin-top: 6px; }
+    .h6-chip {
+      align-self: flex-start; border-radius: 100px; padding: 8px 16px;
+      background: rgba(21,128,61,0.12); border: 1.5px solid #22c55e; color: #15803d;
+      font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 600;
+    }
+
+    .h6-cart {
+      position: absolute; left: 1330px; top: 560px; width: 456px;
+      border-radius: 16px; background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); padding: 24px 26px;
+    }
+    .h6-cart-h { display: flex; align-items: center; justify-content: space-between; }
+    .h6-cart-h b { font-family: "Space Grotesk", sans-serif; font-size: 26px; font-weight: 600; color: #0f172a; }
+    .h6-count {
+      font-family: "Space Grotesk", sans-serif; font-size: 24px; font-weight: 700; color: #ffffff;
+      background: #2563eb; border-radius: 100px; padding: 5px 20px; transform-origin: 50% 50%;
+    }
+    .h6-row {
+      margin-top: 14px; border-radius: 12px; padding: 15px 18px; opacity: 0;
+      background: rgba(37,99,235,0.05); border: 1.5px solid rgba(37,99,235,0.14);
+      font-family: "Inter", sans-serif; font-size: 20px; color: #0f172a;
+    }
+    .h6-auto {
+      display: block; margin-top: 6px; font-family: "Space Grotesk", sans-serif;
+      font-size: 17px; font-weight: 700; color: #15803d;
+    }
+    .h6-auto span { display: inline-block; margin-right: 0.24em; opacity: 0; }
+
+    .h6-overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.5); opacity: 0; z-index: 20; }
+
+    /* The modal — the app ASKS, it never decides for the teacher. */
+    .h6-modal {
+      position: absolute; left: 650px; top: 250px; width: 620px; z-index: 25;
+      background: #ffffff; border-radius: 22px; padding: 46px 52px 44px; text-align: center; opacity: 0;
+      transform-origin: 50% 50%;
+    }
+    .h6-eyebrow {
+      font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #2563eb;
+    }
+    .h6-title { font-family: "Space Grotesk", sans-serif; font-size: 50px; font-weight: 600; color: #0f172a; margin-top: 10px; }
+    .h6-text { font-family: "Inter", sans-serif; font-size: 21px; line-height: 1.6; color: #64748b; margin-top: 20px; }
+    .h6-text b { color: #0f172a; }
+    .h6-actions { margin-top: 34px; display: flex; gap: 14px; justify-content: center; }
+    .h6-btn {
+      border-radius: 14px; padding: 18px 22px; font-family: "Space Grotesk", sans-serif;
+      font-size: 20px; font-weight: 600; opacity: 0; transform-origin: 50% 50%;
+    }
+    .h6-btn.sec { background: #f8fafc; border: 1.5px solid rgba(37,99,235,0.2); color: #64748b; }
+    .h6-btn.pri { background: #2563eb; color: #ffffff; }
+
+    .h6-fly {
+      position: absolute; left: 0; top: 0; z-index: 30; opacity: 0;
+      border-radius: 100px; padding: 12px 24px; background: #2563eb; color: #ffffff;
+      font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; white-space: nowrap;
+    }
+
+    .h6-cursor { position: absolute; left: 1560px; top: 950px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+    .h6-ripple {
+      position: absolute; left: 0; top: 0; width: 140px; height: 140px; margin-left: -70px; margin-top: -70px;
+      border-radius: 50%; border: 3px solid #2563eb; opacity: 0; z-index: 31;
+    }
+  </style>
+
+  <div id="root" data-composition-id="06-hdmi" data-width="1920" data-height="1080">
+    <div class="clip h6-ground" id="h6-ground" data-start="0" data-duration="14.054" data-track-index="0"></div>
+
+    <div class="clip h6-app" id="h6-app" data-layout-allow-overlap data-start="0" data-duration="14.054" data-track-index="1">
+      <div class="h6-h">Tomar equipo nuevo</div>
+      <div class="h6-grid">
+        <div class="h6-item" data-layout-allow-overlap id="h6-laptop"><div><b>Laptop Dell Latitude</b><small>Laptop &middot; 3005532</small></div><div class="h6-chip" data-layout-allow-overlap>Listo para llevar</div></div>
+        <div class="h6-item" data-layout-allow-overlap><div><b>Proyector Epson X41</b><small>Proyector &middot; 3382871</small></div><div class="h6-chip" data-layout-allow-overlap>Listo para llevar</div></div>
+        <div class="h6-item" data-layout-allow-overlap><div><b>Cable HDMI 3 m</b><small>HDMI &middot; a granel</small></div><div class="h6-chip" data-layout-allow-overlap>4 disponibles</div></div>
+        <div class="h6-item" data-layout-allow-overlap><div><b>Control Epson</b><small>Control &middot; 3383140</small></div><div class="h6-chip" data-layout-allow-overlap>Listo para llevar</div></div>
+      </div>
+    </div>
+
+    <div class="clip h6-cart" id="h6-cart" data-layout-allow-overlap data-start="0" data-duration="14.054" data-track-index="2">
+      <div class="h6-cart-h"><b>Carrito</b><div class="h6-count" id="h6-count">0</div></div>
+      <div class="h6-row" id="h6-row-1">Laptop Dell Latitude</div>
+      <div class="h6-row" id="h6-row-2">
+        Cable HDMI 3 m
+        <span class="h6-auto" id="h6-auto"><span>Agregado</span><span>automaticamente</span></span>
+      </div>
+    </div>
+
+    <div class="clip h6-overlay" id="h6-overlay" data-start="0" data-duration="14.054" data-track-index="3"></div>
+
+    <div class="clip h6-modal" id="h6-modal" data-n data-layout-allow-overlap data-start="0" data-duration="14.054" data-track-index="4">
+      <div class="h6-eyebrow" data-layout-allow-overlap>Accesorio sugerido</div>
+      <div class="h6-title" data-layout-allow-overlap>&iquest;Tambien necesita HDMI?</div>
+      <div class="h6-text" data-layout-allow-overlap>Se selecciono <b>Laptop Dell Latitude</b>. Si tambien necesita HDMI, se agrega al prestamo ahora mismo.</div>
+      <div class="h6-actions">
+        <div class="h6-btn sec" id="h6-b1">Cancelar</div>
+        <div class="h6-btn sec" id="h6-b2">No, solo laptop</div>
+        <div class="h6-btn pri" id="h6-b3">Si, agregar HDMI</div>
+      </div>
+    </div>
+
+    <div class="clip h6-fly" id="h6-fly-1" data-start="0" data-duration="14.054" data-track-index="5">Laptop Dell Latitude</div>
+    <div class="clip h6-fly" id="h6-fly-2" data-start="0" data-duration="14.054" data-track-index="6">Cable HDMI 3 m</div>
+
+    <div class="clip h6-ripple" id="h6-ripple" data-start="0" data-duration="14.054" data-track-index="7"></div>
+
+    <svg class="clip h6-cursor" id="h6-cursor" viewBox="0 0 24 24" data-start="0" data-duration="14.054" data-track-index="8">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      gsap.set("#h6-fly-1", { x: 300, y: 300 });
+      gsap.set("#h6-fly-2", { x: 300, y: 300 });
+
+      /* Scene 1 (0–3.1s) — the catalogue is live; the cursor picks the laptop. */
+      tl.fromTo("#h6-app", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.62, ease: "power3.out" }, 0);
+      tl.fromTo("#h6-grid .h6-item", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.56, ease: "power3.out", stagger: 0.08 }, 0.4);
+      tl.fromTo("#h6-cart", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.9);
+      tl.to("#h6-cursor", { x: -1230, y: -680, duration: 0.9, ease: "power2.inOut" }, 1.5);
+      tl.to("#h6-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, 2.46);
+      tl.to("#h6-cursor", { scale: 1, duration: 0.34, ease: "power3.out" }, 2.55);
+      tl.to("#h6-laptop", { scale: 0.965, duration: 0.09, ease: "power1.in" }, 2.46);
+      tl.to("#h6-laptop", { scale: 1, duration: 0.5, ease: "power3.out" }, 2.55);
+      tl.set("#h6-ripple", { x: 330, y: 270 }, 0);
+      tl.fromTo("#h6-ripple", { scale: 0, opacity: 0.9 }, { scale: 3.6, opacity: 0, duration: 0.7, ease: "power2.out", immediateRender: false }, 2.5);
+
+      /* Scene 2 (3.1–6.2s) — the app ASKS; the three answers arrive left to right. */
+      tl.to("#h6-overlay", { opacity: 1, duration: 0.42, ease: "power2.out" }, 3.12);
+      tl.to("#h6-app", { filter: "blur(4px)", duration: 0.42, ease: "power2.out" }, 3.12);
+      tl.to("#h6-cursor", { opacity: 0, duration: 0.24, ease: "power2.in" }, 3.12);
+      tl.fromTo("#h6-modal", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.62, ease: "power3.out" }, 3.3);
+      tl.to(["#h6-b1", "#h6-b2", "#h6-b3"], { opacity: 1, duration: 0.34, ease: "power3.out", stagger: 0.22 }, 4.6);
+
+      /* Scene 3 (6.2–9.3s) — the teacher chooses; the modal hands off. */
+      tl.set("#h6-cursor", { x: -1230, y: -680, opacity: 0 }, 6.2);
+      tl.to("#h6-cursor", { opacity: 1, duration: 0.2, ease: "power2.out" }, 6.22);
+      tl.to("#h6-cursor", { x: -388, y: -470, duration: 0.66, ease: "power2.inOut" }, 6.24);
+      tl.to("#h6-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, 6.98);
+      tl.to("#h6-cursor", { scale: 1, duration: 0.34, ease: "power3.out" }, 7.07);
+      tl.to("#h6-b3", { scale: 0.945, duration: 0.09, ease: "power1.in" }, 6.98);
+      tl.to("#h6-b3", { scale: 1, duration: 0.5, ease: "power3.out" }, 7.07);
+      tl.to("#h6-modal", { scale: 0.86, opacity: 0, duration: 0.5, ease: "power2.in" }, 7.6);
+      tl.to("#h6-overlay", { opacity: 0, duration: 0.5, ease: "power2.in" }, 7.66);
+      tl.to("#h6-app", { filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, 7.66);
+      tl.to("#h6-cursor", { opacity: 0, duration: 0.28, ease: "power2.in" }, 7.6);
+
+      /* Scene 4 (9.3–12.1s) — the app picks an available HDMI and both items land. */
+      tl.fromTo("#h6-fly-1", { opacity: 0, x: 300, y: 300, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 8.6);
+      tl.to("#h6-fly-1", { x: 1400, y: 640, duration: 0.62, ease: "power2.inOut", filter: "blur(4px)" }, 8.8);
+      tl.to("#h6-fly-1", { opacity: 0, duration: 0.14, ease: "power2.in" }, 9.36);
+      tl.to("#h6-row-1", { opacity: 1, duration: 0.34, ease: "power3.out" }, 9.4);
+
+      tl.fromTo("#h6-fly-2", { opacity: 0, x: 780, y: 300, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 9.7);
+      tl.to("#h6-fly-2", { x: 1400, y: 700, duration: 0.62, ease: "power2.inOut", filter: "blur(4px)" }, 9.9);
+      tl.to("#h6-fly-2", { opacity: 0, duration: 0.14, ease: "power2.in" }, 10.46);
+      tl.to("#h6-row-2", { opacity: 1, duration: 0.34, ease: "power3.out" }, 10.5);
+      tl.to("#h6-auto span", { opacity: 1, duration: 0.3, ease: "power3.out", stagger: 0.14 }, 10.9);
+
+      /* Scene 5 (12.1–14.05s) — the counter lands on two, then the frame holds. */
+      const counter = { v: 0 };
+      const countEl = document.getElementById("h6-count");
+      tl.to(
+        counter,
+        {
+          v: 2, duration: 0.5, ease: "power2.out",
+          onUpdate: () => {
+            const n = String(Math.round(counter.v));
+            if (countEl.textContent !== n) countEl.textContent = n;
+          },
+        },
+        12.12
+      );
+      tl.to("#h6-count", { scale: 1.35, duration: 0.24, ease: "power2.out" }, 12.12);
+      tl.to("#h6-count", { scale: 1, duration: 0.44, ease: "power3.out" }, 12.36);
+
+      window.__timelines["06-hdmi"] = tl;
+    })();
+  </script>
+</template>

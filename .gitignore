@@ -78,3 +78,14 @@ app-prestamos-p15/.agents/skills/remotion-to-hyperframes/
 app-prestamos-p15/.agents/skills/seam-craft/
 app-prestamos-p15/.agents/skills/slideshow/
 app-prestamos-p15/.agents/skills/talking-head-recut/
+
+# Videos tutoriales (HyperFrames): fuente sí, binarios no.
+# Se guardan los guiones, storyboards, composiciones HTML y los JSON de
+# timing. Se ignora lo pesado (~110 MB): audio, tipografías, MP4 y PNG.
+# Los MP4 terminados se publican en Releases, no en el historial de git.
+videos/*/assets/
+videos/*/renders/
+videos/*/snapshots/
+videos/*/.media/
+videos/*/.hyperframes/
+videos/*/node_modules/

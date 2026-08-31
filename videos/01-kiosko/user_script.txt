@@ -1,0 +1,32 @@
+# Narracion literal — Video 1 "Kiosko: prestar y devolver"
+# VO_MODE: verbatim. Estas lineas se usan tal cual; no se reescriben.
+
+[0:00-0:06 · Portada]
+Este es el video que necesitas para el dia a dia: como pedir equipo y como devolverlo.
+
+[0:06-0:14 · Entrar como profesor]
+Desde la pantalla principal, toca "Soy Profesor". La otra tarjeta, "Prestamo Rapido", es para alumnos y la vemos en otro video.
+
+[0:14-0:22 · Tu codigo UDG]
+Escribe tu codigo de profesor y presiona Identificarse. No necesitas contrasena: el codigo es suficiente.
+
+[0:22-0:32 · Encontrar el equipo]
+A la derecha esta el catalogo. Puedes filtrar por categoria, o escribir directo: busca por nombre, marca, modelo o numero de inventario. Ojo, al escribir se busca en todo el equipo de la prepa, no solo en la categoria que elegiste.
+
+[0:32-0:40 · La pistola de codigo de barras]
+Si el equipo trae etiqueta de Patrimonio, solo escanealo. Se agrega solo, sin tocar nada mas. Y como usa el numero exacto de la etiqueta, nunca te va a meter otro equipo parecido.
+
+[0:40-0:50 · La laptop y el HDMI]
+Cuando pides una laptop, la app te pregunta si tambien necesitas HDMI. Si dices que si, ella escoge uno disponible y lo agrega. Un paso menos, y un cable menos que se te olvide.
+
+[0:50-0:58 · Observacion y confirmar]
+Si algo no cuadra (te llevas otro control, falta un cable) dejalo escrito en la observacion. Despues, Confirmar y Llevar.
+
+[0:58-1:06 · Listo, y la sesion se cierra sola]
+Listo. La app te muestra lo que te llevas y cierra tu sesion sola en tres segundos, porque esta terminal la usan todos.
+
+[1:06-1:16 · Devolver]
+Para devolver, entra con tu codigo otra vez. Puedes devolver uno por uno, o si traes todo, usar "Devolver todo": te muestra la lista para que revises, y si quieres, cierra tu sesion al terminar.
+
+[1:16-1:18 · Cierre]
+(sin narracion)

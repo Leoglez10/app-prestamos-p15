@@ -1,0 +1,132 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .g6-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .g6-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(37,99,235,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37,99,235,0.05) 1px, transparent 1px);
+      background-size: 96px 96px;
+    }
+
+    .g6-app {
+      position: absolute; left: 300px; top: 76px; width: 1320px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px; padding: 32px 38px;
+    }
+    .g6-title { font-family: "Space Grotesk", sans-serif; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; color: #0f172a; }
+
+    .g6-form { margin-top: 22px; display: flex; gap: 16px; }
+    .g6-input {
+      flex: 1; height: 74px; border-radius: 12px; border: 2px solid rgba(37,99,235,0.2);
+      background: #ffffff; display: flex; align-items: center; padding: 0 22px; gap: 3px;
+    }
+    .g6-ph { font-family: "Inter", sans-serif; font-size: 22px; color: #9A9A9A; }
+    .g6-val { font-family: "Inter", sans-serif; font-size: 25px; color: #0f172a; opacity: 0; }
+    .g6-caret { display: inline-block; width: 3px; height: 28px; background: #2563eb; margin-left: 4px; vertical-align: -5px; }
+    .g6-add {
+      flex: 0 0 auto; border-radius: 12px; background: #2563eb; color: #ffffff; padding: 0 44px;
+      display: flex; align-items: center; font-family: "Space Grotesk", sans-serif; font-size: 23px; font-weight: 600;
+      transform-origin: 50% 50%;
+    }
+
+    .g6-table { margin-top: 26px; border-radius: 16px; border: 1.5px solid rgba(37,99,235,0.14); overflow: hidden; }
+    .g6-th, .g6-tr { display: flex; align-items: center; padding: 20px 26px; }
+    .g6-th {
+      background: rgba(37,99,235,0.05); font-family: "Space Grotesk", sans-serif;
+      font-size: 17px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5a6a7f;
+    }
+    .g6-tr { border-top: 1.5px solid rgba(37,99,235,0.1); font-family: "Inter", sans-serif; font-size: 25px; color: #0f172a; }
+    .g6-c1 { flex: 1; font-family: "Space Grotesk", sans-serif; font-weight: 600; }
+    .g6-c2 { flex: 0 0 200px; color: #5a6a7f; }
+    .g6-c3 { flex: 0 0 260px; }
+    .g6-pill {
+      display: inline-block; border-radius: 100px; padding: 8px 22px;
+      font-family: "Space Grotesk", sans-serif; font-size: 17px; font-weight: 700;
+      background: rgba(21,128,61,0.12); border: 1.5px solid #22c55e; color: #147b3b;
+    }
+
+    .g6-cursor { position: absolute; left: 1620px; top: 940px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+  </style>
+
+  <div id="root" data-composition-id="06-categorias" data-width="1920" data-height="1080">
+    <div class="clip g6-ground" id="g6-ground" data-start="0" data-duration="8.046" data-track-index="0"></div>
+    <div class="clip g6-grid" id="g6-grid" data-start="0" data-duration="8.046" data-track-index="1"></div>
+
+    <div class="clip g6-app" id="g6-app" data-start="0" data-duration="8.046" data-track-index="2">
+      <div class="g6-title">Categor&iacute;as</div>
+      <div class="g6-form">
+        <div class="g6-input" id="g6-input">
+          <div class="g6-ph" id="g6-ph">Nombre de la categor&iacute;a</div>
+          <div class="g6-val" id="g6-val"><span id="g6-name"></span><span class="g6-caret" id="g6-caret"></span></div>
+        </div>
+        <div class="g6-add" id="g6-add">Agregar</div>
+      </div>
+
+      <div class="g6-table">
+        <div class="g6-th"><div class="g6-c1">Nombre</div><div class="g6-c2">Art&iacute;culos</div><div class="g6-c3">Pr&eacute;stamo</div></div>
+        <div class="g6-tr" id="g6-r1" style="opacity: 0"><div class="g6-c1">Proyector</div><div class="g6-c2">12</div><div class="g6-c3"><span class="g6-pill">Prestable</span></div></div>
+        <div class="g6-tr" id="g6-r2" style="opacity: 0"><div class="g6-c1">Laptop</div><div class="g6-c2">8</div><div class="g6-c3"><span class="g6-pill">Prestable</span></div></div>
+        <div class="g6-tr" id="g6-r3" style="opacity: 0"><div class="g6-c1">HDMI</div><div class="g6-c2">24</div><div class="g6-c3"><span class="g6-pill">Prestable</span></div></div>
+        <div class="g6-tr" id="g6-r4" style="opacity: 0"><div class="g6-c1">Control</div><div class="g6-c2">15</div><div class="g6-c3"><span class="g6-pill">Prestable</span></div></div>
+      </div>
+    </div>
+
+    <svg class="clip g6-cursor" id="g6-cursor" viewBox="0 0 24 24" data-start="0" data-duration="8.046" data-track-index="3">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Scene 1 (0–1.7s) — the empty screen. Fast: the payload is the next frame. */
+      tl.fromTo("#g6-app", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.58, ease: "power3.out" }, 0);
+
+      /* Scene 2 (1.7–3.4s) — one name typed, one row lands. */
+      tl.to("#g6-ph", { opacity: 0, duration: 0.16, ease: "power2.in" }, 1.72);
+      tl.to("#g6-val", { opacity: 1, duration: 0.01 }, 1.72);
+      tl.to("#g6-input", { borderColor: "#2563eb", duration: 0.26, ease: "power2.out" }, 1.72);
+      const nameEl = document.getElementById("g6-name");
+      const NAME = "Proyector";
+      const d = { t: 0 };
+      tl.to(d, {
+        t: 1, duration: 0.78, ease: "none",
+        onUpdate: () => {
+          const n = Math.min(NAME.length, Math.floor(d.t * (NAME.length + 0.4)));
+          const next = NAME.slice(0, n);
+          if (nameEl.textContent !== next) nameEl.textContent = next;
+        },
+      }, 1.8);
+      const b = { p: 0 };
+      tl.to(b, {
+        p: Math.PI * 2 * 3, duration: 1.6, ease: "none",
+        onUpdate: () => { gsap.set("#g6-caret", { opacity: Math.sin(b.p) > 0 ? 1 : 0.15 }); },
+      }, 1.72);
+      tl.to("#g6-cursor", { x: -170, y: -740, duration: 0.5, ease: "power2.inOut" }, 2.6);
+      tl.to("#g6-add", { scale: 0.95, duration: 0.09, ease: "power1.in" }, 3.12);
+      tl.to("#g6-add", { scale: 1, duration: 0.46, ease: "power3.out" }, 3.21);
+      tl.fromTo("#g6-r1", { scale: 0.94, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.44, ease: "power3.out" }, 3.2);
+
+      /* Scene 3 (3.4–5.8s) — one row per spoken category. */
+      tl.fromTo("#g6-r2", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.44, ease: "power3.out" }, 3.9);
+      tl.fromTo("#g6-r3", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.44, ease: "power3.out" }, 4.6);
+
+      /* Scene 4 (5.8–8s) — "un nombre y listo": the last one arrives on its own. */
+      tl.to("#g6-cursor", { opacity: 0, duration: 0.24, ease: "power2.in" }, 5.7);
+      tl.fromTo("#g6-r4", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.46, ease: "power3.out" }, 5.9);
+      tl.to("#g6-val", { opacity: 0, duration: 0.3, ease: "power2.in" }, 6.0);
+      tl.to("#g6-ph", { opacity: 1, duration: 0.3, ease: "power2.out" }, 6.1);
+      tl.to("#g6-input", { borderColor: "rgba(37,99,235,0.2)", duration: 0.3, ease: "power2.out" }, 6.1);
+
+      window.__timelines["06-categorias"] = tl;
+    })();
+  </script>
+</template>

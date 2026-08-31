@@ -1,0 +1,1 @@
+Eliges el archivo y la app te dice qué va a pasar antes de hacerlo: cuántos entran nuevos, cuántos se actualizan y cuántos ya estaban igual. Todavía no se guardó nada.

@@ -1,0 +1,106 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    * { box-sizing: border-box; }
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; container-type: size; }
+    .hf-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .hf-grid { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(37,99,235,.045) 1px, rgba(37,99,235,0) 1px), linear-gradient(to bottom, rgba(37,99,235,.045) 1px, rgba(37,99,235,0) 1px); background-size: 96px 96px; }
+    .hf-shell { position: absolute; left: 70px; top: 38px; width: 1780px; height: 820px; overflow: hidden; border: 1.5px solid rgba(37,99,235,.2); border-radius: 22px; background: rgba(255,255,255,.98); }
+    .hf-top { height: 98px; padding: 18px 30px; border-bottom: 1.5px solid rgba(37,99,235,.14); display: flex; align-items: center; justify-content: space-between; }
+    .hf-brand { display: flex; align-items: center; gap: 14px; min-width: 300px; }
+    .hf-brand img { width: 58px; height: 58px; object-fit: contain; }
+    .hf-brand strong { font: 650 24px/1 "Space Grotesk", sans-serif; color: #0f172a; }
+    .hf-brand small { display: block; margin-top: 6px; font: 500 14px/1 "Inter", sans-serif; color: #64748b; }
+    .hf-nav { display: flex; gap: 10px; align-items: center; }
+    .hf-nav span { padding: 10px 16px; border-radius: 100px; font: 600 15px/1 "Space Grotesk", sans-serif; color: #64748b; border: 1px solid rgba(37,99,235,.12); }
+    .hf-nav .is-active { color: #2563eb; background: rgba(37,99,235,.08); border-color: rgba(37,99,235,.24); }
+    .hf-session { min-width: 334px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+    .hf-session-pill { padding: 10px 16px; border-radius: 100px; background: rgba(37,99,235,.07); border: 1.5px solid rgba(37,99,235,.18); font: 500 14px/1 "Inter", sans-serif; color: #0f172a; }
+    .hf-logout { padding: 10px 16px; border-radius: 100px; color: #dc2626; border: 1.5px solid rgba(220,38,38,.28); font: 650 14px/1 "Space Grotesk", sans-serif; background: #fff; }
+    .hf-content { position: absolute; left: 34px; right: 34px; top: 122px; bottom: 34px; overflow: hidden; }
+    .hf-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 30px; margin-bottom: 20px; }
+    .hf-eyebrow { color: #2563eb; font: 650 15px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .hf-title { margin-top: 8px; color: #0f172a; font: 650 38px/1.05 "Space Grotesk", sans-serif; letter-spacing: -.025em; }
+    .hf-step { padding: 9px 15px; border-radius: 100px; color: #2563eb; background: rgba(37,99,235,.08); font: 650 14px/1 "Space Grotesk", sans-serif; }
+    .hf-panel { background: rgba(37,99,235,.035); border: 1.5px solid rgba(37,99,235,.18); border-radius: 16px; }
+    .hf-card { background: #fff; border: 1.5px solid rgba(37,99,235,.18); border-radius: 14px; }
+    .hf-label { display: block; margin-bottom: 7px; color: #475569; font: 600 15px/1 "Inter", sans-serif; }
+    .hf-input { min-height: 54px; padding: 14px 18px; border: 1.5px solid rgba(37,99,235,.2); border-radius: 12px; background: #fff; color: #0f172a; font: 500 18px/1.3 "Inter", sans-serif; }
+    .hf-input.is-focus { border: 2px solid #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,.08); }
+    .hf-button { min-height: 50px; padding: 13px 22px; border: 0; border-radius: 100px; background: #2563eb; color: #fff; font: 650 17px/1 "Space Grotesk", sans-serif; text-align: center; }
+    .hf-button.secondary { background: rgba(37,99,235,.08); color: #2563eb; border: 1.5px solid rgba(37,99,235,.2); }
+    .hf-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 100px; background: rgba(37,99,235,.08); color: #2563eb; border: 1.5px solid rgba(37,99,235,.18); font: 650 14px/1 "Space Grotesk", sans-serif; }
+    .hf-chip.green { color: #15803d; background: rgba(21,128,61,.09); border-color: rgba(21,128,61,.24); }
+    .hf-chip.red { color: #b91c1c; background: rgba(220,38,38,.08); border-color: rgba(220,38,38,.22); }
+    .hf-muted { color: #64748b; font: 400 16px/1.45 "Inter", sans-serif; }
+    .hf-progress { position: absolute; left: 0; bottom: 0; height: 4px; background: #2563eb; border-radius: 0 4px 4px 0; }
+    .hf-cursor { position: absolute; left: 1530px; top: 720px; width: 42px; height: 42px; z-index: 40; transform-origin: 5px 4px; }
+    .hf-ripple { position: absolute; width: 126px; height: 126px; margin: -63px 0 0 -63px; border: 3px solid #2563eb; border-radius: 50%; opacity: 0; pointer-events: none; z-index: 35; }
+    .hf-callout { padding: 14px 18px; border-left: 4px solid #2563eb; border-radius: 12px; background: rgba(37,99,235,.07); color: #0f172a; font: 550 17px/1.35 "Inter", sans-serif; }
+    .hf-success { padding: 13px 17px; border-radius: 12px; background: rgba(21,128,61,.09); border: 1.5px solid rgba(21,128,61,.24); color: #166534; font: 650 16px/1.3 "Inter", sans-serif; }
+    .hf-error { padding: 13px 17px; border-radius: 12px; background: rgba(220,38,38,.08); border: 1.5px solid rgba(220,38,38,.24); color: #991b1b; font: 650 16px/1.35 "Inter", sans-serif; }
+    .hf-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1.5px solid rgba(37,99,235,.16); border-radius: 14px; background: #fff; }
+    .hf-table th { padding: 10px 14px; text-align: left; background: rgba(37,99,235,.055); color: #64748b; font: 650 13px/1 "Space Grotesk", sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+    .hf-table td { padding: 12px 14px; border-top: 1px solid rgba(37,99,235,.1); color: #0f172a; font: 500 15px/1.25 "Inter", sans-serif; vertical-align: middle; }
+    .hf-table td small { display: block; margin-top: 4px; color: #64748b; font-size: 12px; }
+
+    
+    .f04-form { height:500px; padding:40px 46px; }
+    .f04-row { display:flex; align-items:center; justify-content:space-between; }
+    .f04-toggle { display:flex; gap:4px; padding:5px; width:390px; background:rgba(37,99,235,.07); border:1.5px solid rgba(37,99,235,.17); border-radius:100px; }
+    .f04-toggle button { flex:1; border:0; border-radius:100px; padding:13px; background:transparent; color:#64748b; font:650 17px/1 "Space Grotesk"; }
+    .f04-toggle .is-on { background:#2563eb; color:#fff; }
+    .f04-mode { color:#2563eb; font:700 54px/1 "Space Grotesk"; }
+    .f04-fields { margin-top:54px; display:grid; grid-template-columns:1.4fr 1fr; gap:30px; }
+    .f04-note { width:540px; margin-top:42px; opacity:0; }
+  
+  </style>
+  <div id="root" data-composition-id="04-tipo-persona" data-width="1920" data-height="1080" data-duration="16.329">
+    <div id="f04-ground" class="clip hf-ground" data-start="0" data-duration="16.329" data-track-index="0"><div class="hf-grid"></div></div>
+    <div id="f04-stage" class="clip" data-start="0" data-duration="16.329" data-track-index="1">
+      
+      <div class="hf-shell" id="f04-shell">
+        <div class="hf-top">
+          <div class="hf-brand"><img src="public/logo-p15.png" alt=""><div><strong>Préstamos P15</strong><small>Preparatoria 15</small></div></div>
+          <div class="hf-nav"><span>Inicio</span><span class="is-active">Préstamo Rápido</span><span>Inventario</span></div>
+          <div class="hf-session"><div class="hf-session-pill" id="f04-session">Sesión: María López (9001001)</div><div class="hf-logout" id="f04-logout">Cerrar sesión</div></div>
+        </div>
+        <div class="hf-content">
+          <div class="hf-heading" id="f04-heading"><div><div class="hf-eyebrow">Préstamo Rápido</div><div class="hf-title">Nuevo préstamo</div></div><div class="hf-step">03 · Persona</div></div>
+          <div class="hf-panel f04-form"><div class="f04-row"><div><span class="hf-label">Registrar préstamo para</span><div class="f04-toggle"><button id="f04-alumno" class="is-on">Alumno</button><button id="f04-profesor">Profesor</button></div></div><div id="f04-mode" class="f04-mode">Alumno</div></div><div class="f04-fields"><div><label id="f04-name-label" class="hf-label">Nombre del Alumno</label><div class="hf-input">Diego Ramírez</div></div><div><label id="f04-code-label" class="hf-label">Código UDG del Alumno</label><div class="hf-input">219876543</div></div></div><div id="f04-note" class="hf-callout">Autorizado en mostrador por María López</div></div><svg id="f04-cursor" class="hf-cursor" viewBox="0 0 24 24"><path d="M5 2L5 20L10 15.5L13 22L16 20.5L13 14.5L19.5 14Z" fill="#0f172a" stroke="#fff" stroke-width="1.4"/></svg>
+        </div>
+        <div class="hf-progress" style="width:36.36%"></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function(){
+      const tl = gsap.timeline({ paused: true });
+      const typeText = (selector, text, at, duration) => {
+        const el = document.querySelector(selector); const proxy = { n: 0 };
+        tl.to(proxy, { n: text.length, duration, ease: "none", onUpdate: () => { const n = Math.floor(proxy.n); const next = text.slice(0,n); if (el && el.textContent !== next) el.textContent = next; } }, at);
+      };
+      
+    tl.fromTo("#f04-heading, #f04-shell", { opacity:0, y:20 }, { opacity:1, y:0, duration:.7, stagger:.12, ease:"power3.out" }, .1);
+    tl.fromTo(".f04-fields > div", { opacity:0, y:24 }, { opacity:1, y:0, duration:.6, stagger:.16, ease:"power3.out" }, 1.5);
+    tl.fromTo("#f04-cursor", { opacity:0, x:0, y:0 }, { opacity:1, x:-970, y:-500, duration:1.1, ease:"power2.inOut" }, 3.5);
+    tl.to("#f04-alumno", { backgroundColor:"transparent", color:"#64748b", duration:.3 }, 5.05);
+    tl.to("#f04-profesor", { backgroundColor:"#2563eb", color:"#ffffff", duration:.3 }, 5.05);
+    tl.set("#f04-name-label", { textContent:"Nombre del Profesor" }, 5.05);
+    tl.set("#f04-code-label", { textContent:"Código del Profesor" }, 5.05);
+    tl.set("#f04-mode", { textContent:"Profesor" }, 5.05);
+    tl.to("#f04-mode", { color:"#0f172a", duration:.45, ease:"power2.out" }, 6.1);
+    tl.to("#f04-cursor", { x:-1160, y:-500, duration:1.05, ease:"power2.inOut" }, 9.5);
+    tl.to("#f04-profesor", { backgroundColor:"transparent", color:"#64748b", duration:.3 }, 10.6);
+    tl.to("#f04-alumno", { backgroundColor:"#2563eb", color:"#ffffff", duration:.3 }, 10.6);
+    tl.set("#f04-name-label", { textContent:"Nombre del Alumno" }, 10.6);
+    tl.set("#f04-code-label", { textContent:"Código UDG del Alumno" }, 10.6);
+    tl.set("#f04-mode", { textContent:"Alumno", color:"#2563eb" }, 10.6);
+    tl.fromTo("#f04-note", { opacity:0, y:20 }, { opacity:1, y:0, duration:.7, ease:"power3.out" }, 12.4);
+  
+      window.__timelines["04-tipo-persona"] = tl;
+    })();
+  </script>
+</template>

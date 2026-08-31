@@ -1,0 +1,102 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    * { box-sizing: border-box; }
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; container-type: size; }
+    .hf-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .hf-grid { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(37,99,235,.045) 1px, rgba(37,99,235,0) 1px), linear-gradient(to bottom, rgba(37,99,235,.045) 1px, rgba(37,99,235,0) 1px); background-size: 96px 96px; }
+    .hf-shell { position: absolute; left: 70px; top: 38px; width: 1780px; height: 820px; overflow: hidden; border: 1.5px solid rgba(37,99,235,.2); border-radius: 22px; background: rgba(255,255,255,.98); }
+    .hf-top { height: 98px; padding: 18px 30px; border-bottom: 1.5px solid rgba(37,99,235,.14); display: flex; align-items: center; justify-content: space-between; }
+    .hf-brand { display: flex; align-items: center; gap: 14px; min-width: 300px; }
+    .hf-brand img { width: 58px; height: 58px; object-fit: contain; }
+    .hf-brand strong { font: 650 24px/1 "Space Grotesk", sans-serif; color: #0f172a; }
+    .hf-brand small { display: block; margin-top: 6px; font: 500 14px/1 "Inter", sans-serif; color: #64748b; }
+    .hf-nav { display: flex; gap: 10px; align-items: center; }
+    .hf-nav span { padding: 10px 16px; border-radius: 100px; font: 600 15px/1 "Space Grotesk", sans-serif; color: #64748b; border: 1px solid rgba(37,99,235,.12); }
+    .hf-nav .is-active { color: #2563eb; background: rgba(37,99,235,.08); border-color: rgba(37,99,235,.24); }
+    .hf-session { min-width: 334px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+    .hf-session-pill { padding: 10px 16px; border-radius: 100px; background: rgba(37,99,235,.07); border: 1.5px solid rgba(37,99,235,.18); font: 500 14px/1 "Inter", sans-serif; color: #0f172a; }
+    .hf-logout { padding: 10px 16px; border-radius: 100px; color: #dc2626; border: 1.5px solid rgba(220,38,38,.28); font: 650 14px/1 "Space Grotesk", sans-serif; background: #fff; }
+    .hf-content { position: absolute; left: 34px; right: 34px; top: 122px; bottom: 34px; overflow: hidden; }
+    .hf-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 30px; margin-bottom: 20px; }
+    .hf-eyebrow { color: #2563eb; font: 650 15px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .hf-title { margin-top: 8px; color: #0f172a; font: 650 38px/1.05 "Space Grotesk", sans-serif; letter-spacing: -.025em; }
+    .hf-step { padding: 9px 15px; border-radius: 100px; color: #2563eb; background: rgba(37,99,235,.08); font: 650 14px/1 "Space Grotesk", sans-serif; }
+    .hf-panel { background: rgba(37,99,235,.035); border: 1.5px solid rgba(37,99,235,.18); border-radius: 16px; }
+    .hf-card { background: #fff; border: 1.5px solid rgba(37,99,235,.18); border-radius: 14px; }
+    .hf-label { display: block; margin-bottom: 7px; color: #475569; font: 600 15px/1 "Inter", sans-serif; }
+    .hf-input { min-height: 54px; padding: 14px 18px; border: 1.5px solid rgba(37,99,235,.2); border-radius: 12px; background: #fff; color: #0f172a; font: 500 18px/1.3 "Inter", sans-serif; }
+    .hf-input.is-focus { border: 2px solid #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,.08); }
+    .hf-button { min-height: 50px; padding: 13px 22px; border: 0; border-radius: 100px; background: #2563eb; color: #fff; font: 650 17px/1 "Space Grotesk", sans-serif; text-align: center; }
+    .hf-button.secondary { background: rgba(37,99,235,.08); color: #2563eb; border: 1.5px solid rgba(37,99,235,.2); }
+    .hf-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 100px; background: rgba(37,99,235,.08); color: #2563eb; border: 1.5px solid rgba(37,99,235,.18); font: 650 14px/1 "Space Grotesk", sans-serif; }
+    .hf-chip.green { color: #15803d; background: rgba(21,128,61,.09); border-color: rgba(21,128,61,.24); }
+    .hf-chip.red { color: #b91c1c; background: rgba(220,38,38,.08); border-color: rgba(220,38,38,.22); }
+    .hf-muted { color: #64748b; font: 400 16px/1.45 "Inter", sans-serif; }
+    .hf-progress { position: absolute; left: 0; bottom: 0; height: 4px; background: #2563eb; border-radius: 0 4px 4px 0; }
+    .hf-cursor { position: absolute; left: 1530px; top: 720px; width: 42px; height: 42px; z-index: 40; transform-origin: 5px 4px; }
+    .hf-ripple { position: absolute; width: 126px; height: 126px; margin: -63px 0 0 -63px; border: 3px solid #2563eb; border-radius: 50%; opacity: 0; pointer-events: none; z-index: 35; }
+    .hf-callout { padding: 14px 18px; border-left: 4px solid #2563eb; border-radius: 12px; background: rgba(37,99,235,.07); color: #0f172a; font: 550 17px/1.35 "Inter", sans-serif; }
+    .hf-success { padding: 13px 17px; border-radius: 12px; background: rgba(21,128,61,.09); border: 1.5px solid rgba(21,128,61,.24); color: #166534; font: 650 16px/1.3 "Inter", sans-serif; }
+    .hf-error { padding: 13px 17px; border-radius: 12px; background: rgba(220,38,38,.08); border: 1.5px solid rgba(220,38,38,.24); color: #991b1b; font: 650 16px/1.35 "Inter", sans-serif; }
+    .hf-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1.5px solid rgba(37,99,235,.16); border-radius: 14px; background: #fff; }
+    .hf-table th { padding: 10px 14px; text-align: left; background: rgba(37,99,235,.055); color: #64748b; font: 650 13px/1 "Space Grotesk", sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+    .hf-table td { padding: 12px 14px; border-top: 1px solid rgba(37,99,235,.1); color: #0f172a; font: 500 15px/1.25 "Inter", sans-serif; vertical-align: middle; }
+    .hf-table td small { display: block; margin-top: 4px; color: #64748b; font-size: 12px; }
+
+    
+    .f07-layout { display:grid; grid-template-columns:1.35fr .65fr; gap:30px; height:520px; }
+    .f07-form { padding:28px 30px; }
+    .f07-chips { display:flex; gap:10px; min-height:62px; flex-wrap:wrap; }
+    .f07-count { margin-top:18px; opacity:0; }
+    .f07-manual-label { margin-top:34px; }
+    .f07-free { margin-top:14px; opacity:0; }
+    .f07-right { display:flex; flex-direction:column; gap:18px; }
+    .f07-rule { padding:28px; display:flex; gap:20px; align-items:center; min-height:125px; }
+    .f07-dot { width:24px; height:24px; border-radius:50%; flex:0 0 24px; }
+    .f07-dot.yes { background:#15803d; }.f07-dot.no { background:#dc2626; }
+    .f07-rule b { color:#0f172a; font:650 26px/1 "Space Grotesk"; }
+    .f07-rule small { display:block; margin-top:8px; color:#64748b; font:450 16px/1 "Inter"; }
+    #f07-thesis { margin-top:auto; opacity:0; }
+  
+  </style>
+  <div id="root" data-composition-id="07-varios-texto" data-width="1920" data-height="1080" data-duration="20.553">
+    <div id="f07-ground" class="clip hf-ground" data-start="0" data-duration="20.553" data-track-index="0"><div class="hf-grid"></div></div>
+    <div id="f07-stage" class="clip" data-start="0" data-duration="20.553" data-track-index="1">
+      
+      <div class="hf-shell" id="f07-shell">
+        <div class="hf-top">
+          <div class="hf-brand"><img src="public/logo-p15.png" alt=""><div><strong>Préstamos P15</strong><small>Preparatoria 15</small></div></div>
+          <div class="hf-nav"><span>Inicio</span><span class="is-active">Préstamo Rápido</span><span>Inventario</span></div>
+          <div class="hf-session"><div class="hf-session-pill" id="f07-session">Sesión: María López (9001001)</div><div class="hf-logout" id="f07-logout">Cerrar sesión</div></div>
+        </div>
+        <div class="hf-content">
+          <div class="hf-heading" id="f07-heading"><div><div class="hf-eyebrow">Préstamo Rápido</div><div class="hf-title">Varios objetos y texto libre</div></div><div class="hf-step">06 · Límite</div></div>
+          <div class="f07-layout"><div class="hf-panel f07-form"><label class="hf-label">Objeto Prestado</label><div class="f07-chips"><span id="f07-c1" class="hf-chip green">Cable HDMI 3 m <b>×</b></span><span id="f07-c2" class="hf-chip green">Adaptador USB-C <b>×</b></span><span id="f07-c3" class="hf-chip green">Control remoto <b>×</b></span></div><div id="f07-count" class="hf-success f07-count">Se registrarán 3 objetos contra el inventario, cada uno se devuelve por separado.</div><label class="hf-label f07-manual-label">Objeto Prestado</label><div id="f07-manual" class="hf-input is-focus"></div><div id="f07-free" class="hf-error f07-free">Sin coincidencias en el inventario · se guardará como texto libre</div></div><div class="f07-right"><div class="hf-card f07-rule"><span class="f07-dot yes"></span><div><b>Catálogo</b><small>Actualiza inventario</small></div></div><div class="hf-card f07-rule"><span class="f07-dot no"></span><div><b>A mano</b><small>No descuenta nada</small></div></div><div id="f07-thesis" class="hf-callout">Solo cuenta lo que eliges del catálogo.</div></div></div>
+        </div>
+        <div class="hf-progress" style="width:63.64%"></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function(){
+      const tl = gsap.timeline({ paused: true });
+      const typeText = (selector, text, at, duration) => {
+        const el = document.querySelector(selector); const proxy = { n: 0 };
+        tl.to(proxy, { n: text.length, duration, ease: "none", onUpdate: () => { const n = Math.floor(proxy.n); const next = text.slice(0,n); if (el && el.textContent !== next) el.textContent = next; } }, at);
+      };
+      
+    tl.fromTo("#f07-shell", { opacity:0 }, { opacity:1, duration:.65, ease:"power3.out" }, .1);
+    tl.fromTo("#f07-c1, #f07-c2, #f07-c3", { opacity:0, y:28, scale:.92 }, { opacity:1, y:0, scale:1, duration:.55, stagger:.7, ease:"power3.out" }, 1.0);
+    tl.fromTo("#f07-count", { opacity:0, y:16 }, { opacity:1, y:0, duration:.65, ease:"power3.out" }, 5.4);
+    tl.fromTo(".f07-rule", { opacity:0, x:32 }, { opacity:1, x:0, duration:.6, stagger:.22, ease:"power3.out" }, 7.6);
+    typeText("#f07-manual", "cargador prestado por el alumno", 12.7, 3.3);
+    tl.fromTo("#f07-free", { opacity:0, y:15 }, { opacity:1, y:0, duration:.6, ease:"power3.out" }, 16.2);
+    tl.fromTo("#f07-thesis", { opacity:0, y:18 }, { opacity:1, y:0, duration:.65, ease:"power3.out" }, 18.0);
+  
+      window.__timelines["07-varios-texto"] = tl;
+    })();
+  </script>
+</template>

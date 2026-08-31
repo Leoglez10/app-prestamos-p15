@@ -1,0 +1,99 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    * { box-sizing: border-box; }
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; container-type: size; }
+    .hf-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .hf-grid { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(37,99,235,.045) 1px, rgba(37,99,235,0) 1px), linear-gradient(to bottom, rgba(37,99,235,.045) 1px, rgba(37,99,235,0) 1px); background-size: 96px 96px; }
+    .hf-shell { position: absolute; left: 70px; top: 38px; width: 1780px; height: 820px; overflow: hidden; border: 1.5px solid rgba(37,99,235,.2); border-radius: 22px; background: rgba(255,255,255,.98); }
+    .hf-top { height: 98px; padding: 18px 30px; border-bottom: 1.5px solid rgba(37,99,235,.14); display: flex; align-items: center; justify-content: space-between; }
+    .hf-brand { display: flex; align-items: center; gap: 14px; min-width: 300px; }
+    .hf-brand img { width: 58px; height: 58px; object-fit: contain; }
+    .hf-brand strong { font: 650 24px/1 "Space Grotesk", sans-serif; color: #0f172a; }
+    .hf-brand small { display: block; margin-top: 6px; font: 500 14px/1 "Inter", sans-serif; color: #64748b; }
+    .hf-nav { display: flex; gap: 10px; align-items: center; }
+    .hf-nav span { padding: 10px 16px; border-radius: 100px; font: 600 15px/1 "Space Grotesk", sans-serif; color: #64748b; border: 1px solid rgba(37,99,235,.12); }
+    .hf-nav .is-active { color: #2563eb; background: rgba(37,99,235,.08); border-color: rgba(37,99,235,.24); }
+    .hf-session { min-width: 334px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+    .hf-session-pill { padding: 10px 16px; border-radius: 100px; background: rgba(37,99,235,.07); border: 1.5px solid rgba(37,99,235,.18); font: 500 14px/1 "Inter", sans-serif; color: #0f172a; }
+    .hf-logout { padding: 10px 16px; border-radius: 100px; color: #dc2626; border: 1.5px solid rgba(220,38,38,.28); font: 650 14px/1 "Space Grotesk", sans-serif; background: #fff; }
+    .hf-content { position: absolute; left: 34px; right: 34px; top: 122px; bottom: 34px; overflow: hidden; }
+    .hf-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 30px; margin-bottom: 20px; }
+    .hf-eyebrow { color: #2563eb; font: 650 15px/1 "Space Grotesk", sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+    .hf-title { margin-top: 8px; color: #0f172a; font: 650 38px/1.05 "Space Grotesk", sans-serif; letter-spacing: -.025em; }
+    .hf-step { padding: 9px 15px; border-radius: 100px; color: #2563eb; background: rgba(37,99,235,.08); font: 650 14px/1 "Space Grotesk", sans-serif; }
+    .hf-panel { background: rgba(37,99,235,.035); border: 1.5px solid rgba(37,99,235,.18); border-radius: 16px; }
+    .hf-card { background: #fff; border: 1.5px solid rgba(37,99,235,.18); border-radius: 14px; }
+    .hf-label { display: block; margin-bottom: 7px; color: #475569; font: 600 15px/1 "Inter", sans-serif; }
+    .hf-input { min-height: 54px; padding: 14px 18px; border: 1.5px solid rgba(37,99,235,.2); border-radius: 12px; background: #fff; color: #0f172a; font: 500 18px/1.3 "Inter", sans-serif; }
+    .hf-input.is-focus { border: 2px solid #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,.08); }
+    .hf-button { min-height: 50px; padding: 13px 22px; border: 0; border-radius: 100px; background: #2563eb; color: #fff; font: 650 17px/1 "Space Grotesk", sans-serif; text-align: center; }
+    .hf-button.secondary { background: rgba(37,99,235,.08); color: #2563eb; border: 1.5px solid rgba(37,99,235,.2); }
+    .hf-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 100px; background: rgba(37,99,235,.08); color: #2563eb; border: 1.5px solid rgba(37,99,235,.18); font: 650 14px/1 "Space Grotesk", sans-serif; }
+    .hf-chip.green { color: #15803d; background: rgba(21,128,61,.09); border-color: rgba(21,128,61,.24); }
+    .hf-chip.red { color: #b91c1c; background: rgba(220,38,38,.08); border-color: rgba(220,38,38,.22); }
+    .hf-muted { color: #64748b; font: 400 16px/1.45 "Inter", sans-serif; }
+    .hf-progress { position: absolute; left: 0; bottom: 0; height: 4px; background: #2563eb; border-radius: 0 4px 4px 0; }
+    .hf-cursor { position: absolute; left: 1530px; top: 720px; width: 42px; height: 42px; z-index: 40; transform-origin: 5px 4px; }
+    .hf-ripple { position: absolute; width: 126px; height: 126px; margin: -63px 0 0 -63px; border: 3px solid #2563eb; border-radius: 50%; opacity: 0; pointer-events: none; z-index: 35; }
+    .hf-callout { padding: 14px 18px; border-left: 4px solid #2563eb; border-radius: 12px; background: rgba(37,99,235,.07); color: #0f172a; font: 550 17px/1.35 "Inter", sans-serif; }
+    .hf-success { padding: 13px 17px; border-radius: 12px; background: rgba(21,128,61,.09); border: 1.5px solid rgba(21,128,61,.24); color: #166534; font: 650 16px/1.3 "Inter", sans-serif; }
+    .hf-error { padding: 13px 17px; border-radius: 12px; background: rgba(220,38,38,.08); border: 1.5px solid rgba(220,38,38,.24); color: #991b1b; font: 650 16px/1.35 "Inter", sans-serif; }
+    .hf-table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1.5px solid rgba(37,99,235,.16); border-radius: 14px; background: #fff; }
+    .hf-table th { padding: 10px 14px; text-align: left; background: rgba(37,99,235,.055); color: #64748b; font: 650 13px/1 "Space Grotesk", sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+    .hf-table td { padding: 12px 14px; border-top: 1px solid rgba(37,99,235,.1); color: #0f172a; font: 500 15px/1.25 "Inter", sans-serif; vertical-align: middle; }
+    .hf-table td small { display: block; margin-top: 4px; color: #64748b; font-size: 12px; }
+
+    
+    .f02-cards { display:flex; gap:32px; margin-top:26px; }
+    .f02-card { position:relative; flex:1; min-height:310px; padding:42px; display:flex; align-items:flex-start; gap:26px; overflow:hidden; }
+    .f02-icon { width:74px; height:74px; border-radius:18px; flex:0 0 74px; display:grid; place-items:center; background:rgba(100,116,139,.1); color:#64748b; font:700 34px/1 "Space Grotesk"; }
+    .f02-icon.rapid { background:rgba(37,99,235,.1); color:#2563eb; }
+    .f02-card h3 { margin:6px 0 13px; color:#0f172a; font:650 36px/1 "Space Grotesk"; }
+    .f02-card p { max-width:520px; margin:0; color:#64748b; font:450 21px/1.5 "Inter"; }
+    .f02-halo { position:absolute; inset:8px; border-radius:12px; border:4px solid #2563eb; opacity:0; }
+    .f02-note { position:absolute; right:46px; bottom:20px; width:520px; opacity:0; }
+  
+  </style>
+  <div id="root" data-composition-id="02-donde-entra" data-width="1920" data-height="1080" data-duration="15.369">
+    <div id="f02-ground" class="clip hf-ground" data-start="0" data-duration="15.369" data-track-index="0"><div class="hf-grid"></div></div>
+    <div id="f02-stage" class="clip" data-start="0" data-duration="15.369" data-track-index="1">
+      
+      <div class="hf-shell" id="f02-shell">
+        <div class="hf-top">
+          <div class="hf-brand"><img src="public/logo-p15.png" alt=""><div><strong>Préstamos P15</strong><small>Preparatoria 15</small></div></div>
+          <div class="hf-nav"><span>Inicio</span><span class="is-active">Préstamo Rápido</span><span>Inventario</span></div>
+          <div class="hf-session"><div class="hf-session-pill">Acceso administrativo</div></div>
+        </div>
+        <div class="hf-content">
+          <div class="hf-heading" id="f02-heading"><div><div class="hf-eyebrow">Préstamo Rápido</div><div class="hf-title">¿Dónde entra?</div></div><div class="hf-step">01 · Inicio</div></div>
+          <div class="f02-cards"><div class="hf-card f02-card" id="f02-prof"><div class="f02-icon">P</div><div><h3>Soy Profesor</h3><p>Solicita y devuelve equipo desde el kiosko.</p></div></div><div class="hf-card f02-card" id="f02-rapid"><div class="f02-icon rapid">R</div><div><h3>Préstamo Rápido</h3><p id="f02-copy">Registro de préstamos a alumnos. Requiere código administrativo.</p></div><div id="f02-halo" class="f02-halo"></div></div></div><div id="f02-note" class="hf-callout f02-note">Para quien atiende el mostrador</div><svg id="f02-cursor" class="hf-cursor" viewBox="0 0 24 24"><path d="M5 2L5 20L10 15.5L13 22L16 20.5L13 14.5L19.5 14Z" fill="#0f172a" stroke="#fff" stroke-width="1.4"/></svg>
+        </div>
+        <div class="hf-progress" style="width:18.18%"></div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function(){
+      const tl = gsap.timeline({ paused: true });
+      const typeText = (selector, text, at, duration) => {
+        const el = document.querySelector(selector); const proxy = { n: 0 };
+        tl.to(proxy, { n: text.length, duration, ease: "none", onUpdate: () => { const n = Math.floor(proxy.n); const next = text.slice(0,n); if (el && el.textContent !== next) el.textContent = next; } }, at);
+      };
+      
+    tl.fromTo("#f02-heading", { opacity:0, y:-22 }, { opacity:1, y:0, duration:.65, ease:"power3.out" }, .1);
+    tl.fromTo("#f02-prof", { opacity:0, x:-48 }, { opacity:1, x:0, duration:.75, ease:"power3.out" }, .8);
+    tl.fromTo("#f02-rapid", { opacity:0, x:48 }, { opacity:1, x:0, duration:.75, ease:"power3.out" }, 1.15);
+    tl.fromTo("#f02-cursor", { opacity:0, x:0, y:0 }, { opacity:1, x:-940, y:-350, duration:1.2, ease:"power2.inOut" }, 4.2);
+    tl.to("#f02-prof", { opacity:.42, duration:.5, ease:"power2.out" }, 6.0);
+    tl.to("#f02-cursor", { x:-280, y:-350, duration:1.35, ease:"power2.inOut" }, 6.35);
+    tl.to("#f02-halo", { opacity:1, duration:.55, ease:"power3.out" }, 7.45);
+    tl.fromTo("#f02-copy", { opacity:.25 }, { opacity:1, duration:.7, ease:"power3.out" }, 10.45);
+    tl.fromTo("#f02-note", { opacity:0, y:22 }, { opacity:1, y:0, duration:.65, ease:"power3.out" }, 12.15);
+  
+      window.__timelines["02-donde-entra"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,216 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .p5-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .p5-blurbed {
+      position: absolute; left: 100px; top: 70px; width: 1720px; height: 810px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px;
+      filter: blur(7px); opacity: 0.5; overflow: hidden; padding: 30px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-content: start;
+    }
+    .p5-ghost { height: 158px; border-radius: 14px; background: rgba(37,99,235,0.07); border: 1.5px solid rgba(37,99,235,0.14); padding: 18px 20px; }
+    .p5-ghost b { display: block; font-family: "Space Grotesk", sans-serif; font-size: 22px; font-weight: 600; color: #0f172a; }
+    .p5-ghost small { display: block; font-family: "Inter", sans-serif; font-size: 16px; color: #5a6a7f; margin-top: 6px; }
+
+    /* The Patrimonio label — the invented hero of this beat. */
+    .p5-label {
+      position: absolute; left: 168px; top: 250px; width: 760px;
+      background: #ffffff; border: 2px solid #0f172a; border-radius: 12px; padding: 34px 40px 28px;
+    }
+    .p5-label-top {
+      font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase; color: #64748b;
+    }
+    .p5-bars-box { position: relative; margin-top: 22px; height: 150px; overflow: hidden; }
+    .p5-bars { position: absolute; left: 0; top: 0; width: 680px; height: 150px; }
+    .p5-bars-mask { position: absolute; left: 0; top: -6px; width: 700px; height: 164px; background: #ffffff; }
+    .p5-code {
+      margin-top: 20px; text-align: center;
+      font-family: "Space Grotesk", sans-serif; font-size: 52px; font-weight: 700; letter-spacing: 0.22em; color: #0f172a;
+    }
+    .p5-beam {
+      position: absolute; left: 168px; top: 262px; width: 760px; height: 8px;
+      background: linear-gradient(to right, rgba(220,38,38,0), #dc2626 18%, #dc2626 82%, rgba(220,38,38,0));
+      border-radius: 8px; opacity: 0; z-index: 12;
+    }
+
+    /* The number that leaves the label and lands in the search field. */
+    .p5-flier {
+      position: absolute; left: 470px; top: 470px; z-index: 30; opacity: 0;
+      font-family: "Space Grotesk", sans-serif; font-size: 52px; font-weight: 700; letter-spacing: 0.16em; color: #2563eb;
+    }
+
+    .p5-search {
+      position: absolute; left: 1040px; top: 250px; width: 700px; height: 84px;
+      border-radius: 14px; border: 2px solid rgba(37,99,235,0.2); background: #ffffff;
+      display: flex; align-items: center; padding: 0 26px; opacity: 0;
+    }
+    .p5-search span { font-family: "Space Grotesk", sans-serif; font-size: 30px; font-weight: 600; letter-spacing: 0.12em; color: #0f172a; opacity: 0; }
+
+    .p5-cart {
+      position: absolute; left: 1040px; top: 386px; width: 700px;
+      border-radius: 16px; background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2);
+      padding: 26px 30px; opacity: 0; transform-origin: 50% 50%;
+    }
+    .p5-cart-h { display: flex; align-items: center; justify-content: space-between; }
+    .p5-cart-h b { font-family: "Space Grotesk", sans-serif; font-size: 27px; font-weight: 600; color: #0f172a; }
+    .p5-count {
+      font-family: "Space Grotesk", sans-serif; font-size: 22px; font-weight: 700; color: #ffffff;
+      background: #2563eb; border-radius: 100px; padding: 6px 18px;
+    }
+    .p5-cart-row {
+      margin-top: 18px; border-radius: 12px; padding: 18px 20px;
+      background: rgba(37,99,235,0.05); border: 1.5px solid rgba(37,99,235,0.14);
+      font-family: "Inter", sans-serif; font-size: 21px; color: #0f172a; opacity: 0;
+    }
+
+    /* The proof: the exact number wins over a look-alike. */
+    .p5-proof { position: absolute; left: 1040px; top: 600px; width: 700px; opacity: 0; }
+    .p5-proof-h {
+      font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #64748b;
+    }
+    .p5-row {
+      position: relative; margin-top: 14px; border-radius: 12px; padding: 18px 22px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.16);
+      font-family: "Space Grotesk", sans-serif; font-size: 30px; font-weight: 600; letter-spacing: 0.1em; color: #0f172a;
+    }
+    .p5-hlbar {
+      position: absolute; left: 12px; top: 16px; width: 0; height: 44px;
+      background: rgba(21,128,61,0.22); border-radius: 6px; z-index: -1;
+    }
+    .p5-xline { position: absolute; left: 10px; top: 22px; width: 300px; height: 22px; }
+    .p5-xline path { fill: none; stroke: #dc2626; stroke-width: 5; stroke-linecap: round; }
+  </style>
+
+  <div id="root" data-composition-id="05-pistola" data-width="1920" data-height="1080" data-duration="14.554">
+    <div class="clip p5-ground" id="p5-ground" data-start="0" data-duration="14.554" data-track-index="0"></div>
+    <div class="clip p5-blurbed" id="p5-blurbed" data-start="0" data-duration="14.554" data-track-index="1">
+      <div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div><div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div><div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div><div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div>
+      <div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div><div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div><div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div><div class="p5-ghost" data-layout-allow-overlap><b>Proyector Epson</b><small>Proyector</small></div>
+    </div>
+
+    <div class="clip p5-label" id="p5-label" data-start="0" data-duration="14.554" data-track-index="2">
+      <div class="p5-label-top" data-layout-allow-overlap>Patrimonio UdeG</div>
+      <div class="p5-bars-box">
+        <svg class="p5-bars" viewBox="0 0 640 150" preserveAspectRatio="none" id="p5-bars">
+          <rect x="0" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="10" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="25" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="33" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="53" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="66" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="82" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="98" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="106" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="122" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="132" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="140" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="157" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="172" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="192" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="205" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="215" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="232" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="248" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="261" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="274" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="287" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="307" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="324" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="337" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="350" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="363" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="378" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="388" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="399" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="409" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="429" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="439" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="447" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="462" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="482" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="495" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="503" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="523" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="536" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="549" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="557" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="570" y="0" width="11" height="150" fill="#0f172a" />
+          <rect x="587" y="0" width="7" height="150" fill="#0f172a" />
+          <rect x="603" y="0" width="4" height="150" fill="#0f172a" />
+          <rect x="616" y="0" width="4" height="150" fill="#0f172a" />
+        </svg>
+        <div class="p5-bars-mask" id="p5-bars-mask"></div>
+      </div>
+      <div class="p5-code" id="p5-code">*2310216*</div>
+    </div>
+
+    <div class="clip p5-beam" id="p5-beam" data-start="0" data-duration="14.554" data-track-index="3"></div>
+    <div class="clip p5-flier" id="p5-flier" data-start="0" data-duration="14.554" data-track-index="4">2310216</div>
+
+    <div class="clip p5-search" id="p5-search" data-start="0" data-duration="14.554" data-track-index="5">
+      <span id="p5-search-val" data-layout-allow-overlap>2310216</span>
+    </div>
+
+    <div class="clip p5-cart" id="p5-cart" data-start="0" data-duration="14.554" data-track-index="6">
+      <div class="p5-cart-h"><b>Carrito</b><div class="p5-count" id="p5-count">1</div></div>
+      <div class="p5-cart-row" id="p5-cart-row">Proyector Epson X41</div>
+    </div>
+
+    <div class="clip p5-proof" id="p5-proof" data-start="0" data-duration="14.554" data-track-index="7">
+      <div class="p5-proof-h">El n&uacute;mero exacto gana</div>
+      <div class="p5-row"><div class="p5-hlbar" id="p5-hlbar"></div>2310216</div>
+      <div class="p5-row">
+        2310<b style="color:#dc2626">9</b>16
+        <svg class="p5-xline" viewBox="0 0 300 22"><path id="p5-xline-path" d="M6 15 C80 4 170 20 294 8" /></svg>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const xline = document.getElementById("p5-xline-path");
+      const xLen = xline && xline.getTotalLength ? xline.getTotalLength() : 320;
+      gsap.set(xline, { strokeDasharray: xLen, strokeDashoffset: xLen });
+
+      /* Scene 1 (0–3.2s) — the label arrives and its bars draw on left to right. */
+      tl.fromTo("#p5-label", { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.66, ease: "power3.out" }, 0);
+      tl.to("#p5-bars-mask", { x: 700, duration: 1.5, ease: "power2.inOut" }, 0.7);
+      tl.fromTo("#p5-code", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.24);
+
+      /* Scene 2 (3.2–5.6s) — the gun fires: a beam sweeps and the number breaks free. */
+      tl.fromTo("#p5-beam", { opacity: 0, y: 0 }, { opacity: 1, duration: 0.16, ease: "power2.out" }, 3.24);
+      tl.to("#p5-beam", { y: 260, duration: 0.72, ease: "power2.inOut" }, 3.3);
+      tl.to("#p5-beam", { opacity: 0, duration: 0.24, ease: "power2.in" }, 4.02);
+      tl.to("#p5-code", { opacity: 0, duration: 0.2, ease: "power2.in" }, 4.14);
+      tl.fromTo("#p5-flier", { opacity: 0, scale: 0.9, x: 0, y: 0 }, { opacity: 1, scale: 1, duration: 0.24, ease: "power2.out" }, 4.16);
+
+      /* Scene 3 (5.6–8.8s) — one continuous travel: label → search field → cart. */
+      tl.fromTo("#p5-search", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.44, ease: "power3.out" }, 5.6);
+      tl.to("#p5-flier", { x: 610, y: -196, duration: 0.72, ease: "power2.inOut", filter: "blur(5px)" }, 5.72);
+      tl.to("#p5-flier", { filter: "blur(0px)", duration: 0.24, ease: "power2.out" }, 6.44);
+      tl.to("#p5-flier", { opacity: 0, duration: 0.16, ease: "power2.in" }, 6.62);
+      tl.to("#p5-search-val", { opacity: 1, duration: 0.18, ease: "power2.out" }, 6.62);
+      tl.fromTo("#p5-cart", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.44, ease: "power3.out" }, 6.9);
+      tl.to("#p5-cart", { scale: 0.965, duration: 0.1, ease: "power1.in" }, 7.5);
+      tl.to("#p5-cart", { scale: 1, duration: 0.52, ease: "power3.out" }, 7.6);
+      tl.fromTo("#p5-cart-row", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.44, ease: "power3.out" }, 7.62);
+
+      /* Scene 4 (8.8–14.05s) — the reason it can be trusted: the exact code wins. */
+      tl.fromTo("#p5-proof", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 9.4);
+      tl.to("#p5-hlbar", { width: 232, duration: 0.56, ease: "power2.inOut" }, 10.2);
+      tl.to(xline, { strokeDashoffset: 0, duration: 0.56, ease: "power2.inOut" }, 11.0);
+
+      window.__timelines["05-pistola"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,109 @@
+{
+  "ok": true,
+  "strict": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 3 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/leoglez/Documents/Proyectos/prestamos-p15/app-prestamos-p15/videos/03-importar-excel/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      }
+    ],
+    "filesScanned": 2
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 126.778,
+    "samples": [
+      7.043,
+      21.13,
+      35.216,
+      49.303,
+      63.389,
+      77.475,
+      91.562,
+      105.648,
+      119.735
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      7.043,
+      35.216,
+      63.389,
+      91.562,
+      119.735
+    ],
+    "checked": 55,
+    "passed": 55
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      "snapshots/frame-00-at-7.0s.png",
+      "snapshots/frame-01-at-35.2s.png",
+      "snapshots/frame-02-at-63.4s.png",
+      "snapshots/frame-03-at-91.6s.png",
+      "snapshots/frame-04-at-119.7s.png"
+    ],
+    "times": [
+      7.043,
+      35.216,
+      63.389,
+      91.562,
+      119.735
+    ],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.19",
+    "latestVersion": "0.8.19",
+    "updateAvailable": false
+  }
+}

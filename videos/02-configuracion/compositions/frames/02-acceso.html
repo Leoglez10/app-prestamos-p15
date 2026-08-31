@@ -1,0 +1,182 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .a2-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .a2-halo {
+      position: absolute; left: 50%; top: 470px; width: 1500px; height: 1100px;
+      margin-left: -750px; margin-top: -550px;
+      background: radial-gradient(circle, rgba(37,99,235,0.14) 0%, rgba(37,99,235,0) 62%);
+    }
+
+    .a2-card {
+      position: absolute; left: 545px; top: 244px; width: 830px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 22px;
+      padding: 54px 68px 58px; text-align: center;
+    }
+    .a2-h1 { font-family: "Space Grotesk", sans-serif; font-size: 54px; font-weight: 700; letter-spacing: -0.02em; color: #0f172a; }
+    .a2-sub { font-family: "Inter", sans-serif; font-size: 21px; color: #64748b; margin-top: 14px; }
+    .a2-field {
+      margin-top: 28px; height: 86px; border-radius: 14px;
+      border: 2px solid rgba(37,99,235,0.2); background: #f8fafc;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .a2-ph { font-family: "Inter", sans-serif; font-size: 24px; color: #9A9A9A; }
+    .a2-val { font-family: "Space Grotesk", sans-serif; font-size: 36px; font-weight: 600; letter-spacing: 0.16em; color: #0f172a; opacity: 0; }
+    .a2-caret { display: inline-block; width: 3px; height: 36px; background: #2563eb; margin-left: 6px; vertical-align: -6px; }
+    .a2-btn {
+      margin-top: 30px; height: 84px; border-radius: 14px; background: #2563eb;
+      display: flex; align-items: center; justify-content: center;
+      font-family: "Space Grotesk", sans-serif; font-size: 27px; font-weight: 600; color: #ffffff;
+      transform-origin: 50% 50%;
+    }
+
+    /* The admin shell that the login opens onto. */
+    .a2-shell {
+      position: absolute; left: 100px; top: 70px; width: 1720px; height: 810px;
+      background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2); border-radius: 20px;
+      display: flex; opacity: 0;
+    }
+    .a2-side { flex: 0 0 400px; border-right: 1.5px solid rgba(37,99,235,0.14); padding: 30px 26px; }
+    .a2-side-h { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+    .a2-side-h img { width: 52px; height: 52px; object-fit: contain; }
+    .a2-side-h span { font-family: "Space Grotesk", sans-serif; font-size: 23px; font-weight: 600; color: #0f172a; }
+    .a2-tab {
+      display: flex; align-items: center; gap: 14px; padding: 17px 20px; border-radius: 12px;
+      margin-bottom: 9px; font-family: "Inter", sans-serif; font-size: 21px; font-weight: 600; color: #64748b;
+      border: 1.5px solid transparent;
+    }
+    .a2-dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(37,99,235,0.35); flex: 0 0 11px; }
+    .a2-body { flex: 1; padding: 34px 40px; }
+    .a2-body-h { font-family: "Space Grotesk", sans-serif; font-size: 40px; font-weight: 600; color: #0f172a; }
+    .a2-body-ghost {
+      margin-top: 22px; height: 120px; border-radius: 14px;
+      background: rgba(37,99,235,0.045); border: 1.5px solid rgba(37,99,235,0.11);
+    }
+
+    .a2-cursor { position: absolute; left: 1400px; top: 900px; width: 44px; height: 44px; z-index: 40; transform-origin: 6px 4px; }
+    .a2-ripple {
+      position: absolute; left: 0; top: 0; width: 150px; height: 150px; margin-left: -75px; margin-top: -75px;
+      border-radius: 50%; border: 3px solid #2563eb; opacity: 0; z-index: 30;
+    }
+  </style>
+
+  <div id="root" data-composition-id="02-acceso" data-width="1920" data-height="1080">
+    <div class="clip a2-ground" id="a2-ground" data-start="0" data-duration="11.102" data-track-index="0"></div>
+    <div class="clip a2-halo" id="a2-halo" data-start="0" data-duration="11.102" data-track-index="1"></div>
+
+    <div class="clip a2-shell" id="a2-shell" data-start="0" data-duration="11.102" data-track-index="2">
+      <div class="a2-side">
+        <div class="a2-side-h"><img src="public/logo-p15.png" alt="" /><span>Admin P15</span></div>
+        <div class="a2-tab" id="a2-t1"><div class="a2-dot"></div>Inventario</div>
+        <div class="a2-tab" id="a2-t2"><div class="a2-dot"></div>Toma de inventario</div>
+        <div class="a2-tab" id="a2-t3"><div class="a2-dot"></div>Categor&iacute;as</div>
+        <div class="a2-tab" id="a2-t4"><div class="a2-dot"></div>Profesores</div>
+        <div class="a2-tab" id="a2-t5"><div class="a2-dot"></div>Reportes</div>
+        <div class="a2-tab" id="a2-t6"><div class="a2-dot"></div>Configuraci&oacute;n</div>
+      </div>
+      <div class="a2-body">
+        <div class="a2-body-h">Inventario</div>
+        <div class="a2-body-ghost"></div><div class="a2-body-ghost"></div><div class="a2-body-ghost"></div>
+      </div>
+    </div>
+
+    <div class="clip a2-card" id="a2-card" data-start="0" data-duration="11.102" data-track-index="3">
+      <div class="a2-h1">Acceso Admin P15</div>
+      <div class="a2-sub">Ingresa con c&oacute;digo de profesor y PIN de administrador.</div>
+      <div class="a2-field" id="a2-f1">
+        <div class="a2-ph" id="a2-ph1">C&oacute;digo de profesor</div>
+        <div class="a2-val" id="a2-v1"><span id="a2-code"></span><span class="a2-caret" id="a2-c1"></span></div>
+      </div>
+      <div class="a2-field" id="a2-f2">
+        <div class="a2-ph" id="a2-ph2">PIN de administrador</div>
+        <div class="a2-val" id="a2-v2"><span id="a2-pin"></span><span class="a2-caret" id="a2-c2"></span></div>
+      </div>
+      <div class="a2-btn" id="a2-btn">Entrar</div>
+    </div>
+
+    <div class="clip a2-ripple" id="a2-ripple" data-start="0" data-duration="11.102" data-track-index="4"></div>
+
+    <svg class="clip a2-cursor" id="a2-cursor" viewBox="0 0 24 24" data-start="0" data-duration="11.102" data-track-index="5">
+      <path d="M5 2 L5 20 L10 15.5 L13 22 L16 20.5 L13 14.5 L19.5 14 Z" fill="#0f172a" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round" />
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      const codeEl = document.getElementById("a2-code");
+      const pinEl = document.getElementById("a2-pin");
+
+      const typeInto = (el, text, at, dur) => {
+        const d = { t: 0 };
+        tl.to(d, {
+          t: 1, duration: dur, ease: "none",
+          onUpdate: () => {
+            const n = Math.min(text.length, Math.floor(d.t * (text.length + 0.4)));
+            const next = text.slice(0, n);
+            if (el.textContent !== next) el.textContent = next;
+          },
+        }, at);
+      };
+      const blink = (sel, at, dur) => {
+        const b = { p: 0 };
+        tl.to(b, {
+          p: Math.PI * 2 * Math.max(2, Math.round(dur * 1.6)), duration: dur, ease: "none",
+          onUpdate: () => { gsap.set(sel, { opacity: Math.sin(b.p) > 0 ? 1 : 0.15 }); },
+        }, at);
+      };
+
+      /* Scene 1 (0–2.2s) — only the access card. */
+      tl.fromTo("#a2-card", { opacity: 0, y: 28, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.72, ease: "power3.out" }, 0);
+      tl.fromTo("#a2-h1", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.3);
+      tl.fromTo("#a2-sub", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.46, ease: "power3.out" }, 0.46);
+
+      /* Scene 2 (2.2–5s) — the code, then the PIN as dots. Never legible. */
+      tl.to("#a2-ph1", { opacity: 0, duration: 0.2, ease: "power2.in" }, 2.24);
+      tl.to("#a2-v1", { opacity: 1, duration: 0.01 }, 2.24);
+      tl.to("#a2-f1", { borderColor: "#2563eb", backgroundColor: "#ffffff", duration: 0.3, ease: "power2.out" }, 2.24);
+      typeInto(codeEl, "2958101", 2.34, 1.0);
+      blink("#a2-c1", 2.24, 1.4);
+      tl.to("#a2-c1", { opacity: 0, duration: 0.01 }, 3.7);
+
+      tl.to("#a2-ph2", { opacity: 0, duration: 0.2, ease: "power2.in" }, 3.74);
+      tl.to("#a2-v2", { opacity: 1, duration: 0.01 }, 3.74);
+      tl.to("#a2-f2", { borderColor: "#2563eb", backgroundColor: "#ffffff", duration: 0.3, ease: "power2.out" }, 3.74);
+      typeInto(pinEl, "••••••", 3.84, 0.9);
+      blink("#a2-c2", 3.74, 1.2);
+
+      /* Scene 3 (5–7s) — the cursor enters and the card hands off. */
+      tl.to("#a2-cursor", { x: -440, y: -196, duration: 0.7, ease: "power2.inOut" }, 5.02);
+      tl.to("#a2-cursor", { scale: 0.85, duration: 0.09, ease: "power1.in" }, 5.8);
+      tl.to("#a2-cursor", { scale: 1, duration: 0.34, ease: "power3.out" }, 5.89);
+      tl.to("#a2-btn", { scale: 0.955, duration: 0.09, ease: "power1.in" }, 5.8);
+      tl.to("#a2-btn", { scale: 1, duration: 0.5, ease: "power3.out" }, 5.89);
+      tl.set("#a2-ripple", { x: 960, y: 704 }, 0);
+      tl.fromTo("#a2-ripple", { scale: 0, opacity: 0.9 }, { scale: 4, opacity: 0, duration: 0.75, ease: "power2.out", immediateRender: false }, 5.84);
+      tl.to("#a2-card", { scale: 0.9, opacity: 0, duration: 0.46, ease: "power2.in" }, 6.4);
+      tl.to("#a2-cursor", { opacity: 0, duration: 0.28, ease: "power2.in" }, 6.4);
+
+      /* Scene 4 (7–11.1s) — six sections arrive; three of them light up. */
+      tl.to("#a2-shell", { opacity: 1, duration: 0.44, ease: "power2.out" }, 7.02);
+      const tabs = ["#a2-t1", "#a2-t2", "#a2-t3", "#a2-t4", "#a2-t5", "#a2-t6"];
+      tabs.forEach((t, i) => {
+        tl.fromTo(t, { x: -22, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 7.2 + i * 0.13);
+      });
+      /* "solo necesitas tres" — the three that matter come forward, the rest recede. */
+      ["#a2-t3", "#a2-t4", "#a2-t6"].forEach((t, i) => {
+        tl.to(t, { backgroundColor: "rgba(37,99,235,0.09)", borderColor: "rgba(37,99,235,0.28)", color: "#2563eb", duration: 0.34, ease: "power2.out" }, 9.1 + i * 0.26);
+        tl.to(t + " .a2-dot", { backgroundColor: "#2563eb", scale: 1.3, duration: 0.3, ease: "power2.out" }, 9.1 + i * 0.26);
+      });
+      tl.to(["#a2-t1", "#a2-t2", "#a2-t5"], { opacity: 0.35, duration: 0.44, ease: "power2.out" }, 9.2);
+
+      window.__timelines["02-acceso"] = tl;
+    })();
+  </script>
+</template>

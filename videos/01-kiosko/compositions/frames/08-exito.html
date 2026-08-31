@@ -1,0 +1,138 @@
+<template>
+  <style>
+    @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/space-grotesk.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+    @font-face { font-family: "Inter"; src: url("assets/fonts/inter.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: block; }
+
+    #root { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; }
+
+    .s8-ground { position: absolute; inset: 0; background: #f8fafc; }
+    .s8-behind {
+      position: absolute; left: 100px; top: 70px; width: 1720px; height: 810px;
+      border-radius: 20px; background: #ffffff; border: 1.5px solid rgba(37,99,235,0.2);
+      filter: blur(6px); opacity: 0.55;
+    }
+    .s8-overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.52); }
+
+    .s8-modal {
+      position: absolute; left: 585px; top: 128px; width: 750px; z-index: 20;
+      background: #ffffff; border-radius: 26px; padding: 48px 60px 44px; text-align: center;
+    }
+
+    .s8-badge {
+      width: 118px; height: 118px; margin: 0 auto; border-radius: 50%;
+      background: rgba(21,128,61,0.12); border: 3px solid #22c55e;
+      display: flex; align-items: center; justify-content: center; transform-origin: 50% 50%;
+    }
+    .s8-eyebrow {
+      margin-top: 22px; font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 900;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #15803d;
+    }
+    .s8-eyebrow span { display: inline-block; margin-right: 0.28em; }
+    .s8-title {
+      margin-top: 10px; font-family: "Space Grotesk", sans-serif; font-size: 68px; font-weight: 700;
+      letter-spacing: -0.02em; line-height: 1.05; color: #14532d;
+    }
+
+    .s8-panel {
+      margin-top: 30px; border-radius: 16px; background: #f8fafc;
+      border: 1.5px solid rgba(37,99,235,0.14); padding: 24px 28px;
+    }
+    .s8-line {
+      display: flex; justify-content: space-between; align-items: baseline; opacity: 0;
+      font-family: "Inter", sans-serif; font-size: 24px; color: #0f172a; padding: 9px 0;
+    }
+    .s8-line strong { font-family: "Space Grotesk", sans-serif; font-size: 24px; color: #64748b; }
+    .s8-care {
+      display: block; margin-top: 14px; opacity: 0;
+      font-family: "Space Grotesk", sans-serif; font-size: 24px; font-weight: 700; color: #0f172a;
+    }
+
+    .s8-foot { margin-top: 30px; opacity: 0; }
+    .s8-count-row { display: flex; align-items: center; justify-content: center; gap: 20px; }
+    .s8-num {
+      font-family: "Space Grotesk", sans-serif; font-size: 92px; font-weight: 700; line-height: 1;
+      color: #2563eb; min-width: 72px; transform-origin: 50% 50%;
+    }
+    .s8-count-row span { font-family: "Inter", sans-serif; font-size: 26px; color: #64748b; }
+    .s8-drain {
+      margin-top: 20px; height: 10px; border-radius: 6px; background: rgba(37,99,235,0.14); overflow: hidden;
+    }
+    .s8-drain-fill { height: 100%; width: 100%; background: #2563eb; transform-origin: 0% 50%; }
+  </style>
+
+  <div id="root" data-composition-id="08-exito" data-width="1920" data-height="1080">
+    <div class="clip s8-ground" id="s8-ground" data-start="0" data-duration="9.117" data-track-index="0"></div>
+    <div class="clip s8-behind" id="s8-behind" data-start="0" data-duration="9.117" data-track-index="1"></div>
+    <div class="clip s8-overlay" id="s8-overlay" data-start="0" data-duration="9.117" data-track-index="2"></div>
+
+    <div class="clip s8-modal" id="s8-modal" data-start="0" data-duration="9.117" data-track-index="3">
+      <div class="s8-badge" id="s8-badge">
+        <svg viewBox="0 0 24 24" width="62" height="62" fill="none" stroke="#15803d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      </div>
+      <div class="s8-eyebrow" id="s8-eyebrow"><span>Prestamo</span><span>creado</span><span>con</span><span>exito</span></div>
+      <div class="s8-title" id="s8-title">Registro confirmado</div>
+
+      <div class="s8-panel" id="s8-panel">
+        <div class="s8-line" id="s8-l1">Laptop Dell Latitude <strong>x1</strong></div>
+        <div class="s8-line" id="s8-l2">Cable HDMI 3 m <strong>x1</strong></div>
+        <b class="s8-care" id="s8-care">Cuida bien tus equipos.</b>
+      </div>
+
+      <div class="s8-foot" id="s8-foot">
+        <div class="s8-count-row">
+          <div class="s8-num" id="s8-num">3</div>
+          <span>La sesion se cierra sola</span>
+        </div>
+        <div class="s8-drain"><div class="s8-drain-fill" id="s8-drain-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      /* Scene 1 (0–1.8s) — "Listo": the check lands first, nothing else yet. */
+      tl.fromTo("#s8-modal", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 0);
+      tl.fromTo("#s8-badge", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "power3.out" }, 0.18);
+      tl.fromTo("#s8-eyebrow span", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.36, ease: "power3.out", stagger: 0.09 }, 0.72);
+
+      /* Scene 2 (1.8–3.9s) — what you are taking, line by line. */
+      tl.fromTo("#s8-title", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.54, ease: "power3.out" }, 1.82);
+      tl.to("#s8-l1", { opacity: 1, duration: 0.36, ease: "power3.out" }, 2.4);
+      tl.to("#s8-l2", { opacity: 1, duration: 0.36, ease: "power3.out" }, 2.74);
+      tl.to("#s8-care", { opacity: 1, duration: 0.4, ease: "power3.out" }, 3.16);
+      tl.to("#s8-foot", { opacity: 1, duration: 0.4, ease: "power3.out" }, 3.5);
+
+      /* Scene 3 (3.9–6.9s) — exactly three seconds, hard-cut per second, like the app. */
+      const numEl = document.getElementById("s8-num");
+      const driver = { t: 0 };
+      tl.to(
+        driver,
+        {
+          t: 3, duration: 3.0, ease: "none",
+          onUpdate: () => {
+            const left = Math.max(0, 3 - Math.floor(driver.t));
+            const next = String(left);
+            if (numEl.textContent !== next) numEl.textContent = next;
+          },
+        },
+        3.9
+      );
+      [0, 1, 2].forEach((i) => {
+        tl.to("#s8-num", { scale: 1.22, duration: 0.16, ease: "power2.out" }, 3.9 + i);
+        tl.to("#s8-num", { scale: 1, duration: 0.4, ease: "power3.out" }, 4.06 + i);
+      });
+      tl.fromTo("#s8-drain-fill", { scaleX: 1 }, { scaleX: 0, duration: 3.0, ease: "none" }, 3.9);
+
+      /* Scene 4 (6.9–9.1s) — zero. The modal holds, completely still. */
+      tl.to("#s8-num", { color: "#64748b", duration: 0.4, ease: "power2.out" }, 6.92);
+
+      window.__timelines["08-exito"] = tl;
+    })();
+  </script>
+</template>

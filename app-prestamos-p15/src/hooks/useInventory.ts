@@ -21,6 +21,7 @@ import {
   planificarFusionReporte,
   type PlanFusion,
 } from "../utils/reporteTomaFisica";
+import { tituloEvento, validarEvento } from "../utils/evento";
 
 export type { EquipoRevisable };
 export type { PlanFusion };
@@ -83,6 +84,9 @@ export type Equipo = {
   prestamo_activo_id?: number | null;
   prestamo_activo_profe?: string | null;
   prestamo_activo_fecha?: string | null;
+  // Nombre del evento cuando el préstamo activo salió con una salida a evento.
+  // Null en un préstamo normal: es lo que distingue las dos cosas en la tabla.
+  prestamo_activo_evento?: string | null;
 };
 type PrestamoRapidoInput = {
   equipoIds: number[];
@@ -149,6 +153,9 @@ export type PrestamoRapidoAlumno = {
   tipo_persona: string;
   equipo_id: number | null;
   prestamo_app_id: number | null;
+  // Salida a evento: no nulo cuando esta fila es uno de los objetos que salieron
+  // con un evento. La pantalla las agrupa en una sola fila. Ver utils/evento.ts.
+  evento_id: number | null;
 };
 
 let dbPromise: Promise<Database> | null = null;
@@ -221,6 +228,34 @@ const schemaStatements = [
     revocado_en DATETIME,
     FOREIGN KEY (profesor_id) REFERENCES profesores(id)
   )`,
+  // Salidas a evento: SOLO el encabezado. Los objetos que salieron viven en
+  // `prestamos_rapidos_alumnos` con `evento_id`, o sea son préstamos rápidos
+  // normales — por eso devolver uno libera el equipo en el inventario sin
+  // código nuevo. El estado del evento NO se guarda, se deriva de sus filas;
+  // ver `src/utils/evento.ts`.
+  `CREATE TABLE IF NOT EXISTS eventos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    lugar TEXT NOT NULL,
+    fecha_inicio TEXT NOT NULL,
+    fecha_fin TEXT,
+    hora_inicio TEXT,
+    hora_fin TEXT,
+    responsable_nombre TEXT NOT NULL,
+    responsable_codigo TEXT NOT NULL,
+    responsable_tipo TEXT NOT NULL DEFAULT 'profesor',
+    expositor_nombre TEXT,
+    expositor_contacto TEXT,
+    observaciones TEXT,
+    id_admin INTEGER REFERENCES profesores(id) ON DELETE SET NULL,
+    autorizante_codigo TEXT,
+    autorizante_nombre TEXT,
+    creado_en DATETIME,
+    cerrado_en DATETIME,
+    cerrado_por TEXT,
+    notas_cierre TEXT
+  )`,
+
   `CREATE TABLE IF NOT EXISTS prestamos_rapidos_alumnos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre_alumno TEXT NOT NULL,
@@ -233,8 +268,10 @@ const schemaStatements = [
     observaciones TEXT,
     tipo_persona TEXT NOT NULL DEFAULT 'alumno',
     equipo_id INTEGER REFERENCES inventario(id) ON DELETE SET NULL,
-    prestamo_app_id INTEGER
+    prestamo_app_id INTEGER,
+    evento_id INTEGER REFERENCES eventos(id) ON DELETE SET NULL
   )`,
+
 ];
 
 const initialDataStatements = [
@@ -436,6 +473,12 @@ const prepareDatabase = async (db: Database): Promise<void> => {
   }
   if (!prestamosRapidosAlumnosColumns.includes("prestamo_app_id")) {
     await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN prestamo_app_id INTEGER");
+  }
+  if (!prestamosRapidosAlumnosColumns.includes("evento_id")) {
+    // Sin REFERENCES: SQLite no permite agregar una columna con llave foránea
+    // en un ALTER TABLE. La integridad la sostiene el código, que solo escribe
+    // `evento_id` con el id que acaba de insertar en `eventos`.
+    await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN evento_id INTEGER");
   }
 
   const profesoresColumns = await getTableColumns(db, "profesores");
@@ -856,6 +899,19 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       WHERE p2.equipo_id = i.id AND p2.estado_prestamo = 'activo'
     )
   `;
+  // Si el equipo salió con un evento, su nombre. Se llega por
+  // prestamos_rapidos_alumnos, que es donde vive la liga evento ↔ inventario.
+  // COALESCE con el lugar por lo mismo que `tituloEvento`: el nombre es opcional.
+  const eventoActivoSql = `
+    (
+      SELECT COALESCE(NULLIF(TRIM(e.nombre), ''), e.lugar)
+      FROM prestamos_rapidos_alumnos pra
+      JOIN eventos e ON e.id = pra.evento_id
+      WHERE pra.equipo_id = i.id AND pra.estado = 'activo'
+      ORDER BY pra.fecha_salida DESC, pra.id DESC
+      LIMIT 1
+    )
+  `;
 
   if (!categoriaId) {
     try {
@@ -870,7 +926,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
                 )) AS stock_disponible,
                 ${prestamoActivoIdSql} AS prestamo_activo_id,
                 ${responsableActivoSql} AS prestamo_activo_profe,
-                ${prestamoActivoFechaSql} AS prestamo_activo_fecha
+                ${prestamoActivoFechaSql} AS prestamo_activo_fecha,
+                ${eventoActivoSql} AS prestamo_activo_evento
          FROM inventario i
          JOIN categorias c ON c.id = i.categoria_id
          ORDER BY c.nombre, i.nombre_equipo`
@@ -918,6 +975,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
         categoria_es_prestable: 1,
         es_prestable: 1,
         es_granel: 0,
+        prestamo_activo_evento: null,
         stock_total: 1,
         stock_disponible: r.estado === 'disponible' ? 1 : 0
       }));
@@ -936,7 +994,8 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
               )) AS stock_disponible,
               ${prestamoActivoIdSql} AS prestamo_activo_id,
               ${responsableActivoSql} AS prestamo_activo_profe,
-              ${prestamoActivoFechaSql} AS prestamo_activo_fecha
+              ${prestamoActivoFechaSql} AS prestamo_activo_fecha,
+              ${eventoActivoSql} AS prestamo_activo_evento
        FROM inventario i
        JOIN categorias c ON c.id = i.categoria_id
        WHERE i.categoria_id = ?
@@ -988,6 +1047,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       categoria_es_prestable: 1,
       es_prestable: 1,
       es_granel: 0,
+      prestamo_activo_evento: null,
       stock_total: 1,
       stock_disponible: r.estado === 'disponible' ? 1 : 0
     }));
@@ -1544,7 +1604,8 @@ export const getPrestamosRapidosAlumnos = async (filters?: {
     `SELECT id, nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo,
             fecha_salida, fecha_retorno, estado, observaciones,
             id_admin, autorizante_codigo, autorizante_nombre,
-            COALESCE(tipo_persona, 'alumno') AS tipo_persona, equipo_id, prestamo_app_id
+            COALESCE(tipo_persona, 'alumno') AS tipo_persona, equipo_id, prestamo_app_id,
+            evento_id
      FROM prestamos_rapidos_alumnos ${whereClause} ORDER BY fecha_salida DESC LIMIT 500`,
     params
   );
@@ -1605,37 +1666,24 @@ export const createPrestamoRapidoAlumno = async (input: import("../auth/types").
   );
 };
 
+type EquipoDisponible = {
+  id: number;
+  nombre_equipo: string;
+  estado: string;
+  es_granel: number;
+  es_prestable: number;
+  categoria_es_prestable: number;
+  stock_disponible: number;
+};
+
 /**
- * Préstamo rápido ligado a un ítem REAL del inventario.
- *
- * Crea la fila en `prestamos` (igual que createPrestamoRapido para un equipo)
- * y además el registro de préstamo rápido, amarrados por prestamo_app_id /
- * equipo_id para que devolver aquí también devuelva allá.
+ * Lee un ítem del inventario y confirma que PUEDE salir, o lanza con el motivo
+ * exacto. Se saca aparte porque la salida a evento necesita revisar TODOS los
+ * objetos antes de escribir el primero: si el tercero no está disponible, el
+ * evento no debe quedar a medias.
  */
-export const createPrestamoRapidoDesdeInventario = async (
-  input: import("../auth/types").PrestamoRapidoInventarioCreate,
-): Promise<void> => {
-  if (!input.admin) {
-    throw new Error("createPrestamoRapidoDesdeInventario requires an authenticated admin");
-  }
-  if (!input.nombre_alumno.trim() || !input.codigo_alumno.trim()) {
-    throw new Error("Todos los campos son obligatorios.");
-  }
-
-  const db = await getDb();
-
-  // Mismas validaciones que createPrestamoRapido, para el único equipo elegido.
-  const rows = await db.select<
-    Array<{
-      id: number;
-      nombre_equipo: string;
-      estado: string;
-      es_granel: number;
-      es_prestable: number;
-      categoria_es_prestable: number;
-      stock_disponible: number;
-    }>
-  >(
+const requireEquipoDisponible = async (db: Database, equipoId: number): Promise<EquipoDisponible> => {
+  const rows = await db.select<EquipoDisponible[]>(
     `SELECT i.id,
             i.nombre_equipo,
             i.estado,
@@ -1648,11 +1696,11 @@ export const createPrestamoRapidoDesdeInventario = async (
      FROM inventario i
      JOIN categorias c ON c.id = i.categoria_id
      WHERE i.id = ?`,
-    [input.equipoId],
+    [equipoId],
   );
 
   if (rows.length === 0) {
-    throw new Error(`El equipo con ID ${input.equipoId} no existe.`);
+    throw new Error(`El equipo con ID ${equipoId} no existe.`);
   }
   const row = rows[0];
 
@@ -1660,8 +1708,7 @@ export const createPrestamoRapidoDesdeInventario = async (
     throw new Error(`El equipo "${row.nombre_equipo}" está marcado como no prestable.`);
   }
 
-  const esGranel = row.es_granel === 1;
-  if (esGranel) {
+  if (row.es_granel === 1) {
     if (row.stock_disponible < 1) {
       throw new Error(`Stock insuficiente para "${row.nombre_equipo}". Disponibles: ${row.stock_disponible}`);
     }
@@ -1669,47 +1716,102 @@ export const createPrestamoRapidoDesdeInventario = async (
     throw new Error(`El equipo único "${row.nombre_equipo}" no está disponible.`);
   }
 
-  const fechaSalida = getCurrentLocalDateTime();
-  const nombreProfe = input.nombre_alumno.trim();
-  const codigoProfe = input.codigo_alumno.trim();
+  return row;
+};
 
-  await db.execute(
+/**
+ * Escribe las DOS filas de una salida ligada al inventario: el préstamo real en
+ * `prestamos` —que es lo que marca el equipo como prestado— y su espejo en
+ * `prestamos_rapidos_alumnos`, amarrados por prestamo_app_id / equipo_id para
+ * que devolver aquí también devuelva allá.
+ *
+ * El préstamo rápido de siempre y cada objeto de una salida a evento pasan por
+ * aquí; lo único que cambia es el `evento_id`.
+ */
+const insertarSalidaInventario = async (
+  db: Database,
+  equipo: EquipoDisponible,
+  datos: {
+    nombreEquipoOverride?: string;
+    persona: { nombre: string; codigo: string; tipo: "alumno" | "profesor" };
+    admin: import("../auth/types").AdminUser;
+    observaciones?: string | null;
+    fechaSalida: string;
+    eventoId?: number | null;
+  },
+): Promise<void> => {
+  const observaciones = (datos.observaciones ?? "").trim();
+  const nombrePersona = datos.persona.nombre.trim();
+  const codigoPersona = datos.persona.codigo.trim();
+
+  // El id sale del RESULTADO del INSERT, nunca de `SELECT last_insert_rowid()`.
+  // El plugin abre un pool de 10 conexiones y ese SELECT puede salir por otra,
+  // donde `last_insert_rowid()` vale 0 o el id de una escritura ajena. Amarrar
+  // el espejo con un id equivocado es peor que no amarrarlo: devolver desde
+  // Préstamo Rápido cerraría el préstamo de otra persona.
+  const resultado = await db.execute(
     `INSERT INTO prestamos (equipo_id, codigo_profe, nombre_profe, fecha_salida, estado_prestamo, observaciones_entrega)
      VALUES (?, ?, ?, ?, 'activo', ?)`,
-    [input.equipoId, codigoProfe, nombreProfe, fechaSalida, (input.observaciones ?? "").trim()],
+    [equipo.id, codigoPersona, nombrePersona, datos.fechaSalida, observaciones],
   );
+  const prestamoAppId = resultado.lastInsertId ?? null;
 
   // Granel no cambia estado: la disponibilidad se descuenta por préstamos activos.
-  if (!esGranel) {
-    await db.execute("UPDATE inventario SET estado = 'prestado' WHERE id = ?", [input.equipoId]);
+  if (equipo.es_granel !== 1) {
+    await db.execute("UPDATE inventario SET estado = 'prestado' WHERE id = ?", [equipo.id]);
   }
 
-  const insertedRows = await db.select<Array<{ id: number }>>("SELECT last_insert_rowid() AS id");
-  const prestamoAppId = insertedRows.length > 0 ? insertedRows[0].id : null;
-
-  const adminNombre = input.admin.nombre.trim();
-  const tipoPersona = input.tipo_persona === "profesor" ? "profesor" : "alumno";
+  const adminNombre = datos.admin.nombre.trim();
   await db.execute(
     `INSERT INTO prestamos_rapidos_alumnos
        (nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo, observaciones,
         id_admin, autorizante_codigo, autorizante_nombre, fecha_salida,
-        tipo_persona, equipo_id, prestamo_app_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        tipo_persona, equipo_id, prestamo_app_id, evento_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      input.nombre_alumno.trim(),
-      input.codigo_alumno.trim(),
-      row.nombre_equipo,
+      nombrePersona,
+      codigoPersona,
+      datos.nombreEquipoOverride ?? equipo.nombre_equipo,
       adminNombre,
-      (input.observaciones ?? "").trim(),
-      input.admin.id,
-      input.admin.codigo.trim(),
+      observaciones,
+      datos.admin.id,
+      datos.admin.codigo.trim(),
       adminNombre,
-      fechaSalida,
-      tipoPersona,
-      input.equipoId,
+      datos.fechaSalida,
+      datos.persona.tipo,
+      equipo.id,
       prestamoAppId,
-    ]
+      datos.eventoId ?? null,
+    ],
   );
+};
+
+/**
+ * Préstamo rápido ligado a un ítem REAL del inventario.
+ */
+export const createPrestamoRapidoDesdeInventario = async (
+  input: import("../auth/types").PrestamoRapidoInventarioCreate,
+): Promise<void> => {
+  if (!input.admin) {
+    throw new Error("createPrestamoRapidoDesdeInventario requires an authenticated admin");
+  }
+  if (!input.nombre_alumno.trim() || !input.codigo_alumno.trim()) {
+    throw new Error("Todos los campos son obligatorios.");
+  }
+
+  const db = await getDb();
+  const equipo = await requireEquipoDisponible(db, input.equipoId);
+
+  await insertarSalidaInventario(db, equipo, {
+    persona: {
+      nombre: input.nombre_alumno,
+      codigo: input.codigo_alumno,
+      tipo: input.tipo_persona === "profesor" ? "profesor" : "alumno",
+    },
+    admin: input.admin,
+    observaciones: input.observaciones,
+    fechaSalida: getCurrentLocalDateTime(),
+  });
 };
 
 export const marcarPrestamoRapidoDevuelto = async (id: number): Promise<void> => {
@@ -1772,6 +1874,237 @@ export const deletePrestamoRapidoAlumno = async (id: number): Promise<void> => {
   }
 
   await db.execute("DELETE FROM prestamos_rapidos_alumnos WHERE id = ?", [id]);
+};
+
+// --- Salidas a evento -------------------------------------------------------
+//
+// Un evento es UN encabezado en `eventos` y N objetos que ya son préstamos
+// rápidos ligados al inventario (`prestamos_rapidos_alumnos.evento_id`). No hay
+// tabla de items: por eso devolver un objeto del evento libera el equipo con el
+// mismo `marcarPrestamoRapidoDevuelto` de siempre. La lógica pura —estado
+// derivado, validación y acta imprimible— vive en `src/utils/evento.ts`.
+
+export type { Evento, EventoInput, EventoItem } from "../utils/evento";
+
+/**
+ * Registra la salida completa: el encabezado y todos sus objetos.
+ *
+ * PRIMERO valida los equipos, DESPUÉS escribe. Un evento a medias —con dos de
+ * cinco proyectores marcados como prestados y sin acta— es peor que un error
+ * antes de tocar nada.
+ *
+ * ponytail: la escritura no va en una transacción porque cada objeto necesita
+ * el id que devuelve su propio INSERT para amarrar el espejo, y
+ * `ejecutar_transaccion` recibe las sentencias ya armadas. La validación previa
+ * cubre el caso real (equipo no disponible); si algún día hace falta atomicidad
+ * dura, el camino es un comando Rust que arme el evento entero.
+ */
+export const createEventoSalida = async (input: {
+  evento: import("../utils/evento").EventoInput;
+  equipoIds: number[];
+  admin: import("../auth/types").AdminUser;
+}): Promise<number> => {
+  if (!input.admin) {
+    throw new Error("createEventoSalida requires an authenticated admin");
+  }
+
+  const errores = validarEvento(input.evento, input.equipoIds.length);
+  if (errores.length > 0) {
+    throw new Error(errores[0].message);
+  }
+
+  const db = await getDb();
+
+  // Sin duplicados: elegir dos veces el mismo proyector generaría dos préstamos
+  // activos del mismo equipo único y el segundo dejaría el inventario mintiendo.
+  const equipoIds = [...new Set(input.equipoIds)];
+  const equipos: EquipoDisponible[] = [];
+  for (const equipoId of equipoIds) {
+    equipos.push(await requireEquipoDisponible(db, equipoId));
+  }
+
+  const evento = input.evento;
+  const adminNombre = input.admin.nombre.trim();
+  const creadoEn = getCurrentLocalDateTime();
+  const limpiar = (valor: string | null | undefined): string | null => {
+    const texto = (valor ?? "").trim();
+    return texto ? texto : null;
+  };
+
+  const insertado = await db.execute(
+    `INSERT INTO eventos
+       (nombre, lugar, fecha_inicio, fecha_fin, hora_inicio, hora_fin,
+        responsable_nombre, responsable_codigo, responsable_tipo,
+        expositor_nombre, expositor_contacto, observaciones,
+        id_admin, autorizante_codigo, autorizante_nombre, creado_en)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      limpiar(evento.nombre),
+      evento.lugar.trim(),
+      evento.fecha_inicio.trim(),
+      limpiar(evento.fecha_fin),
+      limpiar(evento.hora_inicio),
+      limpiar(evento.hora_fin),
+      evento.responsable_nombre.trim(),
+      evento.responsable_codigo.trim(),
+      evento.responsable_tipo === "alumno" ? "alumno" : "profesor",
+      limpiar(evento.expositor_nombre),
+      // El contacto sin nombre no llega hasta aquí: validarEvento lo rechaza.
+      limpiar(evento.expositor_nombre) ? limpiar(evento.expositor_contacto) : null,
+      limpiar(evento.observaciones),
+      input.admin.id,
+      input.admin.codigo.trim(),
+      adminNombre,
+      creadoEn,
+    ],
+  );
+
+  // Mismo motivo que en `insertarSalidaInventario`: el id viene del resultado
+  // del INSERT. Con `last_insert_rowid()` sobre el pool, los objetos se
+  // guardaban con un evento_id que no existía y el evento salía con 0 objetos
+  // aunque el equipo SÍ estuviera marcado como prestado.
+  const eventoId = insertado.lastInsertId;
+  if (eventoId == null) {
+    throw new Error("No se pudo registrar el evento.");
+  }
+
+  for (const equipo of equipos) {
+    await insertarSalidaInventario(db, equipo, {
+      persona: {
+        nombre: evento.responsable_nombre,
+        codigo: evento.responsable_codigo,
+        tipo: evento.responsable_tipo === "alumno" ? "alumno" : "profesor",
+      },
+      admin: input.admin,
+      observaciones: `Salida a evento: ${tituloEvento({
+        nombre: limpiar(evento.nombre),
+        lugar: evento.lugar.trim(),
+      })}`,
+      fechaSalida: creadoEn,
+      eventoId,
+    });
+  }
+
+  return eventoId;
+};
+
+/**
+ * Los eventos con el conteo de sus objetos. Los dos conteos son lo único que
+ * `estadoEvento` necesita para decidir qué se pinta, así que se calculan aquí
+ * en vez de traer todas las filas hijas a la pantalla.
+ */
+export const getEventos = async (): Promise<import("../utils/evento").Evento[]> => {
+  const db = await getDb();
+  return db.select<import("../utils/evento").Evento[]>(
+    `SELECT e.id, e.nombre, e.lugar, e.fecha_inicio, e.fecha_fin, e.hora_inicio, e.hora_fin,
+            e.responsable_nombre, e.responsable_codigo, e.responsable_tipo,
+            e.expositor_nombre, e.expositor_contacto, e.observaciones,
+            e.id_admin, e.autorizante_codigo, e.autorizante_nombre,
+            e.creado_en, e.cerrado_en, e.cerrado_por, e.notas_cierre,
+            (SELECT COUNT(*) FROM prestamos_rapidos_alumnos p WHERE p.evento_id = e.id) AS total_items,
+            (SELECT COUNT(*) FROM prestamos_rapidos_alumnos p
+              WHERE p.evento_id = e.id AND p.estado = 'devuelto') AS items_devueltos
+     FROM eventos e
+     ORDER BY e.creado_en DESC
+     LIMIT 200`,
+  );
+};
+
+/** Los objetos de un evento, con la etiqueta de Patrimonio para el acta. */
+export const getEventoItems = async (eventoId: number): Promise<import("../utils/evento").EventoItem[]> => {
+  const db = await getDb();
+  return db.select<import("../utils/evento").EventoItem[]>(
+    `SELECT p.id, p.nombre_equipo, p.observaciones, p.estado, p.fecha_salida, p.fecha_retorno,
+            p.equipo_id, i.identificador, i.id_patrimonial
+     FROM prestamos_rapidos_alumnos p
+     LEFT JOIN inventario i ON i.id = p.equipo_id
+     WHERE p.evento_id = ?
+     ORDER BY p.id ASC`,
+    [eventoId],
+  );
+};
+
+/**
+ * Pasar la lista al volver del evento.
+ *
+ * `idsDevueltos` son los objetos que SÍ regresaron; el resto se queda activo, y
+ * eso es justo lo que convierte al evento en "cerrado con faltantes". No se
+ * marca nada como perdido: el objeto sigue prestado y puede devolverse después
+ * desde el detalle, que es lo que pasa en la vida real.
+ */
+export const cerrarEvento = async (input: {
+  eventoId: number;
+  idsDevueltos: number[];
+  admin: import("../auth/types").AdminUser;
+  notas?: string | null;
+}): Promise<void> => {
+  const db = await getDb();
+
+  const pertenecen = await db.select<Array<{ id: number }>>(
+    `SELECT id FROM prestamos_rapidos_alumnos WHERE evento_id = ? AND estado = 'activo'`,
+    [input.eventoId],
+  );
+  const activos = new Set(pertenecen.map((fila) => fila.id));
+
+  for (const id of input.idsDevueltos) {
+    // Filtrar por los activos del evento evita que un id de otra pantalla —o
+    // uno ya devuelto— reescriba una devolución con fecha nueva.
+    if (activos.has(id)) {
+      await marcarPrestamoRapidoDevuelto(id);
+    }
+  }
+
+  await db.execute(
+    "UPDATE eventos SET cerrado_en = ?, cerrado_por = ?, notas_cierre = ? WHERE id = ?",
+    [
+      getCurrentLocalDateTime(),
+      input.admin.nombre.trim(),
+      (input.notas ?? "").trim() || null,
+      input.eventoId,
+    ],
+  );
+};
+
+/** Reabrir: el evento no terminó (o se cerró por error). Los objetos no se tocan. */
+export const reabrirEvento = async (eventoId: number): Promise<void> => {
+  const db = await getDb();
+  await db.execute(
+    "UPDATE eventos SET cerrado_en = NULL, cerrado_por = NULL, notas_cierre = NULL WHERE id = ?",
+    [eventoId],
+  );
+};
+
+/**
+ * Borrar el evento entero, con sus objetos.
+ *
+ * El conteo de pendientes va PRIMERO. `deletePrestamoRapidoAlumno` ya se niega
+ * a borrar un préstamo activo, pero rebotar a mitad del ciclo dejaría al evento
+ * sin la mitad de sus objetos y con el resto todavía prestado: se pregunta una
+ * vez por todos y se aborta antes de borrar nada.
+ */
+export const deleteEvento = async (eventoId: number): Promise<void> => {
+  const db = await getDb();
+
+  const pendientes = await db.select<Array<{ count: number }>>(
+    "SELECT COUNT(*) AS count FROM prestamos_rapidos_alumnos WHERE evento_id = ? AND estado = 'activo'",
+    [eventoId],
+  );
+  if ((pendientes[0]?.count ?? 0) > 0) {
+    throw new Error(
+      "Este evento todavía tiene objetos sin devolver. Pasa la lista de devolución antes de eliminarlo.",
+    );
+  }
+
+  const items = await db.select<Array<{ id: number }>>(
+    "SELECT id FROM prestamos_rapidos_alumnos WHERE evento_id = ?",
+    [eventoId],
+  );
+
+  for (const item of items) {
+    await deletePrestamoRapidoAlumno(item.id);
+  }
+
+  await db.execute("DELETE FROM eventos WHERE id = ?", [eventoId]);
 };
 
 // --- Importacion del Excel de Patrimonio ------------------------------------

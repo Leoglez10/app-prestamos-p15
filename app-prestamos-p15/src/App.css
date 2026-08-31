@@ -9,6 +9,11 @@
   --success-base: #059669;
   --danger-base: #DC2626;
   --warning-base: #D97706;
+  /* Las salidas a evento no son un préstamo más: el violeta las separa a
+     simple vista del azul de la app en la tabla, los badges y el modal. */
+  --evento-base: #7C3AED;
+  --evento-suave: #F5F3FF;
+  --evento-borde: #DDD6FE;
   font-family: "Bahnschrift", "Segoe UI Variable", "Trebuchet MS", sans-serif;
   color: var(--text-primary);
 }
@@ -1825,6 +1830,16 @@ button.ghost {
   gap: 0.5rem;
 }
 
+/* El <input type="file"> nativo pinta su propio botón y un "no file selected"
+   en inglés que no se puede estilar. Se esconde y se dispara desde acá. */
+.boton-archivo {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.15rem;
+}
+
 /* Empezar una campaña nueva pone todo el inventario en pendiente otra vez: no
    puede tener el mismo peso visual que exportar un archivo. */
 .toma-link-danger {
@@ -2504,4 +2519,643 @@ li.toma-vacio.es-listo {
 
 @media (prefers-reduced-motion: reduce) {
   .toma-cierre-cabeza { animation: none; }
+}
+
+
+/* -- Salidas a evento (EventoSalidaDialog / EventoDetalleModal) --
+   Reusa la carcasa .admin-dialog; aquí solo va lo propio del evento. */
+.evento-dialog {
+  border-top: 4px solid var(--evento-base);
+}
+
+.evento-head-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--evento-suave);
+  color: var(--evento-base);
+}
+
+.evento-head-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.evento-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid #FECACA;
+  background: #FEF2F2;
+  color: #991B1B;
+  font-size: 0.9rem;
+}
+
+.evento-fieldset {
+  margin: 0 0 1.1rem;
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+}
+
+.evento-fieldset legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--evento-base);
+}
+
+.evento-conteo {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--evento-suave);
+  border: 1px solid var(--evento-borde);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.evento-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.evento-campo {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.evento-campo input,
+.evento-campo select,
+.evento-campo textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 11px;
+  font: inherit;
+  font-weight: 500;
+  background: var(--surface-default);
+  color: var(--text-primary);
+}
+
+.evento-campo input:focus-visible,
+.evento-campo select:focus-visible,
+.evento-campo textarea:focus-visible,
+.evento-buscar:focus-visible {
+  outline: 2px solid var(--evento-base);
+  outline-offset: 1px;
+}
+
+.evento-campo input[aria-invalid="true"],
+.evento-campo select[aria-invalid="true"] {
+  border-color: var(--danger-base);
+}
+
+.evento-req { color: var(--danger-base); }
+
+.evento-opcional {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.evento-error {
+  color: var(--danger-base);
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.evento-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.evento-check input,
+.evento-item input,
+.evento-item-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--evento-base);
+  cursor: pointer;
+}
+
+.evento-segment {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding: 0.22rem;
+  border-radius: 12px;
+  background: var(--surface-sunken);
+}
+
+.evento-segment-btn {
+  padding: 0.42rem 1.1rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.evento-segment-btn.is-active {
+  background: var(--evento-base);
+  color: #fff;
+}
+
+.evento-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.evento-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--evento-borde);
+  border-radius: 999px;
+  background: var(--evento-suave);
+  color: var(--evento-base);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.evento-buscar {
+  width: 100%;
+  margin-bottom: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 11px;
+  font: inherit;
+  font-weight: 500;
+}
+
+.evento-lista {
+  max-height: 210px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+}
+
+.evento-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.7rem;
+  align-items: center;
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+}
+
+.evento-item:last-child { border-bottom: 0; }
+.evento-item:hover { background: var(--evento-suave); }
+
+.evento-item input { grid-row: span 2; }
+
+.evento-item-nombre {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.evento-item-meta {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.evento-vacio {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.evento-btn-primario,
+.evento-btn-secundario,
+.evento-btn-peligro,
+.evento-btn-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.15rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.evento-btn-primario {
+  background: var(--evento-base);
+  color: #fff;
+}
+
+.evento-btn-secundario {
+  background: var(--surface-default);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.evento-btn-peligro {
+  background: var(--surface-default);
+  border-color: var(--border-subtle);
+  color: var(--danger-base);
+  margin-left: auto;
+}
+
+.evento-btn-mini {
+  padding: 0.32rem 0.7rem;
+  font-size: 0.82rem;
+  background: var(--surface-default);
+  border-color: var(--border-subtle);
+  color: var(--evento-base);
+}
+
+.evento-btn-primario:disabled,
+.evento-btn-secundario:disabled,
+.evento-btn-peligro:disabled,
+.evento-btn-mini:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* -- Detalle del evento -- */
+.evento-detalle {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.evento-detalle-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.evento-detalle-head h3 { margin: 0; }
+
+.evento-estado {
+  align-self: center;
+  margin-left: auto;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.evento-estado-activo {
+  background: var(--evento-suave);
+  border: 1px solid var(--evento-borde);
+  color: var(--evento-base);
+}
+
+.evento-estado-cerrado {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #047857;
+}
+
+.evento-estado-cerrado-con-faltantes {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #B45309;
+}
+
+.evento-datos {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: var(--evento-suave);
+  border: 1px solid var(--evento-borde);
+}
+
+.evento-dato { display: grid; gap: 0.15rem; }
+
+.evento-dato small {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.evento-dato-meta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.evento-notas {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-sunken);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
+.evento-notas-cierre {
+  background: #ECFDF5;
+  border-color: #A7F3D0;
+}
+
+.evento-lista-head h4 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.evento-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.evento-items li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.evento-items li:last-child { border-bottom: 0; }
+.evento-items li.is-devuelto { background: #F8FAFC; }
+
+.evento-item-texto {
+  display: grid;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.evento-item-icono { color: var(--evento-base); }
+.evento-item-icono.is-devuelto { color: var(--success-base); }
+
+.evento-item-check {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.evento-detalle-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding-top: 0.3rem;
+}
+
+
+/* -- Chip de evento en la tabla de inventario (Admin) --
+   Misma señal violeta que la tabla de Préstamo Rápido: dice de un vistazo que
+   ese equipo no salió con una persona suelta, salió con un evento. */
+.evento-chip-inv {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--evento-borde);
+  background: var(--evento-suave);
+  color: var(--evento-base);
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -- Calendario de rango (CalendarioRango.tsx) --
+   Reemplaza a <input type="date">, que en este WebView no abre ningún
+   calendario. Alto fijo de seis semanas para que no brinque al cambiar de mes. */
+.cal {
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 0.7rem;
+  background: var(--surface-default);
+  user-select: none;
+}
+
+.cal-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.cal-mes {
+  font-weight: 800;
+  font-size: 0.98rem;
+  text-transform: capitalize;
+}
+
+.cal-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-default);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.cal-nav:hover {
+  border-color: var(--evento-base);
+  color: var(--evento-base);
+}
+
+.cal-nav:focus-visible,
+.cal-accion:focus-visible {
+  outline: 2px solid var(--evento-base);
+  outline-offset: 1px;
+}
+
+.cal-dias-nombres,
+.cal-semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-dias-nombres {
+  margin-bottom: 0.25rem;
+}
+
+.cal-dias-nombres span {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.cal-rejilla {
+  display: grid;
+  gap: 2px;
+}
+
+.cal-dia {
+  aspect-ratio: 1;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.cal-dia:hover {
+  background: var(--evento-suave);
+}
+
+.cal-dia:focus-visible {
+  outline: 2px solid var(--evento-base);
+  outline-offset: -2px;
+}
+
+/* Los días de relleno se pueden picar —a veces el evento empieza el 30 del mes
+   anterior— pero se ven apagados para no competir con el mes en curso. */
+.cal-dia.es-otro-mes {
+  color: var(--text-secondary);
+  opacity: 0.45;
+}
+
+/* Hoy se marca con el borde, no con el fondo: el fondo ya significa "elegido". */
+.cal-dia.es-hoy {
+  border-color: var(--evento-base);
+}
+
+.cal-dia.es-elegido {
+  background: var(--evento-suave);
+  color: var(--evento-base);
+  opacity: 1;
+}
+
+.cal-dia.es-inicio,
+.cal-dia.es-fin {
+  background: var(--evento-base);
+  border-color: var(--evento-base);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.cal-pie {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.cal-resumen {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--evento-base);
+}
+
+.cal-resumen.es-vacio {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cal-pie-acciones {
+  display: flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.cal-accion {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  background: var(--surface-default);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.cal-accion:hover {
+  border-color: var(--evento-base);
+  color: var(--evento-base);
+}
+
+.cal-ayuda {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+/* El calendario manda; las horas van al lado en pantalla ancha y debajo en
+   la angosta, que es donde el diálogo se vuelve una sola columna. */
+.evento-fechas {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: minmax(270px, 1fr) minmax(150px, 0.6fr);
+  align-items: start;
+}
+
+.evento-horas {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+@media (max-width: 700px) {
+  .evento-fechas {
+    grid-template-columns: 1fr;
+  }
+  .evento-horas {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
 }

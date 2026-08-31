@@ -53,8 +53,6 @@ import { Icon } from "../components/Icon";
 // EXPERIMENT: phone access over the LAN. See docs/QR_CELULAR.md to remove.
 import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
-import { ImportarPatrimonioPanel } from "../components/ImportarPatrimonioPanel";
-import { ImportarReportePanel } from "../components/ImportarReportePanel";
 import { TomaFisicaPanel } from "../components/TomaFisicaPanel";
 import { EquipoFormDialog } from "../components/EquipoFormDialog";
 import { useEscaneoGlobal } from "../hooks/useEscaneoGlobal";
@@ -991,6 +989,12 @@ function InventarioPanel() {
                             Con: {eq.prestamo_activo_profe}
                           </small>
                         )}
+                        {eq.prestamo_activo_evento && (
+                          <span className="evento-chip-inv" title={`Salió con el evento: ${eq.prestamo_activo_evento}`}>
+                            <Icon name="mapPin" />
+                            {eq.prestamo_activo_evento}
+                          </span>
+                        )}
                         {eq.stock_disponible === 0 && (
                           <small style={{ color: 'var(--danger-base)', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                             <Icon name="alert" />
@@ -1005,6 +1009,14 @@ function InventarioPanel() {
                           <small style={{ color: 'var(--brand-primary)', fontWeight: '500' }}>
                             A: {eq.prestamo_activo_profe}
                           </small>
+                        )}
+                        {/* Salió con un evento, no con un préstamo suelto. El violeta
+                            es la misma señal que usa la tabla de Préstamo Rápido. */}
+                        {eq.prestamo_activo_evento && (
+                          <span className="evento-chip-inv" title={`Salió con el evento: ${eq.prestamo_activo_evento}`}>
+                            <Icon name="mapPin" />
+                            {eq.prestamo_activo_evento}
+                          </span>
                         )}
                       </div>
                     )}
@@ -1066,10 +1078,6 @@ function InventarioPanel() {
             </tbody>
           </table>
       </div>
-
-      <ImportarPatrimonioPanel onImportado={() => void loadData()} />
-
-      <ImportarReportePanel onImportado={() => void loadData()} />
 
       <EquipoDetalleModal
         equipo={detalleId === null ? null : equipos.find(eq => eq.id === detalleId) ?? null}

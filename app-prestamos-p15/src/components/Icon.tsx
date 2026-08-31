@@ -29,6 +29,7 @@ const ICONS = {
   ),
   trash: <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3" />,
   save: <path d="M4 6a2 2 0 0 1 2-2h9l5 5v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 4v5h6V4M8 20v-6h8v6" />,
+  upload: <path d="M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />,
   refresh: <path d="M3.5 12a8.5 8.5 0 1 0 2.7-6.2M3 4.5V10h5.5" />,
   spinner: <path d="M12 3a9 9 0 1 0 9 9" />,
   alert: <path d="M12 4 2.5 20h19zM12 10v4M12 17.4v.2" />,

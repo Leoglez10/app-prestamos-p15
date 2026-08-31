@@ -94,11 +94,21 @@ export function ImportarReportePanel({ onImportado }: Props) {
           type="file"
           accept=".csv,text/csv"
           disabled={ocupado}
+          hidden
           onChange={(e) => {
             const archivo = e.target.files?.[0];
             if (archivo) void elegirArchivo(archivo);
           }}
         />
+        <button
+          type="button"
+          className="ghost boton-archivo"
+          disabled={ocupado}
+          onClick={() => archivoRef.current?.click()}
+        >
+          <Icon name="upload" size="1.05rem" />
+          Elegir el reporte CSV
+        </button>
       </div>
 
       {ocupado && <div style={{ color: "var(--text-secondary)" }}>Trabajando…</div>}

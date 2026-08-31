@@ -40,6 +40,8 @@ import {
 } from "../hooks/useInventory";
 import { usePistola } from "../hooks/usePistola";
 import { EquipoFormDialog } from "./EquipoFormDialog";
+import { ImportarPatrimonioPanel } from "./ImportarPatrimonioPanel";
+import { ImportarReportePanel } from "./ImportarReportePanel";
 import {
   calcularProgreso,
   clasificarDisparo,
@@ -699,6 +701,10 @@ export function TomaFisicaPanel({
             </div>
           </aside>
         </div>
+
+        <ImportarPatrimonioPanel onImportado={() => void recargar()} />
+
+        <ImportarReportePanel onImportado={() => void recargar()} />
 
         {aviso && <div className="feedback success">{aviso}</div>}
         {error && <div className="feedback error">{error}</div>}

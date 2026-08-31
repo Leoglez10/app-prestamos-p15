@@ -15,8 +15,20 @@ import {
   marcarPrestamoRapidoDevuelto,
   deletePrestamoRapidoAlumno,
   getRuntimeStorageReason,
+  getEventos,
   initializeInventoryDb,
 } from "../hooks/useInventory";
+import {
+  estadoEvento,
+  ETIQUETA_ESTADO_EVENTO,
+  hoyLocal,
+  rangoFechas,
+  rangoHoras,
+  tituloEvento,
+  type Evento,
+} from "../utils/evento";
+import { EventoSalidaDialog } from "../components/EventoSalidaDialog";
+import { EventoDetalleModal } from "../components/EventoDetalleModal";
 import { parseSqliteDate, formatSqliteDateTime } from "../utils/datetime";
 import { useAuth } from "../auth/AuthContext";
 import { LoginForm } from "../auth/LoginForm";
@@ -47,6 +59,24 @@ const isVencido = (item: PrestamoRapidoAlumno, now: number): boolean => {
   const salida = parseSqliteDate(item.fecha_salida);
   return salida ? now - salida.getTime() > VENCIDO_MS : false;
 };
+
+/**
+ * Una fila de la tabla. Un evento ocupa UNA fila aunque haya sacado diez
+ * objetos: los diez son la misma salida y ver diez renglones idénticos con el
+ * mismo responsable no ayuda a nadie. El detalle se abre al hacer clic.
+ *
+ * `activo` y `vencido` se calculan aquí para que los chips y el filtro traten
+ * igual a un préstamo y a un evento, sin preguntar de qué tipo es cada fila.
+ */
+type Fila = {
+  clave: string;
+  /** fecha_salida o creado_en, ambos "YYYY-MM-DD HH:MM:SS": el string ordena bien. */
+  orden: string;
+  activo: boolean;
+  vencido: boolean;
+  /** Todo lo buscable de la fila, ya en minúsculas. */
+  texto: string;
+} & ({ tipo: "prestamo"; item: PrestamoRapidoAlumno } | { tipo: "evento"; evento: Evento });
 
 const timeAgo = (dateStr: string | null, now: number): string => {
   const date = parseSqliteDate(dateStr);
@@ -90,6 +120,12 @@ export default function PrestamoRapido() {
   const [highlightIndex, setHighlightIndex] = useState(-1);
 
   const [historial, setHistorial] = useState<PrestamoRapidoAlumno[]>([]);
+  // Salidas a evento. Van aparte del historial porque una salida es un
+  // encabezado propio; sus objetos SÍ viven en `historial` y se ocultan de la
+  // lista suelta para no contarlos dos veces.
+  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [eventoDialogAbierto, setEventoDialogAbierto] = useState(false);
+  const [eventoAbierto, setEventoAbierto] = useState<Evento | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<FilterEstado>("activo");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,45 +182,100 @@ export default function PrestamoRapido() {
 
   // The whole (capped) history is loaded once and filtered in memory: it keeps
   // the counters honest and removes a database round trip per keystroke.
-  const loadHistorial = async () => {
-    const rows = await getPrestamosRapidosAlumnos();
+  const loadHistorial = async (): Promise<Evento[]> => {
+    const [rows, eventoRows] = await Promise.all([getPrestamosRapidosAlumnos(), getEventos()]);
     setHistorial(rows);
+    setEventos(eventoRows);
+    return eventoRows;
   };
+
+  // Préstamos sueltos y salidas a evento en UNA lista. Los objetos que salieron
+  // con un evento se caen de aquí (ya están dentro de la fila del evento) para
+  // no aparecer dos veces ni inflar los contadores.
+  const filas = useMemo<Fila[]>(() => {
+    const hoy = hoyLocal();
+
+    // Se compara contra los eventos que EXISTEN, no contra `evento_id != null`.
+    // Una fila que apunta a un evento borrado (o a un id que nunca existió)
+    // desaparecería de las dos listas: ni sale suelta ni sale dentro del
+    // evento, y el equipo se queda prestado sin forma de devolverlo desde aquí.
+    // Ante la duda, se muestra como préstamo normal.
+    const idsDeEventos = new Set(eventos.map((evento) => evento.id));
+
+    const dePrestamos: Fila[] = historial
+      .filter((item) => item.evento_id == null || !idsDeEventos.has(item.evento_id))
+      .map((item) => ({
+        tipo: "prestamo",
+        item,
+        clave: `p-${item.id}`,
+        orden: item.fecha_salida,
+        activo: item.estado === "activo",
+        vencido: isVencido(item, now),
+        texto: [
+          item.nombre_alumno,
+          item.codigo_alumno,
+          item.nombre_equipo,
+          item.tipo_persona || "alumno",
+          item.autorizante_nombre || item.persona_prestamo || "",
+        ]
+          .join(" ")
+          .toLowerCase(),
+      }));
+
+    const deEventos: Fila[] = eventos.map((evento) => {
+      const estado = estadoEvento(evento);
+      // "Cerrado con faltantes" sigue contando como activo porque hay equipo
+      // afuera de verdad: sus filas hijas siguen en estado 'activo'.
+      const conPendientes = estado !== "cerrado";
+      const ultimoDia = evento.fecha_fin || evento.fecha_inicio;
+      return {
+        tipo: "evento",
+        evento,
+        clave: `e-${evento.id}`,
+        orden: evento.creado_en,
+        activo: conPendientes,
+        // Un evento se marca cuando ya pasó su último día y todavía debe equipo.
+        vencido: conPendientes && (estado === "cerrado-con-faltantes" || ultimoDia < hoy),
+        texto: [
+          tituloEvento(evento),
+          evento.lugar,
+          evento.responsable_nombre,
+          evento.responsable_codigo,
+          evento.expositor_nombre || "",
+          "evento salida",
+        ]
+          .join(" ")
+          .toLowerCase(),
+      };
+    });
+
+    return [...dePrestamos, ...deEventos].sort((a, b) => b.orden.localeCompare(a.orden));
+  }, [historial, eventos, now]);
 
   const counts = useMemo(() => {
     let activos = 0;
     let vencidos = 0;
     let devueltos = 0;
-    for (const item of historial) {
-      if (item.estado === "activo") {
+    for (const fila of filas) {
+      if (fila.activo) {
         activos += 1;
-        if (isVencido(item, now)) vencidos += 1;
+        if (fila.vencido) vencidos += 1;
       } else {
         devueltos += 1;
       }
     }
-    return { activos, vencidos, devueltos, total: historial.length };
-  }, [historial, now]);
+    return { activos, vencidos, devueltos, total: filas.length };
+  }, [filas]);
 
   const filtrados = useMemo(() => {
     const term = busqueda.trim().toLowerCase();
-    return historial.filter((item) => {
-      if (filtroEstado === "activo" && item.estado !== "activo") return false;
-      if (filtroEstado === "devuelto" && item.estado !== "devuelto") return false;
-      if (filtroEstado === "vencido" && !isVencido(item, now)) return false;
-      if (!term) return true;
-      const haystack = [
-        item.nombre_alumno,
-        item.codigo_alumno,
-        item.nombre_equipo,
-        item.tipo_persona || "alumno",
-        item.autorizante_nombre || item.persona_prestamo || "",
-      ]
-        .join(" ")
-        .toLowerCase();
-      return haystack.includes(term);
+    return filas.filter((fila) => {
+      if (filtroEstado === "activo" && !fila.activo) return false;
+      if (filtroEstado === "devuelto" && fila.activo) return false;
+      if (filtroEstado === "vencido" && !fila.vencido) return false;
+      return !term || fila.texto.includes(term);
     });
-  }, [historial, busqueda, filtroEstado, now]);
+  }, [filas, busqueda, filtroEstado]);
 
   // Dynamic copy for the person fields ("Nombre del alumno/profesor", etc.).
   const personaNoun = tipoPersona === "profesor" ? "profesor" : "alumno";
@@ -580,17 +671,34 @@ export default function PrestamoRapido() {
           <Icon name="arrowLeft" />
           <span>Volver</span>
         </Link>
+        <span className="page-header-sep" aria-hidden="true" />
+        <span className="page-title">Préstamo rápido</span>
         <SessionBadge session={state.session} onLogout={logout} />
         <img src={logoP15} alt="Logo Preparatoria Quince" className="header-logo" />
       </header>
 
       <div className="content-wrapper">
-        <section className="form-card" aria-labelledby="form-title">
+        <section className="form-card" aria-label="Nuevo préstamo">
+          {/* Prestar un objeto y sacar equipo a un evento son dos flujos
+              hermanos: comparten panel en vez de competir, uno como pestaña
+              activa y el otro como la puerta al diálogo de salida. */}
+          <div className="flujo-tabs">
+            <button type="button" className="flujo-tab is-active" aria-pressed={true}>
+              <Icon name="package" />
+              Préstamo individual
+            </button>
+            <button
+              type="button"
+              className="flujo-tab flujo-tab-evento"
+              onClick={() => setEventoDialogAbierto(true)}
+              disabled={isSubmitting}
+              aria-haspopup="dialog"
+            >
+              <Icon name="mapPin" />
+              Salida a evento
+            </button>
+          </div>
           <div className="form-card-header">
-            <h1 id="form-title" className="form-title">
-              <Icon name="package" className="form-icon" />
-              Nuevo préstamo
-            </h1>
             <p className="form-subtitle">Datos del {personaNoun} y el objeto prestado.</p>
           </div>
 
@@ -932,11 +1040,11 @@ export default function PrestamoRapido() {
           <div className="historial-header">
             <div className="historial-heading-row">
               <h2 id="historial-title" className="historial-title">
-                <Icon name="clipboard" />
                 Historial
               </h2>
               <div className="search-wrapper">
                 <label htmlFor="busqueda-historial" className="visually-hidden">Buscar en historial</label>
+                <Icon name="search" className="search-icon" />
                 <input
                   id="busqueda-historial"
                   type="search"
@@ -949,6 +1057,9 @@ export default function PrestamoRapido() {
               </div>
             </div>
 
+            {/* Barra segmentada: una sola fila pase lo que pase. Va en grid con
+                columnas automáticas porque con flex los filtros se apilaban
+                cuando la búsqueda les ganaba el ancho. */}
             <div className="hist-chips" role="group" aria-label="Filtrar historial por estado">
               {chips.map((chip) => (
                 <button
@@ -958,8 +1069,8 @@ export default function PrestamoRapido() {
                   className={`hist-chip hist-chip-${chip.tone} ${filtroEstado === chip.value ? "is-active" : ""}`}
                   aria-pressed={filtroEstado === chip.value}
                 >
-                  <span className="hist-chip-count">{chip.count}</span>
                   <span className="hist-chip-label">{chip.label}</span>
+                  <span className="hist-chip-count">{chip.count}</span>
                 </button>
               ))}
             </div>
@@ -967,12 +1078,12 @@ export default function PrestamoRapido() {
 
           {filtrados.length === 0 ? (
             <div className="empty-state" role="status">
-              <Icon name={historial.length === 0 ? "inbox" : "search"} className="empty-icon" />
+              <Icon name={filas.length === 0 ? "inbox" : "search"} className="empty-icon" />
               <p className="empty-message">
-                {historial.length === 0 ? "No hay registros todavía." : "Nada coincide con este filtro."}
+                {filas.length === 0 ? "No hay registros todavía." : "Nada coincide con este filtro."}
               </p>
               <p className="empty-hint">
-                {historial.length === 0
+                {filas.length === 0
                   ? "Los préstamos que registres aparecerán en esta lista."
                   : "Prueba con otro estado o limpia la búsqueda."}
               </p>
@@ -993,11 +1104,87 @@ export default function PrestamoRapido() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtrados.map((item) => {
-                    const vencido = isVencido(item, now);
+                  {filtrados.map((fila) => {
+                    if (fila.tipo === "evento") {
+                      const evento = fila.evento;
+                      const estado = estadoEvento(evento);
+                      const pendientes = evento.total_items - evento.items_devueltos;
+                      return (
+                        <tr
+                          key={fila.clave}
+                          className={`row-evento ${fila.vencido ? "row-evento-alerta" : ""}`}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`Ver la salida a evento ${tituloEvento(evento)}`}
+                          onClick={() => setEventoAbierto(evento)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setEventoAbierto(evento);
+                            }
+                          }}
+                        >
+                          <td data-label="Persona" className="cell-primary">
+                            <span className="evento-tag">
+                              <Icon name="mapPin" /> Salida a evento
+                            </span>
+                            <span className="cell-name">{tituloEvento(evento)}</span>
+                            <span className="cell-meta">
+                              {evento.responsable_nombre} · {evento.lugar}
+                            </span>
+                          </td>
+                          <td data-label="Objeto">
+                            <span className="cell-name">
+                              {evento.total_items} objeto{evento.total_items === 1 ? "" : "s"}
+                            </span>
+                            <span className="cell-meta">
+                              {pendientes > 0 ? `${pendientes} sin devolver` : "todo devuelto"}
+                            </span>
+                          </td>
+                          <td data-label="Tiempo" className="cell-tiempo">
+                            <span title={`Registrado: ${formatSqliteDateTime(evento.creado_en)}`}>
+                              {rangoFechas(evento)}
+                            </span>
+                            <span className="cell-meta">{rangoHoras(evento)}</span>
+                          </td>
+                          <td data-label="Estado">
+                            <span className={`status-badge status-evento-${estado}`}>
+                              <Icon
+                                name={
+                                  estado === "cerrado"
+                                    ? "check"
+                                    : estado === "cerrado-con-faltantes"
+                                      ? "alert"
+                                      : "dot"
+                                }
+                              />
+                              {ETIQUETA_ESTADO_EVENTO[estado]}
+                            </span>
+                          </td>
+                          <td data-label="Acciones" className="cell-actions">
+                            {/* El clic en la fila ya abre el detalle; el botón existe
+                                para quien navega con teclado o lector de pantalla. */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEventoAbierto(evento);
+                              }}
+                              className="action-btn action-evento"
+                              aria-label={`Abrir la salida a evento ${tituloEvento(evento)}`}
+                            >
+                              Ver evento
+                              <Icon name="arrowRight" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    const item = fila.item;
+                    const vencido = fila.vencido;
                     const autorizante = item.autorizante_nombre || item.persona_prestamo || "—";
                     return (
-                      <tr key={item.id} className={vencido ? "row-vencido" : undefined}>
+                      <tr key={fila.clave} className={vencido ? "row-vencido" : undefined}>
                         <td data-label="Persona" className="cell-primary">
                           <span className="cell-name">{item.nombre_alumno}</span>
                           {item.tipo_persona === "profesor" && (
@@ -1056,6 +1243,7 @@ export default function PrestamoRapido() {
                               className="action-btn action-success"
                               aria-label={`Marcar como devuelto el equipo ${item.nombre_equipo} prestado a ${item.nombre_alumno}`}
                             >
+                              <Icon name="check" />
                               Devolver
                             </button>
                           )}
@@ -1078,6 +1266,44 @@ export default function PrestamoRapido() {
         </section>
       </div>
 
+      <EventoSalidaDialog
+        abierto={eventoDialogAbierto}
+        admin={state.status === "authenticated" ? state.session.admin : null}
+        equipos={equipos}
+        profesores={profesores}
+        personas={personasRapidas}
+        onCerrar={() => setEventoDialogAbierto(false)}
+        onGuardado={async (mensaje) => {
+          setSuccessMessage(mensaje);
+          // El inventario cambió: los equipos que salieron ya no están libres.
+          await loadHistorial();
+          try {
+            setEquipos(await getEquipos());
+          } catch {
+            // El catálogo solo alimenta el selector; recargarlo nunca bloquea.
+          }
+        }}
+      />
+
+      <EventoDetalleModal
+        evento={eventoAbierto}
+        admin={state.status === "authenticated" ? state.session.admin : null}
+        onCerrar={() => setEventoAbierto(null)}
+        onCambio={async () => {
+          const frescos = await loadHistorial();
+          // El modal recibe el evento por prop, así que devolver un objeto no
+          // actualizaría su insignia sin volver a apuntarlo a la fila recargada.
+          setEventoAbierto((abierto) =>
+            abierto ? (frescos.find((evento) => evento.id === abierto.id) ?? null) : null,
+          );
+          try {
+            setEquipos(await getEquipos());
+          } catch {
+            // Igual que arriba: el catálogo desactualizado no rompe nada.
+          }
+        }}
+      />
+
       <style>{`
         .prestamo-rapido-page {
           height: 100dvh;
@@ -1085,7 +1311,7 @@ export default function PrestamoRapido() {
           flex-direction: column;
           overflow: hidden;
           gap: clamp(0.6rem, 1.4vh, 1rem);
-          background: var(--surface-sunken);
+          background: var(--background-default);
           padding: clamp(0.6rem, 1.6vh, 1rem) clamp(0.75rem, 2vw, 1.5rem);
         }
 
@@ -1115,29 +1341,56 @@ export default function PrestamoRapido() {
         }
         .page-header .session-badge {
           margin-left: auto;
-          padding: 0.45rem 0.8rem;
-          font-size: 0.88rem;
+          padding: 0;
+          gap: 0.7rem;
+          background: none;
+          border: none;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+        .page-header .session-badge-code {
+          background: none;
+          padding: 0;
+        }
+        .page-header .session-badge-logout {
+          background: var(--surface-default);
+          color: var(--text-secondary);
+          border: 1.5px solid var(--border-subtle);
+        }
+        .page-header .session-badge-logout:hover {
+          border-color: var(--danger-base);
+          color: var(--danger-base);
+          filter: none;
         }
 
         .back-link {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.45rem;
           text-decoration: none;
           color: var(--brand-primary);
-          font-weight: 600;
+          font-weight: 700;
           font-size: clamp(0.85rem, 1.4vw, 1rem);
-          padding: 0.5rem 0.9rem;
-          border-radius: 12px;
-          border: 1.5px solid var(--border-subtle);
-          background: var(--surface-default);
-          transition: all 0.2s ease;
+          padding: 0.4rem 0.2rem;
+          border-radius: 8px;
+          transition: color 0.2s ease;
           flex-shrink: 0;
         }
         .back-link:hover {
-          background: var(--surface-sunken);
-          border-color: var(--brand-primary);
-          transform: translateY(-1px);
+          color: #1D4ED8;
+        }
+
+        .page-header-sep {
+          width: 1px;
+          height: 20px;
+          background: var(--border-subtle);
+          flex-shrink: 0;
+        }
+        .page-title {
+          font-size: clamp(0.95rem, 1.8vh, 1.15rem);
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          flex-shrink: 0;
         }
         .back-link:focus-visible {
           outline: 2px solid var(--brand-primary);
@@ -1165,10 +1418,9 @@ export default function PrestamoRapido() {
         .form-card,
         .historial-card {
           background: var(--surface-default);
-          border-radius: 20px;
+          border-radius: 18px;
           padding: clamp(1rem, 2vh, 1.6rem);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-          border: 1px solid rgba(148, 163, 184, 0.12);
+          border: 1px solid var(--border-subtle);
           min-height: 0;
           min-width: 0;
         }
@@ -1182,22 +1434,60 @@ export default function PrestamoRapido() {
           overflow: hidden;
         }
 
-        .form-card-header {
-          margin-bottom: 1.1rem;
+        .flujo-tabs {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          border-bottom: 1.5px solid var(--border-subtle);
+          margin-bottom: 0.9rem;
         }
-
-        .form-title {
-          font-size: clamp(1.15rem, 2.2vh, 1.5rem);
-          font-weight: 800;
-          color: var(--text-primary);
-          margin: 0 0 0.25rem 0;
+        .flujo-tab {
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 0.5rem;
-          letter-spacing: -0.02em;
+          padding: 0.85rem 0.5rem;
+          margin-bottom: -1.5px;
+          border: none;
+          border-bottom: 3px solid transparent;
+          border-radius: 12px 12px 0 0;
+          background: var(--surface-sunken);
+          color: var(--text-secondary);
+          font-family: inherit;
+          font-size: clamp(0.85rem, 1.5vh, 0.95rem);
+          font-weight: 800;
+          cursor: pointer;
+          transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
         }
-        .form-icon {
-          font-size: 1.2em;
+        .flujo-tab:hover:not(:disabled):not(.is-active) {
+          color: var(--text-primary);
+        }
+        .flujo-tab:focus-visible {
+          outline: 2px solid var(--brand-primary);
+          outline-offset: -2px;
+        }
+        .flujo-tab.is-active {
+          background: #DBEAFE;
+          color: #1D4ED8;
+          border-bottom-color: var(--brand-primary);
+        }
+        /* El violeta es la única señal que necesita: si estuviera en azul se
+           leería como la otra mitad del mismo formulario. */
+        .flujo-tab-evento {
+          background: var(--evento-suave);
+          color: var(--evento-base);
+        }
+        .flujo-tab-evento:hover:not(:disabled) {
+          background: var(--evento-base);
+          color: #ffffff;
+          border-bottom-color: var(--evento-base);
+        }
+        .flujo-tab-evento:focus-visible {
+          outline-color: var(--evento-base);
+        }
+        .flujo-tab:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .form-card-header {
+          margin-bottom: 1.1rem;
         }
 
         .form-subtitle {
@@ -1275,9 +1565,9 @@ export default function PrestamoRapido() {
 
         .form-input {
           padding: 0.7rem 0.95rem;
-          border-radius: 12px;
-          border: 2px solid var(--border-subtle);
-          background: var(--surface-sunken);
+          border-radius: 10px;
+          border: 1.5px solid var(--border-subtle);
+          background: var(--surface-default);
           color: var(--text-primary);
           font-size: clamp(0.88rem, 1.5vh, 1rem);
           font-family: inherit;
@@ -1295,8 +1585,7 @@ export default function PrestamoRapido() {
         .form-input:focus {
           outline: none;
           border-color: var(--brand-primary);
-          box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-          background: var(--surface-default);
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
         .form-input:disabled {
           opacity: 0.6;
@@ -1666,7 +1955,7 @@ export default function PrestamoRapido() {
         .historial-header {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 0.7rem;
           margin-bottom: 0.9rem;
           flex-shrink: 0;
         }
@@ -1677,26 +1966,30 @@ export default function PrestamoRapido() {
           gap: 1rem;
           flex-wrap: wrap;
         }
-
         .historial-title {
-          font-size: clamp(1.05rem, 1.9vh, 1.35rem);
+          font-size: clamp(1.05rem, 1.9vh, 1.3rem);
           font-weight: 800;
           color: var(--text-primary);
           margin: 0;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
         }
 
         .search-wrapper {
-          flex: 1;
-          min-width: 200px;
-          max-width: 340px;
+          position: relative;
+          flex: 0 1 330px;
+          min-width: 180px;
+        }
+        .search-icon {
+          position: absolute;
+          left: 0.85rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-secondary);
+          pointer-events: none;
         }
         .search-input {
-          padding: 0.6rem 0.95rem;
+          padding: 0.55rem 0.9rem 0.55rem 2.3rem;
           border-radius: 12px;
-          border: 1.5px solid var(--border-subtle);
+          border: 1.5px solid transparent;
           background: var(--surface-sunken);
           color: var(--text-primary);
           font-size: clamp(0.84rem, 1.4vh, 0.94rem);
@@ -1709,63 +2002,71 @@ export default function PrestamoRapido() {
           outline: none;
           border-color: var(--brand-primary);
           box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-          background: var(--surface-default);
         }
         .search-input::placeholder {
           color: var(--text-secondary);
         }
 
         .hist-chips {
-          display: flex;
-          gap: 0.5rem;
-          flex-wrap: wrap;
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: minmax(0, 1fr);
+          gap: 4px;
+          padding: 4px;
+          border-radius: 14px;
+          background: var(--surface-sunken);
         }
         .hist-chip {
           display: flex;
-          align-items: baseline;
-          gap: 0.4rem;
-          padding: 0.45rem 0.85rem;
-          border-radius: 999px;
-          border: 1.5px solid var(--border-subtle);
-          background: var(--surface-sunken);
+          align-items: center;
+          justify-content: center;
+          gap: 0.45rem;
+          min-width: 0;
+          padding: 0.55rem 0.6rem;
+          border: none;
+          border-radius: 10px;
+          background: none;
           color: var(--text-secondary);
           font-family: inherit;
-          font-size: 0.82rem;
+          font-size: clamp(0.82rem, 1.4vh, 0.92rem);
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.18s ease;
+          transition: background 0.18s ease, color 0.18s ease;
         }
-        .hist-chip:hover {
-          border-color: #94a3b8;
-          transform: translateY(-1px);
+        .hist-chip-label {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .hist-chip:hover:not(.is-active) {
+          color: var(--text-primary);
         }
         .hist-chip:focus-visible {
           outline: 2px solid var(--brand-primary);
           outline-offset: 2px;
         }
         .hist-chip-count {
-          font-size: 1.05rem;
+          padding: 0.05rem 0.45rem;
+          border-radius: 999px;
+          background: var(--border-subtle);
+          color: #334155;
+          font-size: 0.78rem;
           font-weight: 800;
-          color: var(--text-primary);
-          line-height: 1;
+          line-height: 1.4;
         }
         .hist-chip.is-active {
-          background: var(--brand-primary);
-          border-color: var(--brand-primary);
-          color: #ffffff;
+          background: var(--surface-default);
+          color: var(--text-primary);
+          font-weight: 800;
+          box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1);
         }
         .hist-chip.is-active .hist-chip-count {
-          color: #ffffff;
+          background: #DBEAFE;
+          color: #1E40AF;
         }
         .hist-chip-vencido .hist-chip-count {
-          color: #dc2626;
-        }
-        .hist-chip-vencido.is-active {
-          background: #dc2626;
-          border-color: #dc2626;
-        }
-        .hist-chip-vencido.is-active .hist-chip-count {
-          color: #ffffff;
+          background: #FEE2E2;
+          color: #991B1B;
         }
 
         .empty-state {
@@ -1797,8 +2098,6 @@ export default function PrestamoRapido() {
           flex: 1;
           min-height: 0;
           overflow: auto;
-          border-radius: 12px;
-          border: 1px solid var(--border-subtle);
         }
         .table-wrapper:focus-visible {
           outline: 2px solid var(--brand-primary);
@@ -1814,22 +2113,22 @@ export default function PrestamoRapido() {
           position: sticky;
           top: 0;
           z-index: 1;
-          background: var(--surface-sunken);
-          padding: 0.7rem 0.85rem;
+          background: var(--surface-default);
+          padding: 0.5rem 0.5rem 0.6rem;
           text-align: left;
-          font-size: clamp(0.68rem, 1.1vh, 0.78rem);
+          font-size: clamp(0.66rem, 1.05vh, 0.74rem);
           font-weight: 800;
-          color: var(--text-secondary);
+          color: #94A3B8;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          border-bottom: 2px solid var(--border-subtle);
+          letter-spacing: 0.06em;
+          border-bottom: 1px solid var(--border-subtle);
         }
         .historial-table td {
-          padding: 0.6rem 0.85rem;
+          padding: 0.75rem 0.5rem;
           font-size: clamp(0.8rem, 1.35vh, 0.9rem);
           color: var(--text-primary);
           vertical-align: middle;
-          border-bottom: 1px solid var(--border-subtle);
+          border-bottom: 1px solid #E2E8F0;
         }
         .historial-table tbody tr {
           transition: background 0.15s ease;
@@ -1845,6 +2144,46 @@ export default function PrestamoRapido() {
         }
         .historial-table tbody tr.row-vencido td:first-child {
           box-shadow: inset 3px 0 0 #dc2626;
+        }
+
+        /* Una salida a evento no se lee como un préstamo suelto: barra violeta,
+           fondo tenue y toda la fila es clickeable para abrir su detalle. */
+        .historial-table tbody tr.row-evento {
+          background: var(--evento-suave);
+          cursor: pointer;
+        }
+        .historial-table tbody tr.row-evento td:first-child {
+          box-shadow: inset 3px 0 0 var(--evento-base);
+        }
+        .historial-table tbody tr.row-evento:hover {
+          background: #EDE9FE;
+        }
+        .historial-table tbody tr.row-evento:focus-visible {
+          outline: 2px solid var(--evento-base);
+          outline-offset: -2px;
+        }
+        /* Cerrado con faltantes o pasado de fecha: sigue siendo evento, pero
+           con equipo afuera. El ámbar avisa sin volverlo un error rojo. */
+        .historial-table tbody tr.row-evento.row-evento-alerta {
+          background: #FFFBEB;
+        }
+        .historial-table tbody tr.row-evento.row-evento-alerta td:first-child {
+          box-shadow: inset 3px 0 0 var(--warning-base);
+        }
+        .historial-table tbody tr.row-evento.row-evento-alerta:hover {
+          background: #FEF3C7;
+        }
+
+        .evento-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          margin-bottom: 0.15rem;
+          color: var(--evento-base);
+          font-size: 0.68rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
         }
 
         .cell-primary {
@@ -1881,34 +2220,28 @@ export default function PrestamoRapido() {
           display: inline-flex;
           align-items: center;
           white-space: nowrap;
-          padding: 0.28rem 0.7rem;
-          border-radius: 999px;
-          font-size: 0.74rem;
-          font-weight: 800;
-          gap: 0.3rem;
+          gap: 0.4rem;
+          font-size: clamp(0.78rem, 1.3vh, 0.88rem);
+          font-weight: 700;
         }
-        .status-activo {
-          background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-          color: #166534;
-          border: 1px solid #86efac;
-        }
-        .status-vencido {
-          background: linear-gradient(135deg, #fee2e2, #fecaca);
-          color: #991b1b;
-          border: 1px solid #fca5a5;
-        }
-        .status-devuelto {
-          background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-          color: #374151;
-          border: 1px solid #d1d5db;
-        }
+        .status-activo { color: var(--success-base); }
+        .status-vencido { color: var(--danger-base); }
+        .status-devuelto { color: #94A3B8; }
+        .status-evento-activo { color: var(--evento-base); }
+        .status-evento-cerrado { color: var(--success-base); }
+        .status-evento-cerrado-con-faltantes { color: var(--warning-base); }
 
         .action-btn {
-          padding: 0.4rem 0.85rem;
-          border-radius: 10px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.45rem;
+          min-height: 44px;
+          padding: 0 1.15rem;
+          border-radius: 14px;
           border: none;
-          font-size: 0.8rem;
-          font-weight: 700;
+          font-size: clamp(0.82rem, 1.4vh, 0.92rem);
+          font-weight: 800;
           cursor: pointer;
           font-family: inherit;
           transition: all 0.2s ease;
@@ -1917,14 +2250,27 @@ export default function PrestamoRapido() {
           outline: 2px solid var(--brand-primary);
           outline-offset: 2px;
         }
+        .action-evento {
+          background: var(--evento-base);
+          color: #ffffff;
+          box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+        }
+        .action-evento:focus-visible {
+          outline-color: var(--evento-base);
+        }
+        .action-evento:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(124, 58, 237, 0.38);
+          filter: brightness(1.05);
+        }
         .action-success {
           background: linear-gradient(135deg, #10b981, #059669);
           color: #ffffff;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
         }
         .action-success:hover {
           transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+          box-shadow: 0 6px 18px rgba(16, 185, 129, 0.38);
           filter: brightness(1.05);
         }
         /* Destructive action kept quiet and pushed away from "Devolver" so it
@@ -1934,9 +2280,12 @@ export default function PrestamoRapido() {
           background: transparent;
           color: var(--text-secondary);
           opacity: 0.45;
-          padding: 0.35rem 0.5rem;
+          min-height: 38px;
+          border-radius: 10px;
+          padding: 0 0.5rem;
           font-size: 0.95rem;
           line-height: 1;
+          box-shadow: none;
         }
         .action-delete:hover {
           opacity: 1;
@@ -2000,7 +2349,11 @@ export default function PrestamoRapido() {
             align-items: stretch;
           }
           .search-wrapper {
-            max-width: none;
+            flex: 1 1 auto;
+          }
+          .hist-chips {
+            grid-auto-flow: row;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
           .table-wrapper {
             max-height: none;

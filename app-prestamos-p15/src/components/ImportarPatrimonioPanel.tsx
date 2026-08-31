@@ -91,11 +91,21 @@ export function ImportarPatrimonioPanel({ onImportado }: Props) {
           type="file"
           accept=".xlsx,.xls"
           disabled={ocupado}
+          hidden
           onChange={(e) => {
             const archivo = e.target.files?.[0];
             if (archivo) void elegirArchivo(archivo);
           }}
         />
+        <button
+          type="button"
+          className="ghost boton-archivo"
+          disabled={ocupado}
+          onClick={() => archivoRef.current?.click()}
+        >
+          <Icon name="upload" size="1.05rem" />
+          Elegir el Excel de Patrimonio
+        </button>
       </div>
 
       {ocupado && <div style={{ color: "var(--text-secondary)" }}>Trabajando…</div>}

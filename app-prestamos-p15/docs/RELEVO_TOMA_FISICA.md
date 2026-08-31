@@ -67,8 +67,8 @@ nada que perder.
 
 1. En la segunda computadora: **Exportar reporte**. Cae en `reportes/`.
 2. Drive lo sincroniza (ver el pendiente de arriba).
-3. En la principal: pestaña **Inventario** → **Traer la toma física de otra
-   computadora** → elegir el CSV.
+3. En la principal: pestaña **Toma de inventario** → **Traer la toma física de
+   otra computadora** → elegir el CSV.
 4. Se ve la vista previa. Nada se escribe hasta confirmar.
 
 ---

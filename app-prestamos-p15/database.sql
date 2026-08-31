@@ -84,7 +84,43 @@ CREATE TABLE IF NOT EXISTS prestamos_rapidos_alumnos (
     -- Added by admin-auth-prestamo-rapido: accountability columns
     id_admin INTEGER REFERENCES profesores(id) ON DELETE SET NULL,
     autorizante_codigo TEXT,
-    autorizante_nombre TEXT
+    autorizante_nombre TEXT,
+    -- Added by prestamo-rapido-inventario: links the record to the real loan.
+    tipo_persona TEXT NOT NULL DEFAULT 'alumno',
+    equipo_id INTEGER REFERENCES inventario(id) ON DELETE SET NULL,
+    prestamo_app_id INTEGER,
+    -- Added by salida-a-evento: set when this row is one of the objects that
+    -- left with an event. The event header lives in `eventos`.
+    evento_id INTEGER REFERENCES eventos(id) ON DELETE SET NULL
+);
+
+-- Event outings. This table holds ONLY the header; the objects that left are
+-- rows of prestamos_rapidos_alumnos carrying `evento_id`, so returning one of
+-- them frees the inventory item through the existing path.
+--
+-- The event status is NOT stored: it is derived from `cerrado_en` plus the
+-- state of its child rows. See src/utils/evento.ts.
+CREATE TABLE IF NOT EXISTS eventos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT,
+    lugar TEXT NOT NULL,
+    fecha_inicio TEXT NOT NULL,
+    fecha_fin TEXT,
+    hora_inicio TEXT,
+    hora_fin TEXT,
+    responsable_nombre TEXT NOT NULL,
+    responsable_codigo TEXT NOT NULL,
+    responsable_tipo TEXT NOT NULL DEFAULT 'profesor',
+    expositor_nombre TEXT,
+    expositor_contacto TEXT,
+    observaciones TEXT,
+    id_admin INTEGER REFERENCES profesores(id) ON DELETE SET NULL,
+    autorizante_codigo TEXT,
+    autorizante_nombre TEXT,
+    creado_en DATETIME,
+    cerrado_en DATETIME,
+    cerrado_por TEXT,
+    notas_cierre TEXT
 );
 
 CREATE TABLE IF NOT EXISTS app_settings (

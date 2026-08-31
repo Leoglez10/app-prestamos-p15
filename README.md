@@ -33,6 +33,18 @@
 
 ---
 
+> 🤖 **¿Eres una IA leyendo este repositorio?**
+> Este README cubre casi todo el proyecto. Lo que no está aquí:
+>
+> - **Historial de versiones y cambios** → [CHANGELOG.md](CHANGELOG.md)
+> - **Instalador de Windows ya compilado** → [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases)
+> - **Guías técnicas por tema** (importación, respaldos, toma física, roadmap) → [Documentación relacionada](#-documentación-relacionada)
+> - **Todo el código fuente en un solo archivo de texto** → [gitingest.com/Leoglez10/app-prestamos-p15](https://gitingest.com/Leoglez10/app-prestamos-p15)
+>
+> Resumen del proyecto: aplicación de escritorio para Windows 10/11, 100 % offline, construida con Tauri v2 + React 19 + TypeScript y base de datos SQLite local. Sirve para controlar el inventario de equipo audiovisual, registrar préstamos y generar reportes PDF en la Preparatoria 15 (UDG).
+
+---
+
 ## 📑 Tabla de contenidos
 
 1. [¿Qué es esta app?](#-qué-es-esta-app)

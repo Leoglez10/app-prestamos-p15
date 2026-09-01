@@ -28,6 +28,7 @@
 > 1. Instala la app → [Instalación en 7 pasos](#-instalación-para-usuarios-finales-no-programadores)
 > 2. Entra al Admin y cambia el PIN de fábrica → [Credenciales por defecto](#-credenciales-por-defecto-cambiar)
 > 3. Conecta los respaldos a Google Drive con el correo de la escuela → [Respaldos en Google Drive](#respaldos-en-google-drive-con-el-correo-de-la-escuela) (el respaldo automático ya viene activado, cada 12 horas)
+> 4. ¿Encontraste un problema o necesitas una función? **[Repórtalo aquí](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose)** — es un formulario guiado, no necesitas saber programar
 >
 > El resto es opcional: [cómo usarla paso a paso](#-cómo-usar-la-app-paso-a-paso), [importar el Excel oficial](#-importar-excel-de-patrimonio) o [contar inventario físico](#-toma-de-inventario-físico).
 
@@ -730,8 +731,13 @@ npm test
 app-prestamos-p15/                ← Carpeta del repo
 ├── 📁 .github/workflows/
 │   └── build-windows.yml         ← CI activo: compila y publica al crear tags v*
+├── 📁 .github/ISSUE_TEMPLATE/
+│   ├── bug.yml                   ← Formulario "Reportar un problema" (para usuarios)
+│   ├── feature.yml               ← Formulario "Sugerir una mejora"
+│   └── config.yml                ← Desactiva issues en blanco + enlaces de ayuda
 ├── 📄 README.md                  ← ESTE ARCHIVO
 ├── 📄 CHANGELOG.md               ← Qué cambió en cada versión publicada
+├── 📄 CONTRIBUTING.md            ← Cómo reportar issues y contribuir código
 ├── 📄 LICENSE                    ← Uso interno educativo
 ├── 📄 README_INSTALACION.md      ← Guía corta de instalación y actualización
 └── app-prestamos-p15/            ← Carpeta real del proyecto (necesaria así para el CI)
@@ -918,6 +924,25 @@ No. **Cámbialo en cuanto entres**, pero ten presente que la versión actual con
 
 ## 🤝 Cómo contribuir
 
+### No programas: reporta (es lo más útil)
+
+¿Encontraste un problema o se te ocurre una mejora? Abre un Issue con formulario guiado:
+
+👉 **[github.com/Leoglez10/app-prestamos-p15/issues/new/choose](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose)**
+
+Hay dos formularios, y llenarlos es como responder un cuestionario:
+
+| Formulario | Cuándo usarlo |
+|---|---|
+| 🐛 **Reportar un problema** | La app hizo algo raro, se trabó, o no hizo lo que esperabas |
+| 💡 **Sugerir una mejora** | Te gustaría que la app hiciera algo que todavía no hace |
+
+> 💡 Los Issues son el **soporte técnico** de la aplicación: cualquiera con cuenta de GitHub puede abrir uno, sin que le den acceso al repo. El mantenedor lo revisa y la corrección sale en una versión futura.
+
+### Sí programas: Pull Request
+
+El flujo completo (fork → clonar → rama → cambiar → commit → push → PR) está detallado en **[CONTRIBUTING.md](CONTRIBUTING.md)**. En corto:
+
 1. Clona el repo.
 2. Crea una branch: `git checkout -b feat/mi-cambio`.
 3. Haz commits claros: `feat: agregué exportación a Excel`.
@@ -997,6 +1022,7 @@ Si la compilación falla, el badge de arriba se pone rojo y no se publica nada.
 | [docs/SERVIDOR.md](app-prestamos-p15/docs/SERVIDOR.md) | Notas sobre alojar los datos en un servidor (exploración) |
 | [docs/ROADMAP.md](app-prestamos-p15/docs/ROADMAP.md) | Rumbo del proyecto y pendientes |
 | [CHANGELOG.md](CHANGELOG.md) | Qué cambió en cada versión publicada |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Cómo reportar problemas y contribuir código |
 | [README_INSTALACION.md](README_INSTALACION.md) | Instalación y actualización manual |
 
 ---
@@ -1028,7 +1054,7 @@ En corto: cualquier institución educativa puede usarlo, instalarlo, estudiarlo 
 
 </div>
 
-> 📬 ¿Encontraste un bug o tienes una mejora? Abre un [Issue](https://github.com/Leoglez10/app-prestamos-p15/issues) o manda un Pull Request.
+> 📬 ¿Encontraste un bug o tienes una mejora? Abre un [Issue con formulario](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose) (cualquiera puede) o manda un Pull Request — guía en [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 

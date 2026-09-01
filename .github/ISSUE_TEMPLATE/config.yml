@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: "\U0001F4D6 Dudas de uso (antes de abrir un issue)"
+    url: https://github.com/Leoglez10/app-prestamos-p15#-dudas-frecuentes
+    about: >
+      Muchos problemas comunes ya tienen respuesta en el README: kiosko sin equipos,
+      importación de Excel, pistola de códigos, respaldos. Checa las Dudas frecuentes primero.
+  - name: "\U0001F4DA Manual completo para el personal"
+    url: https://github.com/Leoglez10/app-prestamos-p15/blob/main/app-prestamos-p15/docs/MANUAL_PERSONAL.md
+    about: Guía operativa paso a paso de toda la aplicación.

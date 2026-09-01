@@ -1,0 +1,41 @@
+name: "\U0001F4A1 Sugerir una mejora"
+description: "¿Qué te gustaría que hiciera la aplicación?"
+title: "[Mejora]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cualquier persona puede proponer mejoras: profesores, administrativos, becarios.
+        No hace falta saber programar.
+
+  - type: textarea
+    id: que-gustaria
+    attributes:
+      label: "¿Qué te gustaría que hiciera la aplicación?"
+      description: Descríbelo como si se lo contaras a un compañero de la oficina.
+      placeholder: "Me gustaría que la app..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: por-que-util
+    attributes:
+      label: "¿Por qué sería útil?"
+      description: "¿Qué problema te ahorra? ¿Quién más se beneficiaría (profesores, alumnos, audiovisuales)?"
+      placeholder: "Sería útil porque..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: rol
+    attributes:
+      label: "¿Cómo usas la app?"
+      options:
+        - Profesor (kiosko)
+        - Administrador / audiovisuales
+        - Préstamo rápido (alumnos)
+        - Programador / mantenimiento
+        - Otra
+    validations:
+      required: true

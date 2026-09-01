@@ -1,0 +1,64 @@
+name: "\U0001F41B Reportar un problema"
+description: Algo no funcionó como debería o la app hizo algo raro.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportar. No necesitas saber de computadoras: llena lo que puedas
+        y adjunta una captura si tienes. Mientras más contexto des, más rápido se puede arreglar.
+
+  - type: textarea
+    id: que-intentaba
+    attributes:
+      label: "¿Qué estabas intentando hacer?"
+      description: "Ejemplo: prestar una laptop desde el kiosko / importar el Excel de Patrimonio."
+      placeholder: "Yo estaba tratando de..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: que-ocurrio
+    attributes:
+      label: "¿Qué ocurrió?"
+      description: Cuenta lo que pasó, con tus palabras. Si apareció un mensaje de error, cópialo aquí.
+      placeholder: "Lo que pasó fue..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: que-debia-ocurrir
+    attributes:
+      label: "¿Qué debería haber ocurrido?"
+      description: "Cómo esperabas que se comportara la app."
+      placeholder: "Yo esperaba que..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sistema
+    attributes:
+      label: "¿En qué computadora ocurrió?"
+      options:
+        - Windows 10
+        - Windows 11
+        - Otra / no sé
+      default: 2
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: "Versión de la app (opcional)"
+      description: "Si la sabes, escríbela (por ejemplo 0.7.0). La encuentras en el instalador o en la carpeta de la app."
+      placeholder: "0.7.0"
+
+  - type: textarea
+    id: captura
+    attributes:
+      label: "¿Puedes adjuntar una captura? (opcional pero ayuda mucho)"
+      description: Arrastra la imagen a este cuadro o usa el enlace "Adjuntar archivos" de abajo.
+    validations:
+      required: false

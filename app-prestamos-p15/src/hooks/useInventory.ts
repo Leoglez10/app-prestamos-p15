@@ -496,6 +496,12 @@ const prepareDatabase = async (db: Database): Promise<void> => {
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_inventario_id_patrimonial ON inventario (id_patrimonial)"
   );
 
+  // El reporte marca cada préstamo con un EXISTS sobre esta columna; sin índice
+  // es un barrido de la tabla espejo por cada fila de `prestamos`.
+  await db.execute(
+    "CREATE INDEX IF NOT EXISTS idx_prestamos_rapidos_prestamo_app_id ON prestamos_rapidos_alumnos (prestamo_app_id)"
+  );
+
   await db.execute("UPDATE prestamos SET estado_prestamo = 'activo' WHERE estado_prestamo IS NULL OR TRIM(estado_prestamo) = ''");
   await db.execute("UPDATE prestamos SET fecha_salida = CURRENT_TIMESTAMP WHERE fecha_salida IS NULL OR TRIM(fecha_salida) = ''");
   await db.execute("UPDATE inventario SET es_granel = 0 WHERE es_granel IS NULL");
@@ -1382,8 +1388,20 @@ export type ReportePrestamo = {
    *
    * `id` es solo el más chico del grupo (`MIN(p.id)`), así que no sirve para
    * buscar algo atado a un préstamo puntual —como su foto de devolución—.
+   *
+   * Vacío cuando `fuente` es 'rapido': esos ids son de
+   * `prestamos_rapidos_alumnos` y buscarlos en `prestamos` traería la foto de
+   * un préstamo ajeno que casualmente comparte número.
    */
   ids: string;
+  /**
+   * De qué tabla salió la fila. 'prestamo' son las filas reales de `prestamos`
+   * —editables y borrables desde aquí—; 'rapido' son los préstamos rápidos de
+   * texto libre, que no tocan el inventario y por eso solo se leen.
+   */
+  fuente: "prestamo" | "rapido";
+  /** true si el movimiento se registró desde Préstamo Rápido. */
+  es_rapido: boolean;
 };
 
 export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}): Promise<ReportePrestamo[]> => {
@@ -1393,8 +1411,10 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
 
   if (filters.busqueda?.trim()) {
     const searchTerm = `%${filters.busqueda.trim()}%`;
-    conditions.push("(p.codigo_profe LIKE ? OR p.nombre_profe LIKE ? OR i.nombre_equipo LIKE ? OR c.nombre LIKE ?)");
-    params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+    conditions.push(
+      "(p.codigo_profe LIKE ? OR p.nombre_profe LIKE ? OR i.nombre_equipo LIKE ? OR c.nombre LIKE ? OR p.nombre_libre LIKE ?)",
+    );
+    params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
   }
 
   if (filters.estado?.trim()) {
@@ -1419,11 +1439,58 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   const limit = Math.max(50, Math.min(filters.limit ?? 500, 2000));
-  const rows = await db.select<ReportePrestamo[]>(
-    `SELECT MIN(p.id) AS id,
+  // El reporte lee DOS orígenes en una sola lista:
+  //
+  //  - `prestamos`: todo movimiento que tocó el inventario, venga del kiosko o
+  //    de Préstamo Rápido (ahí `es_rapido` marca cuál fue cuál).
+  //  - `prestamos_rapidos_alumnos` SIN equipo_id: los préstamos rápidos de
+  //    texto libre, que nunca escriben en `prestamos` y por eso antes no
+  //    aparecían en ningún reporte.
+  //
+  // La unión imita la forma de `prestamos` para que filtros, JOIN y agrupado
+  // sigan siendo los mismos; `nombre_libre` carga el nombre tecleado a mano,
+  // que no tiene fila en `inventario` de donde leerlo.
+  const rows = await db.select<Array<Omit<ReportePrestamo, "es_rapido"> & { es_rapido: number }>>(
+    `WITH movimientos AS (
+       SELECT p.id AS id,
+              p.equipo_id AS equipo_id,
+              NULL AS nombre_libre,
+              p.codigo_profe AS codigo_profe,
+              p.nombre_profe AS nombre_profe,
+              p.fecha_salida AS fecha_salida,
+              p.fecha_retorno AS fecha_retorno,
+              p.estado_prestamo AS estado_prestamo,
+              p.observaciones_entrega AS observaciones_entrega,
+              p.condicion_regreso AS condicion_regreso,
+              p.admin_condicion_entrega AS admin_condicion_entrega,
+              p.admin_notas_retorno AS admin_notas_retorno,
+              'prestamo' AS fuente,
+              CASE WHEN EXISTS (
+                SELECT 1 FROM prestamos_rapidos_alumnos pr WHERE pr.prestamo_app_id = p.id
+              ) THEN 1 ELSE 0 END AS es_rapido
+       FROM prestamos p
+       UNION ALL
+       SELECT pra.id,
+              NULL,
+              pra.nombre_equipo,
+              pra.codigo_alumno,
+              pra.nombre_alumno,
+              pra.fecha_salida,
+              pra.fecha_retorno,
+              COALESCE(pra.estado, 'activo'),
+              pra.observaciones,
+              NULL,
+              NULL,
+              NULL,
+              'rapido',
+              1
+       FROM prestamos_rapidos_alumnos pra
+       WHERE pra.equipo_id IS NULL
+     )
+     SELECT MIN(p.id) AS id,
             p.codigo_profe,
             p.nombre_profe,
-            i.nombre_equipo,
+            COALESCE(i.nombre_equipo, p.nombre_libre) AS nombre_equipo,
             COALESCE(c.nombre, 'Sin categoría') AS categoria_nombre,
             p.estado_prestamo,
             MIN(p.fecha_salida) AS fecha_salida,
@@ -1433,12 +1500,15 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
             MIN(p.admin_condicion_entrega) AS admin_condicion_entrega,
             MIN(p.admin_notas_retorno) AS admin_notas_retorno,
             COUNT(*) AS cantidad_prestada,
-            GROUP_CONCAT(p.id) AS ids
-     FROM prestamos p
+            CASE WHEN p.fuente = 'prestamo' THEN GROUP_CONCAT(p.id) ELSE '' END AS ids,
+            p.fuente,
+            p.es_rapido
+     FROM movimientos p
      LEFT JOIN inventario i ON i.id = p.equipo_id
      LEFT JOIN categorias c ON c.id = i.categoria_id
      ${whereClause}
-     GROUP BY p.equipo_id, p.codigo_profe, p.nombre_profe, p.estado_prestamo
+     GROUP BY p.fuente, p.es_rapido, COALESCE(p.equipo_id, 0), p.nombre_libre,
+              p.codigo_profe, p.nombre_profe, p.estado_prestamo
      ORDER BY MIN(p.fecha_salida) DESC
      LIMIT ${limit}`,
     params
@@ -1449,7 +1519,10 @@ export const getReportePrestamos = async (filters: ReportePrestamoFilters = {}):
     categoria_nombre: r.categoria_nombre || 'Sin categoría',
     nombre_profe: r.nombre_profe || 'Desconocido',
     estado_prestamo: r.estado_prestamo || 'activo',
-    cantidad_prestada: r.cantidad_prestada || 1
+    cantidad_prestada: r.cantidad_prestada || 1,
+    ids: r.ids || '',
+    fuente: r.fuente === 'rapido' ? 'rapido' : 'prestamo',
+    es_rapido: r.es_rapido === 1,
   }));
 };
 

@@ -1103,6 +1103,13 @@ function idConFoto(ids: string | null, conFoto: Set<number>): number | null {
   return null;
 }
 
+/**
+ * Identifica una fila del reporte sin importar de que tabla salio. `id` solo es
+ * unico DENTRO de su tabla: `prestamos` #7 y un prestamo rapido de texto libre
+ * #7 conviven en la misma lista, asi que la llave lleva el origen adelante.
+ */
+const claveReporte = (reporte: ReportePrestamo) => `${reporte.fuente}:${reporte.id}`;
+
 function ReportesPanel() {
   // EXPERIMENT: fotos de devolución. Ver docs/QR_CELULAR.md para quitarlo.
   const [conFoto, setConFoto] = useState<Set<number>>(new Set());
@@ -1117,7 +1124,7 @@ function ReportesPanel() {
   const [categoriaFiltro, setCategoriaFiltro] = useState("");
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
-  const [editingObservacionId, setEditingObservacionId] = useState<number | null>(null);
+  const [editingObservacionKey, setEditingObservacionKey] = useState<string | null>(null);
   const [adminCondicion, setAdminCondicion] = useState("");
   const [adminNotas, setAdminNotas] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -1165,7 +1172,7 @@ function ReportesPanel() {
   }, [debouncedSearch, estadoFiltro, categoriaFiltro, fechaDesde, fechaHasta, reportes.length]);
 
   const resetObservaciones = () => {
-    setEditingObservacionId(null);
+    setEditingObservacionKey(null);
     setAdminCondicion("");
     setAdminNotas("");
   };
@@ -1183,7 +1190,7 @@ function ReportesPanel() {
   };
 
   const handleEditObservaciones = (reporte: ReportePrestamo) => {
-    setEditingObservacionId(reporte.id);
+    setEditingObservacionKey(claveReporte(reporte));
     setAdminCondicion(reporte.admin_condicion_entrega || "");
     setAdminNotas(reporte.admin_notas_retorno || "");
   };
@@ -1276,7 +1283,7 @@ function ReportesPanel() {
       .map((reporte) => {
         const columns = [
           `<td>${html(reporte.nombre_profe)}${reportePdf.includeProfessorCode ? `<br /><span class="muted">${html(reporte.codigo_profe)}</span>` : ""}</td>`,
-          `<td>${html(reporte.nombre_equipo)}${reporte.cantidad_prestada > 1 ? `<span style="color:#16a34a;font-weight:700;"> ×${reporte.cantidad_prestada}</span>` : ""}${reportePdf.includeCategory ? `<br /><span class="muted">${html(reporte.categoria_nombre)}</span>` : ""}</td>`,
+          `<td>${html(reporte.nombre_equipo)}${reporte.cantidad_prestada > 1 ? `<span style="color:#16a34a;font-weight:700;"> ×${reporte.cantidad_prestada}</span>` : ""}${reportePdf.includeCategory ? `<br /><span class="muted">${html(reporte.categoria_nombre)}</span>` : ""}${reporte.es_rapido ? `<br /><span style="color:#b45309;font-weight:700;font-size:10px;">PRÉSTAMO RÁPIDO${reporte.fuente === "rapido" ? " · SIN INVENTARIO" : ""}</span>` : ""}</td>`,
           `<td>${html(formatSqliteDateTime(reporte.fecha_salida))}</td>`,
           `<td>${html(formatSqliteDateTime(reporte.fecha_retorno))}</td>`,
           `<td>${html(reporte.estado_prestamo)}</td>`,
@@ -1437,7 +1444,7 @@ function ReportesPanel() {
                 </tr>
               ) : null}
               {reportes.map(r => (
-                <tr key={r.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: r.estado_prestamo === 'historico' ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
+                <tr key={claveReporte(r)} style={{ borderBottom: '1px solid var(--border-subtle)', background: r.estado_prestamo === 'historico' ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
                   <td className="col-optional" style={{ padding: '0.75rem 0.65rem', verticalAlign: 'top' }}>
                     <strong style={{ fontSize: '0.88rem' }}>#{r.id}</strong>
                   </td>
@@ -1450,6 +1457,32 @@ function ReportesPanel() {
                     <strong style={{ fontSize: '0.92rem', lineHeight: 1.35 }}>{r.nombre_equipo}</strong>
                     <br />
                     <small style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>{r.categoria_nombre}</small>
+                    {r.es_rapido ? (
+                      <>
+                        <br />
+                        <span
+                          title={r.fuente === 'rapido'
+                            ? 'Registrado en Préstamo Rápido, sin objeto del inventario'
+                            : 'Registrado desde Préstamo Rápido'}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            marginTop: '0.25rem',
+                            padding: '0.12rem 0.42rem',
+                            borderRadius: '999px',
+                            background: 'rgba(217, 119, 6, 0.14)',
+                            color: '#b45309',
+                            fontSize: '0.66rem',
+                            fontWeight: 800,
+                            letterSpacing: '0.03em',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          Préstamo rápido{r.fuente === 'rapido' ? ' · sin inventario' : ''}
+                        </span>
+                      </>
+                    ) : null}
                   </td>
                   <td style={{ padding: '0.75rem 0.65rem', verticalAlign: 'top' }}>
                     <div style={{ display: 'grid', gap: '0.45rem' }}>
@@ -1511,7 +1544,7 @@ function ReportesPanel() {
                     </div>
                   </td>
                   <td style={{ padding: '0.75rem 0.65rem', verticalAlign: 'top' }}>
-                    {editingObservacionId === r.id ? (
+                    {editingObservacionKey === claveReporte(r) ? (
                       <div style={{ display: 'grid', gap: '0.5rem' }}>
                         <input
                           type="text"
@@ -1560,14 +1593,17 @@ function ReportesPanel() {
                   </td>
                   <td style={{ padding: '0.75rem 0.65rem', textAlign: 'right', verticalAlign: 'top' }}>
                     <div style={{ display: 'grid', justifyItems: 'end', gap: '0.35rem' }}>
-                      {r.estado_prestamo !== 'activo' && editingObservacionId !== r.id && (
+                      {/* Un préstamo rápido de texto libre no tiene fila en `prestamos`:
+                          editarlo o borrarlo desde aquí no escribiría en ningún lado.
+                          Se administra desde la pantalla de Préstamo Rápido. */}
+                      {r.fuente === 'prestamo' && r.estado_prestamo !== 'activo' && editingObservacionKey !== claveReporte(r) && (
                         <button
                           onClick={() => handleEditObservaciones(r)}
                           style={{ width: '100%', maxWidth: '92px', minWidth: '0', padding: '0.32rem 0.45rem', fontSize: '0.73rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--brand-primary)', whiteSpace: 'nowrap' }}>
                           Editar
                         </button>
                       )}
-                      {r.estado_prestamo !== 'activo' && (
+                      {r.fuente === 'prestamo' && r.estado_prestamo !== 'activo' && (
                         <button
                           onClick={() => handleDelete(r.id)}
                           style={{ width: '100%', maxWidth: '92px', minWidth: '0', padding: '0.32rem 0.45rem', fontSize: '0.73rem', borderRadius: '6px', color: 'white', border: 'none', fontWeight: 'bold', background: 'var(--danger-base)', whiteSpace: 'nowrap' }}>

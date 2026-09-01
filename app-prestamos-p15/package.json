@@ -15,7 +15,8 @@
     "test:importacion": "node --test src/utils/importacionPatrimonio.test.ts",
     "test": "node --test src/utils/*.test.ts",
     "test:toma": "node --test src/utils/tomaFisica.test.ts",
-    "test:pistola": "node --test src/utils/pistola.test.ts"
+    "test:pistola": "node --test src/utils/pistola.test.ts",
+    "docs:pdf": "python3 scripts/build-manual-pdf.py"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

@@ -12,6 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
+app-prestamos-p15/output/
 
 # Database
 prestamos.db

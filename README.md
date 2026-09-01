@@ -39,6 +39,7 @@
 >
 > - **Historial de versiones y cambios** → [CHANGELOG.md](CHANGELOG.md)
 > - **Instalador de Windows ya compilado** → [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases)
+> - **Manual completo para el personal** → [docs/MANUAL_PERSONAL.md](app-prestamos-p15/docs/MANUAL_PERSONAL.md) (cada Release incluye también el PDF)
 > - **Guías técnicas por tema** (importación, respaldos, toma física, roadmap) → [Documentación relacionada](#-documentación-relacionada)
 > - **Todo el código fuente en un solo archivo de texto** → [gitingest.com/Leoglez10/app-prestamos-p15](https://gitingest.com/Leoglez10/app-prestamos-p15)
 >
@@ -1011,6 +1012,7 @@ Si la compilación falla, el badge de arriba se pone rojo y no se publica nada.
 
 | Doc | Para qué sirve |
 |---|---|
+| [docs/MANUAL_PERSONAL.md](app-prestamos-p15/docs/MANUAL_PERSONAL.md) | **Manual operativo completo** para el personal; cada Release adjunta la misma versión en PDF |
 | [docs/ENGINEERING_HANDBOOK.md](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
 | [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) | Formato y reglas del Excel de Patrimonio |
 | [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md) | Diseño técnico de la importación |

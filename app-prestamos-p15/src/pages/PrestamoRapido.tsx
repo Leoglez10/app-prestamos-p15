@@ -76,6 +76,12 @@ type Fila = {
   vencido: boolean;
   /** Todo lo buscable de la fila, ya en minúsculas. */
   texto: string;
+  /**
+   * Categorías del inventario que toca la fila. Un préstamo suelto aporta una;
+   * un evento aporta las de todos los objetos que salieron con él, así que el
+   * filtro por tipo de objeto no lo esconde cuando sí lleva ese tipo dentro.
+   */
+  categorias: string[];
 } & ({ tipo: "prestamo"; item: PrestamoRapidoAlumno } | { tipo: "evento"; evento: Evento });
 
 const timeAgo = (dateStr: string | null, now: number): string => {
@@ -128,6 +134,7 @@ export default function PrestamoRapido() {
   const [eventoAbierto, setEventoAbierto] = useState<Evento | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<FilterEstado>("activo");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Elapsed labels and the overdue flag must keep moving on a screen that stays
@@ -211,10 +218,12 @@ export default function PrestamoRapido() {
         orden: item.fecha_salida,
         activo: item.estado === "activo",
         vencido: isVencido(item, now),
+        categorias: [item.categoria_nombre],
         texto: [
           item.nombre_alumno,
           item.codigo_alumno,
           item.nombre_equipo,
+          item.categoria_nombre,
           item.tipo_persona || "alumno",
           item.autorizante_nombre || item.persona_prestamo || "",
         ]
@@ -222,8 +231,17 @@ export default function PrestamoRapido() {
           .toLowerCase(),
       }));
 
+    const categoriasPorEvento = new Map<number, Set<string>>();
+    for (const item of historial) {
+      if (item.evento_id == null) continue;
+      const acumulado = categoriasPorEvento.get(item.evento_id) ?? new Set<string>();
+      acumulado.add(item.categoria_nombre);
+      categoriasPorEvento.set(item.evento_id, acumulado);
+    }
+
     const deEventos: Fila[] = eventos.map((evento) => {
       const estado = estadoEvento(evento);
+      const categoriasEvento = [...(categoriasPorEvento.get(evento.id) ?? [])];
       // "Cerrado con faltantes" sigue contando como activo porque hay equipo
       // afuera de verdad: sus filas hijas siguen en estado 'activo'.
       const conPendientes = estado !== "cerrado";
@@ -236,12 +254,14 @@ export default function PrestamoRapido() {
         activo: conPendientes,
         // Un evento se marca cuando ya pasó su último día y todavía debe equipo.
         vencido: conPendientes && (estado === "cerrado-con-faltantes" || ultimoDia < hoy),
+        categorias: categoriasEvento,
         texto: [
           tituloEvento(evento),
           evento.lugar,
           evento.responsable_nombre,
           evento.responsable_codigo,
           evento.expositor_nombre || "",
+          ...categoriasEvento,
           "evento salida",
         ]
           .join(" ")
@@ -267,15 +287,22 @@ export default function PrestamoRapido() {
     return { activos, vencidos, devueltos, total: filas.length };
   }, [filas]);
 
+  /** Categorías presentes en lo que se cargó, para poblar el selector. */
+  const categoriasDisponibles = useMemo(() => {
+    const nombres = new Set(historial.map((item) => item.categoria_nombre));
+    return [...nombres].sort((a, b) => a.localeCompare(b, "es"));
+  }, [historial]);
+
   const filtrados = useMemo(() => {
     const term = busqueda.trim().toLowerCase();
     return filas.filter((fila) => {
       if (filtroEstado === "activo" && !fila.activo) return false;
       if (filtroEstado === "devuelto" && fila.activo) return false;
       if (filtroEstado === "vencido" && !fila.vencido) return false;
+      if (filtroCategoria && !fila.categorias.includes(filtroCategoria)) return false;
       return !term || fila.texto.includes(term);
     });
-  }, [filas, busqueda, filtroEstado]);
+  }, [filas, busqueda, filtroEstado, filtroCategoria]);
 
   // Dynamic copy for the person fields ("Nombre del alumno/profesor", etc.).
   const personaNoun = tipoPersona === "profesor" ? "profesor" : "alumno";
@@ -1055,6 +1082,19 @@ export default function PrestamoRapido() {
                   aria-label="Buscar en historial de préstamos"
                 />
               </div>
+              <label htmlFor="filtro-categoria" className="visually-hidden">Filtrar por tipo de objeto</label>
+              <select
+                id="filtro-categoria"
+                className="hist-categoria-select"
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                aria-label="Filtrar historial por tipo de objeto"
+              >
+                <option value="">Todos los objetos</option>
+                {categoriasDisponibles.map((categoria) => (
+                  <option key={categoria} value={categoria}>{categoria}</option>
+                ))}
+              </select>
             </div>
 
             {/* Barra segmentada: una sola fila pase lo que pase. Va en grid con
@@ -1085,7 +1125,7 @@ export default function PrestamoRapido() {
               <p className="empty-hint">
                 {filas.length === 0
                   ? "Los préstamos que registres aparecerán en esta lista."
-                  : "Prueba con otro estado o limpia la búsqueda."}
+                  : "Prueba con otro estado, otro tipo de objeto o limpia la búsqueda."}
               </p>
             </div>
           ) : (
@@ -2007,6 +2047,28 @@ export default function PrestamoRapido() {
           color: var(--text-secondary);
         }
 
+        .hist-categoria-select {
+          flex: 0 1 190px;
+          min-width: 150px;
+          /* background-color, no el shorthand: background borraria el chevron
+             que la regla base de select pinta como background-image. */
+          padding: 0.55rem 2.1rem 0.55rem 0.9rem;
+          border-radius: 12px;
+          border: 1.5px solid transparent;
+          background-color: var(--surface-sunken);
+          color: var(--text-primary);
+          font-size: clamp(0.84rem, 1.4vh, 0.94rem);
+          font-family: inherit;
+          box-sizing: border-box;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .hist-categoria-select:focus {
+          outline: none;
+          border-color: var(--brand-primary);
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
         .hist-chips {
           display: grid;
           grid-auto-flow: column;
@@ -2350,6 +2412,10 @@ export default function PrestamoRapido() {
           }
           .search-wrapper {
             flex: 1 1 auto;
+          }
+          .hist-categoria-select {
+            flex: 1 1 auto;
+            width: 100%;
           }
           .hist-chips {
             grid-auto-flow: row;

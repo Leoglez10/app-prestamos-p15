@@ -156,6 +156,10 @@ export type PrestamoRapidoAlumno = {
   // Salida a evento: no nulo cuando esta fila es uno de los objetos que salieron
   // con un evento. La pantalla las agrupa en una sola fila. Ver utils/evento.ts.
   evento_id: number | null;
+  // Categoria del equipo ligado, para poder filtrar el historial por tipo de
+  // objeto. Los prestamos de texto libre no tienen equipo, asi que caen en
+  // 'Sin categoria'.
+  categoria_nombre: string;
 };
 
 let dbPromise: Promise<Database> | null = null;
@@ -1655,31 +1659,45 @@ export const restoreBackupFromFile = async (file: File): Promise<RestoreBackupRe
 export const getPrestamosRapidosAlumnos = async (filters?: {
   busqueda?: string;
   estado?: string;
+  categoriaId?: number | null;
 }): Promise<PrestamoRapidoAlumno[]> => {
   const db = await getDb();
   const conditions: string[] = [];
   const params: Array<string | number> = [];
 
+  // Todas las columnas van calificadas: `nombre_equipo` y `estado` existen en
+  // las dos tablas del JOIN y sin prefijo SQLite las rechaza por ambiguas.
   if (filters?.busqueda?.trim()) {
     const term = `%${filters.busqueda.trim()}%`;
-    conditions.push("(nombre_alumno LIKE ? OR codigo_alumno LIKE ? OR nombre_equipo LIKE ? OR persona_prestamo LIKE ?)");
-    params.push(term, term, term, term);
+    conditions.push(
+      "(pra.nombre_alumno LIKE ? OR pra.codigo_alumno LIKE ? OR pra.nombre_equipo LIKE ? OR pra.persona_prestamo LIKE ? OR c.nombre LIKE ?)",
+    );
+    params.push(term, term, term, term, term);
   }
 
   if (filters?.estado?.trim()) {
-    conditions.push("estado = ?");
+    conditions.push("pra.estado = ?");
     params.push(filters.estado.trim());
+  }
+
+  if (filters?.categoriaId) {
+    conditions.push("c.id = ?");
+    params.push(filters.categoriaId);
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   return db.select<PrestamoRapidoAlumno[]>(
-    `SELECT id, nombre_alumno, codigo_alumno, nombre_equipo, persona_prestamo,
-            fecha_salida, fecha_retorno, estado, observaciones,
-            id_admin, autorizante_codigo, autorizante_nombre,
-            COALESCE(tipo_persona, 'alumno') AS tipo_persona, equipo_id, prestamo_app_id,
-            evento_id
-     FROM prestamos_rapidos_alumnos ${whereClause} ORDER BY fecha_salida DESC LIMIT 500`,
+    `SELECT pra.id, pra.nombre_alumno, pra.codigo_alumno, pra.nombre_equipo, pra.persona_prestamo,
+            pra.fecha_salida, pra.fecha_retorno, pra.estado, pra.observaciones,
+            pra.id_admin, pra.autorizante_codigo, pra.autorizante_nombre,
+            COALESCE(pra.tipo_persona, 'alumno') AS tipo_persona, pra.equipo_id, pra.prestamo_app_id,
+            pra.evento_id,
+            COALESCE(c.nombre, 'Sin categoría') AS categoria_nombre
+     FROM prestamos_rapidos_alumnos pra
+     LEFT JOIN inventario i ON i.id = pra.equipo_id
+     LEFT JOIN categorias c ON c.id = i.categoria_id
+     ${whereClause} ORDER BY pra.fecha_salida DESC LIMIT 500`,
     params
   );
 };

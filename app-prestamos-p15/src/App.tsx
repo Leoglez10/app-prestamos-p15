@@ -4,6 +4,7 @@ import Kiosk from "./pages/Kiosk";
 import Admin from "./pages/Admin";
 import PrestamoRapido from "./pages/PrestamoRapido";
 import { useAutoBackup } from "./hooks/useAutoBackup";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./App.css";
 
 function App() {
@@ -11,12 +12,14 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/kiosko" element={<Kiosk />} />
-        <Route path="/prestamo-rapido" element={<PrestamoRapido />} />
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/kiosko" element={<Kiosk />} />
+          <Route path="/prestamo-rapido" element={<PrestamoRapido />} />
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

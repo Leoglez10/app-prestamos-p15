@@ -291,9 +291,6 @@ setSelectedEquipoIds([]);
     }
   };
 
-  if (loading) return <main className="kiosk-main"><div style={{ margin: 'auto' }}>Cargando Kiosko...</div></main>;
-  if (getRuntimeStorageMode() === "blocked") return <main className="kiosk-main"><div style={{ margin: 'auto', color: 'red' }}>Error de Base de Datos.</div></main>;
-
   const isLaptopEquipo = (equipo: Equipo) => {
     const source = `${equipo.nombre_equipo} ${equipo.categoria_nombre}`.toLowerCase();
     return source.includes("laptop") || source.includes("lap");
@@ -544,6 +541,16 @@ setSelectedEquipoIds([]);
     }
     return "Disponible de inmediato";
   };
+
+  // Estas dos salidas van DESPUES de todos los hooks, no antes.
+  //
+  // Estaban arriba, encima de `usePistola`. Con `loading` en true el primer
+  // render salia aqui y registraba menos hooks; al terminar `initialize()` el
+  // segundo render llegaba a `usePistola` y sumaba dos `useEffect` mas. React
+  // corta con "Rendered more hooks than during the previous render" y, sin
+  // ErrorBoundary, el Kiosko quedaba en blanco al entrar desde "Soy Profesor".
+  if (loading) return <main className="kiosk-main"><div style={{ margin: 'auto' }}>Cargando Kiosko...</div></main>;
+  if (getRuntimeStorageMode() === "blocked") return <main className="kiosk-main"><div style={{ margin: 'auto', color: 'red' }}>Error de Base de Datos.</div></main>;
 
   return (
     <main className="kiosk-main">

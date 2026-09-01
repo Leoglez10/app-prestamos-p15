@@ -3172,3 +3172,27 @@ li.toma-vacio.es-listo {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 }
+
+/* Pantalla de ErrorBoundary. Deliberadamente sobria: solo tiene que dejar leer
+   el mensaje y volver al inicio. Ver src/components/ErrorBoundary.tsx. */
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 100vh;
+  padding: 32px;
+  text-align: center;
+}
+
+.error-boundary pre {
+  max-width: 720px;
+  overflow-x: auto;
+  padding: 16px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #b91c1c;
+  text-align: left;
+  white-space: pre-wrap;
+}

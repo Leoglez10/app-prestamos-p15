@@ -8,6 +8,39 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.7.2] — 2026-09-01
+
+### Corregido
+
+- **El Kiosko abría en blanco.** Entrar por **Soy Profesor** dejaba la ventana vacía y sin mensaje en
+  las versiones 0.5.0 a 0.7.1. `Kiosk.tsx` tenía dos `return` tempranos —el de *Cargando Kiosko…* y el
+  de *Error de Base de Datos*— por encima de la llamada a `usePistola`. El primer render salía en esos
+  `return` con menos hooks de los que registraba el segundo, y React aborta con *"Rendered more hooks
+  than during the previous render"*. Las dos salidas ahora van debajo de todos los hooks
+  (`src/pages/Kiosk.tsx`).
+
+  El fallo entró con `usePistola` en la 0.5.0 y no se notó porque solo golpea al Kiosko: Préstamo
+  Rápido y Administrador no tienen `return` encima de sus hooks. Ninguna base de datos estuvo
+  involucrada y no se perdió ningún préstamo.
+
+### Añadido
+
+- **Pantalla de error en lugar de ventana en blanco.** Cualquier excepción durante el render ahora
+  muestra el mensaje y un botón para volver al inicio. En un build de escritorio no hay consola
+  abierta, así que hasta ahora el único síntoma que llegaba era "no abre"
+  (`src/components/ErrorBoundary.tsx`).
+
+---
+
+## [0.7.1] — 2026-08-31
+
+### Añadido
+
+- **Manual del personal**, con su PDF generado y adjuntado en cada release por la CI.
+- **Formularios guiados de issues** y `CONTRIBUTING.md` para reportar problemas desde GitHub.
+
+---
+
 ## [0.7.0] — 2026-08-31
 
 ### Añadido

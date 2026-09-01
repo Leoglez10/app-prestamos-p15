@@ -8,6 +8,62 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.7.0] — 2026-08-31
+
+### Añadido
+
+- **Salida a evento.** Varios equipos salen juntos a un lugar y una fecha sin registrar un préstamo
+  suelto por cada uno. La tabla `eventos` guarda solo el encabezado —lugar, fechas, responsable,
+  expositor—; los equipos que salen son filas normales de `prestamos` ligadas al evento, así que el
+  inventario y los reportes los siguen viendo como lo que son
+  (`src/utils/evento.ts`, `src/components/EventoSalidaDialog.tsx`,
+  `src/components/EventoDetalleModal.tsx`).
+
+  - `CalendarioRango` para elegir el rango de días, en lugar de dos campos de fecha sueltos
+    (`src/components/CalendarioRango.tsx`, `src/utils/calendario.ts`).
+  - Chip violeta en Inventario para el equipo que salió con un evento.
+  - Un evento se cierra aunque falte equipo: queda como **cerrado con faltantes** y sus filas siguen
+    activas, porque hay material afuera de verdad.
+
+- **Los préstamos rápidos de texto libre ya aparecen en Reportes.** Un préstamo rápido sin equipo del
+  inventario nunca escribía en `prestamos`, así que no salía en ningún reporte: el historial se veía
+  completo sin serlo. `getReportePrestamos` ahora une las dos fuentes y marca cada fila con una
+  insignia **Préstamo rápido**, en pantalla y en el PDF.
+
+  - Las filas de texto libre son de **solo lectura** desde Reportes: no existen en `prestamos`, así
+    que editarlas o borrarlas ahí no escribiría en ningún lado. Se administran desde Préstamo Rápido.
+
+- **Filtro por tipo de objeto en el historial de Préstamo Rápido.** Antes solo se podía acotar por
+  estado o por texto, así que responder "¿qué cámaras hay afuera?" obligaba a leer la lista entera.
+  Un evento se filtra por las categorías de todo lo que salió con él, para que no se esconda cuando
+  sí lleva ese tipo adentro.
+
+### Cambiado
+
+- **Importar Patrimonio** e **Importar reporte de inventario** se mudaron a **Toma de inventario**,
+  cada uno con su botón en vez del campo de archivo desnudo.
+- Todos los `<select>` de la app usan el mismo chevron. Antes cada uno sin estilo propio mostraba la
+  doble flecha nativa de macOS, que no combina con ningún otro control.
+- Los filtros de Reportes se marcan cuando están aplicados: un filtro olvidado escondía medio
+  historial sin avisar.
+
+### Corregido
+
+- **El id de un INSERT se lee del resultado del INSERT, nunca de `SELECT last_insert_rowid()`.**
+  `tauri-plugin-sql` abre un pool de conexiones y `last_insert_rowid()` es por conexión: la lectura
+  caía en otra conexión y devolvía `0` o el id de una escritura ajena. Los objetos de un evento
+  podían quedar colgados del evento equivocado.
+- Los filtros del historial de Préstamo Rápido califican sus columnas: `nombre_equipo` y `estado`
+  existen en las dos tablas del JOIN y SQLite los rechazaba como ambiguos.
+
+### Interno
+
+- Índice en `prestamos_rapidos_alumnos (prestamo_app_id)`: el `EXISTS` que marca cada préstamo del
+  reporte recorría la tabla espejo una vez por fila.
+- Pruebas nuevas de `utils/evento.ts` y `utils/calendario.ts` — 112 en verde.
+- Bloque de orientación para IAs en el README y guiones de los seis videos tutoriales versionados
+  (solo la fuente; los binarios quedan fuera del repo).
+
 ## [0.6.0] — 2026-08-29
 
 ### Añadido

@@ -150,6 +150,20 @@ button {
   color: var(--text-primary);
 }
 
+/* appearance:none drops the platform chevron (a double arrow on macOS) so every
+   select matches the inputs beside it instead of the OS. Any rule that later
+   re-declares a select's padding or background must keep padding-right and use
+   background-color, or the arrow loses its gutter / disappears. */
+select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 2.2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.85rem;
+}
+
 button {
   cursor: pointer;
   background: var(--brand-primary);
@@ -370,7 +384,7 @@ button.ghost {
 /* -- Responsive Admin Layout Classes -- */
 .admin-form-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 2fr) repeat(4, minmax(11rem, 1fr));
   gap: 0.8rem;
   align-items: end;
 }
@@ -469,31 +483,24 @@ button.ghost {
   background: var(--surface-default);
 }
 
-/* appearance:none drops the platform chevron (a double arrow on macOS) so the
-   two selects read as one control set with the search field. */
-.admin-filters select {
+.admin-filters select,
+.admin-form-grid select {
   min-width: 0;
-  appearance: none;
-  cursor: pointer;
   font-weight: 600;
   color: var(--text-secondary);
-  padding-right: 2.2rem;
-  background-color: var(--surface-default);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 0.85rem;
   transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
-.admin-filters select:hover {
+.admin-filters select:hover,
+.admin-form-grid select:hover {
   border-color: var(--brand-primary);
   color: var(--text-primary);
 }
 
 /* The applied filter has to be visible at a glance, otherwise a stale filter
    silently hides half the inventory. */
-.admin-filters select.is-active {
+.admin-filters select.is-active,
+.admin-form-grid select.is-active {
   color: var(--text-primary);
   font-weight: 700;
   border-color: var(--brand-primary);
@@ -769,6 +776,10 @@ button.ghost {
 .admin-dialog select,
 .admin-dialog textarea {
   padding: 0.8rem 0.9rem;
+}
+
+.admin-dialog select {
+  padding-right: 2.4rem;
   font-size: 1.02rem;
 }
 
@@ -900,7 +911,7 @@ button.ghost {
   font-size: 0.92rem;
 }
 
-.quick-add-form select { flex: 0 1 200px; }
+.quick-add-form select { flex: 0 1 200px; padding-right: 2.1rem; }
 
 .quick-add-form button {
   width: auto;
@@ -2612,9 +2623,11 @@ li.toma-vacio.es-listo {
   border-radius: 11px;
   font: inherit;
   font-weight: 500;
-  background: var(--surface-default);
+  background-color: var(--surface-default);
   color: var(--text-primary);
 }
+
+.evento-campo select { padding-right: 2.2rem; }
 
 .evento-campo input:focus-visible,
 .evento-campo select:focus-visible,

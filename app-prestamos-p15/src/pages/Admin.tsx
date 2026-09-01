@@ -1383,13 +1383,21 @@ function ReportesPanel() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select value={estadoFiltro} onChange={(e) => setEstadoFiltro(e.target.value)}>
+          <select
+            className={estadoFiltro ? "is-active" : undefined}
+            value={estadoFiltro}
+            onChange={(e) => setEstadoFiltro(e.target.value)}
+          >
             <option value="">Todos los estados</option>
             <option value="activo">Activo</option>
             <option value="devuelto">Devuelto</option>
             <option value="historico">Histórico</option>
           </select>
-          <select value={categoriaFiltro} onChange={(e) => setCategoriaFiltro(e.target.value)}>
+          <select
+            className={categoriaFiltro ? "is-active" : undefined}
+            value={categoriaFiltro}
+            onChange={(e) => setCategoriaFiltro(e.target.value)}
+          >
             <option value="">Todas las categorías</option>
             {categorias.map((categoria) => (
               <option key={categoria.id} value={categoria.id}>{categoria.nombre}</option>

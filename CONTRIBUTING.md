@@ -91,6 +91,10 @@ git push -u origin feat/mi-cambio
   archivos con contraseñas reales, ni los archivos locales `-LeoLaptop.*`.
   El `.gitignore` ya los excluye, pero verifícalo antes de tu commit.
 - **Valida antes del PR**: `npx tsc --noEmit` y `npm test` deben pasar sin errores.
+  `npm test` corre primero `eslint src` (también disponible suelto como `npm run lint`),
+  que vigila las **Rules of Hooks** de React. Un hook llamado después de un `return`
+  temprano deja la ventana en blanco sin ningún mensaje, así que esa regla es un error
+  que frena la validación, no un aviso.
   Para cambios de interfaz, valida también manualmente con `npm run tauri dev`
   (el proyecto todavía no tiene pruebas end-to-end de la interfaz).
 

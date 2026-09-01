@@ -8,6 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "lint": "eslint src",
+    "pretest": "eslint src",
     "test:backup": "node --test src/utils/backupSchedule.test.ts",
     "test:patrimonio": "node --test src/utils/codigoPatrimonial.test.ts",
     "test:identificadores": "node --test src/utils/identificadores.test.ts",
@@ -31,7 +33,10 @@
     "@tauri-apps/cli": "^2.11.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@typescript-eslint/parser": "^8.69.0",
     "@vitejs/plugin-react": "^4.6.0",
+    "eslint": "^10.9.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
   }

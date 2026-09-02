@@ -66,6 +66,15 @@ fn backups_dir(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(dir)
 }
 
+/// Carpeta hermana de `backups`, no subcarpeta: Drive for Desktop las espeja por
+/// separado. Ver `docs/RELEVO_TOMA_FISICA.md`.
+fn reportes_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app_data_root(app)?.join("reportes");
+    fs::create_dir_all(&dir)
+        .map_err(|error| format!("No se pudo preparar el directorio de reportes: {error}"))?;
+    Ok(dir)
+}
+
 fn backup_kind(file_name: &str) -> &'static str {
     if file_name.starts_with(AUTO_BACKUP_PREFIX) {
         "auto"
@@ -171,9 +180,7 @@ fn guardar_reporte_inventario(app: AppHandle, nombre: String, contenido: String)
         .and_then(|parte| parte.to_str())
         .ok_or_else(|| "Nombre de archivo invalido.".to_string())?;
 
-    let dir = app_data_root(&app)?.join("reportes");
-    fs::create_dir_all(&dir)
-        .map_err(|error| format!("No se pudo preparar el directorio de reportes: {error}"))?;
+    let dir = reportes_dir(&app)?;
 
     let destino = dir.join(nombre_seguro);
     fs::write(&destino, contenido)
@@ -386,6 +393,16 @@ pub fn run() {
                     eprintln!("[celular] sin ruta de datos: {error}")
                 }
             }
+            // Drive for Desktop can only mirror a folder that already exists, and
+            // until now each of these was created on first use: a fresh install
+            // had neither, so the documented setup could not be completed. Both
+            // are best-effort; a failure here must not stop the app from opening.
+            for carpeta in [backups_dir(&app.handle()), reportes_dir(&app.handle())] {
+                if let Err(error) = carpeta {
+                    eprintln!("[datos] {error}");
+                }
+            }
+
             Ok(())
         })
         .plugin(tauri_plugin_sql::Builder::default().build())

@@ -15,6 +15,11 @@ pierda nada.
   `app_data_root/reportes/`, que es una carpeta **hermana**, no una subcarpeta.
   Sin este paso el archivo nunca llega a la otra máquina.
 
+  Las dos carpetas se crean al abrir la app (`.setup()` en
+  `src-tauri/src/lib.rs`), asi que ya existen aunque nadie haya exportado un
+  reporte todavia. Antes solo nacian con el primer uso, y en una instalacion
+  nueva Drive no las encontraba para espejarlas.
+
   Hay que agregar las dos carpetas **por separado** en Drive:
 
   ```

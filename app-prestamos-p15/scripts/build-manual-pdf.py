@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Build the versioned staff manual PDF from its Markdown source."""
+"""Build the versioned staff manual PDF from its Markdown source.
+
+The Markdown source carries a hand-written index so it reads well on GitHub.
+That block is dropped here and replaced by <pdf:toc></pdf:toc>, which resolves real
+page numbers at render time.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +29,7 @@ OUTPUT_PATH = OUTPUT_DIRECTORY / "manual-personal-app-prestamos-p15.pdf"
 
 
 def pdf_anchor(value: str) -> str:
+    """Strip accents from anchor ids: the PDF backend indexes them as latin-1."""
     normalized = unicodedata.normalize("NFKD", value)
     return "".join(character for character in normalized if not unicodedata.combining(character))
 
@@ -44,8 +50,14 @@ def parse_front_matter(source: str) -> tuple[dict[str, str], str]:
     return metadata, source[closing + 5 :]
 
 
+def drop_markdown_index(body: str) -> str:
+    """Remove the GitHub-facing '# Índice' chapter; the PDF table of contents replaces it."""
+    return re.sub(r"\n?#\s+Índice\n.*?\n---\n", "\n", body, count=1, flags=re.DOTALL)
+
+
 def build_html(source: str, stylesheet: str, version: str) -> str:
     metadata, body = parse_front_matter(source)
+    body = drop_markdown_index(body)
     renderer = markdown.Markdown(
         extensions=[
             TocExtension(slugify=slugify_unicode),
@@ -69,6 +81,7 @@ def build_html(source: str, stylesheet: str, version: str) -> str:
     title = html.escape(metadata.get("title", "Manual del personal"))
     subtitle = html.escape(metadata.get("subtitle", "App Préstamos P15"))
     language = html.escape(metadata.get("lang", "es"))
+    safe_version = html.escape(version)
 
     return f"""<!doctype html>
 <html lang="{language}">
@@ -78,14 +91,23 @@ def build_html(source: str, stylesheet: str, version: str) -> str:
   <style>{stylesheet}</style>
 </head>
 <body>
-  <div id="page-header">Manual del personal · App Préstamos P15</div>
-  <div id="page-footer">Página <pdf:pagenumber> de <pdf:pagecount></div>
-  <table id="title-block-header"><tr><td>
-    <p class="title">{title}</p>
-    <p class="subtitle">{subtitle}</p>
-    <p class="cover-meta">Versión {html.escape(version)} · Manual operativo para el personal</p>
-  </td></tr></table>
+  <div id="cover">
+    <div id="cover-band">
+      <p class="title">{title}</p>
+      <p class="subtitle">{subtitle}</p>
+      <p class="cover-meta">Versión {safe_version} &middot; Manual operativo para el personal</p>
+    </div>
+  </div>
+
+  <pdf:nexttemplate name="main" />
   <pdf:nextpage />
+
+  <div id="page-header">Manual del personal &middot; App Préstamos P15 &middot; {safe_version}</div>
+  <div id="page-footer">Página <pdf:pagenumber> de <pdf:pagecount></div>
+
+  <h1 id="indice">Índice</h1>
+  <pdf:toc></pdf:toc>
+
   <main>{content}</main>
 </body>
 </html>"""

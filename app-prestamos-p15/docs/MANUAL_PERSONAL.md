@@ -6,19 +6,23 @@ lang: es
 
 # Índice
 
-- [Antes de empezar](#antes-de-empezar)
-- [Qué es la app y qué no es](#qué-es-la-app-y-qué-no-es)
-- [Las tres puertas de entrada](#las-tres-puertas-de-entrada)
-- [Tareas del día a día](#tareas-del-día-a-día)
-- [Importar el Excel de Patrimonio](#importar-el-excel-de-patrimonio)
-- [Toma de inventario físico](#toma-de-inventario-físico)
-- [Respaldos](#respaldos)
-- [Qué hago si algo falla](#qué-hago-si)
-- [Actualizaciones](#actualizaciones)
-- [Funciones en pruebas](#funciones-en-pruebas)
-- [Calendario y checklists](#calendario-de-mantenimiento)
-- [Glosario](#glosario)
-- [Ayuda, videos y documentación](#dónde-está-lo-demás)
+1. [Antes de empezar](#antes-de-empezar) — para quién es, cómo leerlo, las cinco reglas de oro
+2. [Qué es la app y qué no es](#qué-es-la-app-y-qué-no-es) — y qué puede hacer, de un vistazo
+3. [Instalar la app](#instalar-la-app) — conseguir el instalador, instalarlo, dejarlo listo
+4. [Las tres puertas de entrada](#las-tres-puertas-de-entrada) — Kiosko, Préstamo Rápido, Admin
+5. [Tareas del día a día](#tareas-del-día-a-día) — prestar, devolver, eventos, altas, estados, reportes
+6. [Importar el Excel de Patrimonio](#importar-el-excel-de-patrimonio)
+7. [Toma de inventario físico](#toma-de-inventario-físico) — campañas, modo prueba, reporte, dos computadoras
+8. [Respaldos](#respaldos) — los tres tipos, Google Drive, restaurar
+9. [**Qué hago si…**](#qué-hago-si) — el capítulo de emergencias
+10. [Funciones en pruebas](#funciones-en-pruebas)
+11. [Calendario de mantenimiento](#calendario-de-mantenimiento) — qué toca cada semana, mes y ciclo
+12. [Preguntas rápidas](#preguntas-rápidas)
+13. [Glosario](#glosario)
+14. [Dónde está lo demás](#dónde-está-lo-demás) — ayuda, videos, documentación
+
+> En el PDF, este índice trae el número de página de cada capítulo y de cada
+> sección. En GitHub, cada línea es un enlace.
 
 ---
 
@@ -100,6 +104,79 @@ extraviado o en mantenimiento.
   instalarlo).
 - Una pistola lectora de código de barras USB - opcional, pero hace la toma
   física diez veces más rápida.
+
+## Qué puede hacer, de un vistazo
+
+| Función | Qué resuelve |
+|---|---|
+| **Catálogo de equipos** | Organizado por categorías, con equipos únicos y a granel |
+| **Préstamo a profesor** | Autoservicio en el kiosko, con solo el código UDG |
+| **Préstamo a alumno** | Con registro de qué administrador lo autorizó |
+| **Salida a evento** | Varios equipos salen juntos a un lugar y unas fechas |
+| **Códigos de barras** | La pistola dispara sola, sin configurar nada |
+| **Importar Patrimonio** | El Excel oficial se carga con plan previo y respaldo automático |
+| **Toma de inventario físico** | Campañas por área, modo prueba y reporte para Patrimonio |
+| **Dos computadoras a la vez** | Una presta mientras otra cuenta; el trabajo se fusiona |
+| **Reportes en PDF** | Filtrados por fecha, estado o categoría |
+| **Respaldo automático** | Cada 12 horas, con subida a Google Drive si la conectas |
+| **Sin internet** | Todo funciona con la red apagada |
+
+---
+
+# Instalar la app
+
+Este capítulo se usa una vez por computadora. Si la app ya está instalada y
+funcionando, salta al siguiente.
+
+## Paso 1: conseguir el instalador
+
+Es un archivo que termina en `.exe` o `.msi`, por ejemplo
+`App.Prestamos.P15_0.7.1_x64-setup.exe`. Hay dos formas de conseguirlo:
+
+- **Desde GitHub (lo recomendado).** Entra a
+  <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más
+  reciente y, en la sección **Assets**, descarga el `.exe`.
+- **Copia manual.** Alguien que ya lo tenga te lo pasa por USB o carpeta
+  compartida.
+
+> En esa misma página de Releases está **este manual en PDF**. Descarga el de la
+> misma versión que vayas a instalar.
+
+## Paso 2: instalar
+
+1. Copia el instalador a la computadora destino si lo bajaste en otra.
+2. Doble clic sobre el archivo.
+3. **Windows va a mostrar una pantalla azul** que dice *"Windows protegió su
+   PC"*. Es normal y esperado: la app no tiene certificado comercial de firma
+   porque es de distribución interna.
+   - **"Más información"** → **"Ejecutar de todas formas"**.
+4. Sigue el asistente: Siguiente → Siguiente → Instalar.
+5. Al terminar aparece el ícono **"App Prestamos P15"** en el escritorio o en el
+   menú Inicio.
+6. Ábrela. La primera vez crea la base de datos.
+
+> **Si la app abre en blanco**, falta el componente **WebView2**. Instálalo desde
+> <https://developer.microsoft.com/microsoft-edge/webview2/> y vuelve a abrirla.
+
+## Paso 3: dejarla lista para trabajar
+
+Esta lista es lo que separa una instalación que sirve de una que va a dar
+problemas en tres meses:
+
+- [ ] Entra al Admin con el código y PIN de fábrica.
+- [ ] **Cambia el PIN.**
+- [ ] Da de alta a los administradores reales, cada uno con su código y PIN.
+- [ ] Da de alta a los profesores que van a usar el kiosko.
+- [ ] Revisa las categorías: decide cuáles son **Prestables** y cuáles **solo
+      inventario**.
+- [ ] Instala **Google Drive para Escritorio** con el correo de la escuela.
+- [ ] Conecta la carpeta `backups` a Drive.
+- [ ] Conecta la carpeta `reportes` a Drive, **por separado**.
+- [ ] Verifica en Configuración que el respaldo automático esté activado.
+- [ ] Conecta la pistola y pruébala en el **modo prueba** de la toma física.
+
+> No dejes la lista a medias. Una app instalada sin respaldos conectados
+> funciona perfectamente… hasta el día que no.
 
 ---
 
@@ -302,6 +379,60 @@ Se decide **por categoría** (todos los de esa categoría) o **por equipo**
 - **Por categoría:** Admin → **Categorías** → interruptor **Prestable**.
 - **Por equipo:** Admin → Inventario → editar el equipo → casilla **Prestable**.
 
+## Los cuatro estados de un equipo
+
+Todo equipo está siempre en uno de estos cuatro estados. Cambiarlo bien es lo
+que mantiene el inventario confiable:
+
+| Estado | Significa | ¿Aparece en el kiosko? | Quién lo pone |
+|---|---|---|---|
+| `disponible` | Está en el estante, listo para prestarse | Sí, si además es prestable | La app, al devolverse |
+| `prestado` | Alguien se lo llevó | No | La app, al confirmar el préstamo |
+| `extraviado` | Se buscó y no apareció | No | Tú, a mano |
+| `mantenimiento` | Está dañado o en reparación | No | Tú, a mano |
+
+> **`extraviado` y `mantenimiento` los pone una persona, no el sistema.** La app
+> nunca va a decidir sola que un equipo se perdió. Si nadie lo marca, el equipo
+> se queda `prestado` para siempre y el inventario miente.
+
+## Equipos únicos y equipos a granel
+
+Hay dos formas de tener equipo capturado, y conviene entender la diferencia
+antes de dar de alta nada:
+
+| Aspecto | Equipo único | A granel |
+|---|---|---|
+| **Qué es** | Una laptop, un proyector | 10 adaptadores HDMI idénticos |
+| **Cómo se guarda** | Una fila por aparato | **Una sola fila** con un número de stock |
+| **Tiene ID patrimonial propio** | Sí | No individualmente |
+| **Al prestar** | Cambia de estado a `prestado` | Baja el stock disponible en uno |
+| **Se puede rastrear quién tiene cuál** | Sí | No: solo cuántos hay afuera |
+
+**Úsalo a granel cuando las piezas sean intercambiables y no valga la pena
+etiquetarlas una por una.** Un cable HDMI no necesita expediente propio.
+
+**No lo uses para nada que Patrimonio etiquete individualmente.** Si tiene su
+etiqueta con ID patrimonial, va como equipo único: si no, la toma física no lo
+puede escanear.
+
+> Si el stock a granel deja de cuadrar con lo que hay en el estante, cuéntalos a
+> mano y corrige el número en la ficha del equipo. Ver
+> [el caso completo](#el-equipo-a-granel-dice-que-quedan-menos-de-los-que-hay).
+
+## Ajustes del kiosko
+
+**Admin** → pestaña **Configuración**.
+
+Ahí se decide **qué ve un profesor** cuando entra al kiosko: si se muestra el
+catálogo completo, y el resto de ajustes de esa pantalla.
+
+> Si un profesor dice que "no le aparece nada para pedir", revisa esta pantalla
+> antes de buscar el problema en el inventario. Un catálogo oculto se ve
+> exactamente igual que un inventario vacío.
+
+En esa misma pestaña están los **respaldos** —automáticos y manuales— y la
+**restauración**. Ver el capítulo [Respaldos](#respaldos).
+
 ## Sacar reportes y guardarlos como PDF
 
 La app prepara el documento y abre el diálogo de impresión de Windows. **No
@@ -481,7 +612,7 @@ pierda nada.
 
 **El punto clave:** el respaldo `.db` NO sirve para devolver el trabajo.
 
-| | Qué es | Qué hace al entrar | Cuándo se usa |
+| Qué se pasa | Qué es | Qué hace al entrar | Cuándo se usa |
 |---|---|---|---|
 | **Respaldo `.db`** | La base completa | **Reemplaza todo** | Una sola vez, al montar la segunda computadora |
 | **Reporte `.csv`** | El resultado del recorrido | **Fusiona** | Cada vez que la segunda termina |
@@ -633,16 +764,21 @@ revisa los primeros bytes del archivo antes de tocar nada.
 
 ## Dónde vive todo
 
-```
-C:\Users\<TUSUARIO>\AppData\Roaming\com.p15.prestamos\
-├── prestamos.db          ← LA BASE DE DATOS. Todo el historial.
-├── prestamos.db-wal      ← Cache de escritura. NO BORRAR.
-├── prestamos.db-shm      ← Memoria compartida. NO BORRAR.
-├── backups\              ← Todos los respaldos
-└── reportes\             ← Reportes CSV de la toma física
-```
+Todo vive dentro de una sola carpeta de Windows:
 
-**Atajo para llegar:** Win + R → `%AppData%\com.p15.prestamos` → Enter.
+`C:\Users\<TUSUARIO>\AppData\Roaming\com.p15.prestamos\`
+
+Donde `<TUSUARIO>` es el nombre de usuario de Windows. Adentro hay esto:
+
+| Archivo o carpeta | Qué es | ¿Se puede borrar? |
+|---|---|---|
+| `prestamos.db` | **La base de datos.** Todo el historial de préstamos, equipos y profesores | **Nunca** |
+| `prestamos.db-wal` | Cache de escritura de la base | **Nunca** |
+| `prestamos.db-shm` | Memoria compartida de la base | **Nunca** |
+| `backups\` | Todos los respaldos, automáticos y manuales | Solo respaldos viejos que ya no necesites |
+| `reportes\` | Los CSV de la toma física | Sí, una vez entregados a Patrimonio |
+
+**Atajo para llegar:** Win + R → escribe `%AppData%\com.p15.prestamos` → Enter.
 
 > Si borras esa carpeta, **pierdes todo el historial de préstamos.**
 
@@ -671,9 +807,22 @@ define uno nuevo en Profesores.
 
 ### Alguien dejó la sesión de Admin abierta
 
-Se cierra sola a las 8 horas. Mientras tanto, cualquiera con acceso físico a esa
-computadora puede administrar todo. Cierra sesión tú y recuérdaselo. Si pasa
-seguido, es un problema de procedimiento, no de la app.
+**No se cierra sola.** La sesión de Admin no tiene temporizador: dura hasta que
+alguien pulse **Cerrar sesión admin** o hasta que se cierre la ventana de la app.
+Si la computadora se queda encendida con la app abierta, la sesión sigue viva el
+fin de semana entero.
+
+Mientras tanto, cualquiera con acceso físico a esa computadora puede administrar
+todo: borrar equipos, cambiar PINes, restaurar respaldos.
+
+**Qué hacer:**
+
+1. Cierra la sesión tú, ahora.
+2. Si pasa seguido, cierra la **app** completa al terminar el turno, no solo la
+   sesión. Es lo único que garantiza que quede cerrada.
+
+> No confundas esto con Préstamo Rápido, que sí vence: su autorización caduca a
+> las **8 horas**, y se comprueba al volver a cargar la pantalla.
 
 ## Problemas con equipos
 
@@ -690,7 +839,7 @@ Tres causas, en orden de frecuencia:
 
 ### Un equipo volvió pero nadie lo registró
 
-**Admin** → **Inventario** → menú de la fila (⋮) → **"Forzar devolución"**.
+**Admin** → **Inventario** → menú de la fila (los tres puntitos) → **"Forzar devolución"**.
 
 Úsalo cuando el equipo está físicamente ahí pero el sistema lo cree prestado.
 Es el caso del profesor que devolvió el HDMI en el mostrador sin pasar por el
@@ -700,7 +849,7 @@ kiosko.
 
 1. Primero agota la búsqueda real. Un equipo marcado extraviado deja de aparecer
    para préstamo.
-2. **Admin** → **Inventario** → menú de la fila (⋮) → **"Marcar perdido"**.
+2. **Admin** → **Inventario** → menú de la fila (los tres puntitos) → **"Marcar perdido"**.
    También puedes editar el equipo y cambiar su estado a `extraviado`.
 3. Anota en las notas del equipo **qué pasó y quién lo tenía**. Dentro de seis
    meses nadie se va a acordar.
@@ -715,7 +864,7 @@ Cuando vuelva de reparación, regrésalo a `disponible`.
 
 ### Se prestó el equipo equivocado
 
-Fuerza la devolución del equipo mal prestado (Inventario → ⋮ → Forzar
+Fuerza la devolución del equipo mal prestado (Inventario → menú de la fila → Forzar
 devolución) y registra el préstamo correcto. Deja nota de qué pasó.
 
 ### El equipo a granel dice que quedan menos de los que hay
@@ -870,13 +1019,56 @@ Restaurar **reemplaza**.
 Si ya perdiste datos: restaura el `prestamos-pre-restore-...` más reciente de la
 computadora afectada.
 
-### Necesito llevarme la app a otra computadora
+### Necesito trabajar en otra computadora unos días (relevo por USB)
 
-1. En la computadora original: **Crear respaldo** → **Abrir carpeta** → copia el
-   `.db` a una USB (o descárgalo de Drive).
+Si la computadora de siempre está ocupada o se fue a reparación, puedes trabajar
+en otra y luego traerte todo. El método es un **relevo**, como pasarse una
+estafeta: la base viaja entera, de ida y de vuelta.
+
+> **Regla no negociable: una sola computadora activa a la vez.** Si las dos
+> capturan el mismo día, la última en restaurar borra el trabajo de la otra, y no
+> hay forma de recuperarlo salvo el respaldo previo.
+>
+> Esto **no** aplica a la toma física en paralelo, que es otro procedimiento y sí
+> es seguro. Ver [Toma física en dos
+> computadoras](#toma-física-en-dos-computadoras).
+
+**Ida — de la computadora de siempre a la prestada:**
+
+1. Instala la app en la otra computadora.
+2. En la de siempre: **Admin** → Configuración → **"Crear respaldo"** →
+   **"Abrir carpeta"**.
+3. Copia el `.db` recién creado a una USB.
+4. En la prestada: **Admin** → Configuración → **"Importar respaldo"** y elige
+   ese `.db`.
+5. Reinicia la app. Ya tiene todo el inventario; trabaja normal.
+6. **A partir de aquí, no captures nada en la de siempre.**
+
+**Vuelta — de la prestada a la de siempre:**
+
+7. En la prestada: **"Crear respaldo"** → **"Abrir carpeta"** → copia el `.db` a
+   la USB.
+8. En la de siempre: **"Importar respaldo"** con ese archivo. Reinicia.
+9. La de siempre vuelve a ser la computadora activa. La prestada queda
+   desactualizada: **no captures nada más ahí** hasta el siguiente relevo.
+
+> Si las dos computadoras tienen Drive con el correo de la escuela, te saltas la
+> USB: el respaldo aparece solo en Drive y lo descargas del otro lado. La regla
+> de una sola computadora activa sigue siendo igual de obligatoria.
+
+### Me voy a cambiar de computadora definitivamente
+
+Es el relevo de ida, sin vuelta:
+
+1. En la vieja: **Crear respaldo** → **Abrir carpeta** → copia el `.db` a una
+   USB o bájalo de Drive.
 2. En la nueva: instala la app, **Importar respaldo**, elige el `.db`, reinicia.
-3. A partir de ahí, **la nueva es la computadora activa**. No captures nada más
-   en la vieja.
+3. Repite la lista de [Dejarla lista para
+   trabajar](#paso-3-dejarla-lista-para-trabajar): los respaldos a Drive se
+   conectan **por computadora**, no viajan con la base.
+4. Desinstala la app de la vieja o déjala claramente marcada como fuera de uso.
+   Una segunda computadora con la app "por si acaso" es como termina alguien
+   capturando en la equivocada.
 
 ## Actualizaciones
 
@@ -928,18 +1120,61 @@ Simplemente no lo uses todavía.
 | **Trimestral** | Con la app cerrada, copiar la carpeta `%AppData%\com.p15.prestamos\` completa a un USB y guardarla **fuera de la oficina**. |
 | **Anual** | Archivar el historial del año. Crear un respaldo manual del cierre - esos nunca se borran solos. |
 
-## Checklist del primer día en una computadora nueva
+## Checklist del cierre de ciclo escolar
 
-- [ ] Instalar la app.
-- [ ] Abrirla una vez (crea la base de datos).
-- [ ] Entrar al Admin con las credenciales de fábrica.
-- [ ] **Cambiar el PIN.**
-- [ ] Dar de alta a los administradores reales.
-- [ ] Instalar Google Drive para Escritorio con el correo de la escuela.
-- [ ] Conectar la carpeta `backups` a Drive.
-- [ ] Conectar la carpeta `reportes` a Drive **por separado**.
-- [ ] Verificar que el respaldo automático esté activado (Configuración).
-- [ ] Probar la pistola en modo prueba de la toma física.
+- [ ] Revisar que no queden préstamos activos de meses anteriores.
+- [ ] Perseguir o marcar como `extraviado` lo que no volvió.
+- [ ] Cerrar los eventos que sigan abiertos.
+- [ ] Exportar el reporte del ciclo completo a PDF y archivarlo.
+- [ ] Correr una campaña de toma física de todas las áreas.
+- [ ] Crear un **respaldo manual** — esos nunca se borran solos.
+- [ ] Copiar ese respaldo a un USB y guardarlo fuera de la oficina.
+
+> El checklist de una computadora nueva está en [Dejarla lista para
+> trabajar](#paso-3-dejarla-lista-para-trabajar).
+
+---
+
+# Preguntas rápidas
+
+Las que se responden en una línea, para cuando alguien pregunta de pasada.
+
+**¿Necesito internet?**
+No. Todo es local. Solo los respaldos suben a Drive, y eso lo hace Drive.
+
+**¿La app manda datos a algún servidor?**
+No. No tiene telemetría ni manda nada a ningún lado. Lo único que puede salir de
+la computadora son los respaldos, y solo si tú conectas esa carpeta a Drive.
+
+**¿Sirve en Mac o Linux?**
+No hay instalador oficial. Solo Windows 10 y 11.
+
+**¿Puedo tener la app en varias computadoras?**
+Sí, pero **cada una tiene su base independiente**. No se sincronizan, ni siquiera
+con Drive: Drive sincroniza *archivos de respaldo*, no la base viva.
+
+**¿Se puede usar en una tablet o celular?**
+No. Es un programa de escritorio para Windows.
+
+**¿Cuántas personas pueden usarla a la vez?**
+Una computadora, una persona a la vez. Varias personas comparten esa
+computadora, por turnos.
+
+**¿Se puede recuperar algo borrado por error?**
+Si hay un respaldo posterior al dato pero anterior al borrado, sí: restaurándolo.
+Si no, no. Por eso el respaldo automático viene activado.
+
+**¿El PIN de fábrica es seguro?**
+No. Cámbialo el primer día — y ten presente que la combinación de fábrica sigue
+funcionando como acceso de recuperación aunque lo cambies.
+
+**¿Qué pasa si dos personas escanean el mismo equipo en la toma física?**
+Nada malo. El segundo disparo sale como **Repetido** en amarillo y no cuenta
+doble.
+
+**¿Puedo practicar sin arruinar nada?**
+Sí: **"Modo prueba · no guarda nada"** en la toma física corre el recorrido
+completo sin escribir en la base.
 
 ---
 

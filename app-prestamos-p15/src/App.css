@@ -2484,6 +2484,12 @@ li.toma-vacio.es-listo {
   animation: tomaEntraArriba 220ms ease-out;
 }
 
+/* Sin nada leído el verde de éxito miente: el cierre queda en aviso. */
+.toma-cierre-cabeza.es-vacio {
+  background: #fef3c7;
+  color: #78350f;
+}
+
 .toma-cierre-cabeza > div {
   display: flex;
   flex-direction: column;

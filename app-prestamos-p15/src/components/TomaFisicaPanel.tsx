@@ -739,17 +739,26 @@ export function TomaFisicaPanel({
   if (cerrando) {
     const minutos = abiertoEn ? Math.max(1, Math.round((Date.now() - abiertoEn) / 60000)) : null;
     const marcadosAhora = equipos.filter((equipo) => noLocalizados.includes(equipo.id));
+    // Lo del area que ya esta resuelto: ni pendiente ni recien marcado como
+    // perdido (esos tienen su propia seccion mas abajo y se duplicarian).
+    const yaVistos = delArea
+      .filter(({ equipo, pendiente }) => !pendiente && !noLocalizados.includes(equipo.id))
+      .map(({ equipo }) => equipo);
 
     return (
       <section className="toma-recorrido">
         <div className="toma-cierre">
-          <header className="toma-cierre-cabeza">
+          {/* Cerrar sin haber leído nada no es un logro: el check verde ahí
+              miente. Es el caso de entrar al área y salir sin disparar. */}
+          <header className={`toma-cierre-cabeza${leidos.length === 0 ? " es-vacio" : ""}`}>
             <div className="toma-tarjeta-icono">
-              <Icon name="check" size="2rem" strokeWidth={2.5} />
+              <Icon name={leidos.length === 0 ? "alert" : "check"} size="2rem" strokeWidth={2.5} />
             </div>
             <div>
               <strong>
-                {ubicacion} · {leidos.length} {leidos.length === 1 ? "equipo leído" : "equipos leídos"}
+                {leidos.length === 0
+                  ? `${ubicacion} · no escaneaste nada`
+                  : `${ubicacion} · ${leidos.length} ${leidos.length === 1 ? "equipo leído" : "equipos leídos"}`}
               </strong>
               <span>
                 {minutos ? `${minutos} min de recorrido` : "Recorrido terminado"}
@@ -803,6 +812,40 @@ export function TomaFisicaPanel({
             ) : (
               <p className="toma-vacio es-listo">
                 <Icon name="checkCircle" /> No quedó nada pendiente en {ubicacion}.
+              </p>
+            )}
+
+            {/* El padron del area, aunque ya este todo revisado. Sin esto, cerrar
+                un area terminada muestra una pantalla vacia y no hay forma de
+                recordar que es lo que vive ahi. */}
+            {yaVistos.length > 0 && (
+              <>
+                <div className="toma-columna-titulo">
+                  <h2>Lo demás que hay en {ubicacion}</h2>
+                  <small>— ya revisado en esta campaña</small>
+                </div>
+                <ul className="toma-lista">
+                  {yaVistos.map((equipo) => (
+                    <li key={equipo.id} className="es-leido">
+                      <Icon name="check" />
+                      <div>
+                        <strong>{equipo.nombre_equipo}</strong>
+                        <span>
+                          {[equipo.marca, equipo.id_patrimonial ?? "sin etiqueta de Patrimonio"]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {delArea.length === 0 && (
+              <p className="toma-vacio">
+                Todavía no hay ningún equipo anotado en {ubicacion}. La ubicación se le pone a
+                cada equipo al escanearlo aquí.
               </p>
             )}
 

@@ -256,6 +256,28 @@ export function TomaFisicaPanel({
     [equipos, ubicacion, inicioCampana, leidos]
   );
 
+  /**
+   * Todo lo que Patrimonio tiene anotado en esta area, este o no revisado.
+   *
+   * `pendientes` se vacia en cuanto se dispara contra cada etiqueta, y ahi la
+   * columna deja de servir para lo mas comun: entrar al aula solo a mirar que
+   * hay. El padron completo se queda; los revisados bajan y quedan tildados.
+   */
+  const delArea = useMemo(() => {
+    const area = ubicacion.trim().toLocaleLowerCase();
+    if (!area) return [];
+    const pendienteIds = new Set(pendientes.map((equipo) => equipo.id));
+
+    return equipos
+      .filter((equipo) => (equipo.ubicacion ?? "").trim().toLocaleLowerCase() === area)
+      .map((equipo) => ({ equipo, pendiente: pendienteIds.has(equipo.id) }))
+      .sort(
+        (a, b) =>
+          Number(b.pendiente) - Number(a.pendiente) ||
+          a.equipo.nombre_equipo.localeCompare(b.equipo.nombre_equipo, "es", { numeric: true })
+      );
+  }, [equipos, ubicacion, pendientes]);
+
   /** Candidatos para un código huérfano: primero los de esta área. */
   const candidatos = useMemo(() => {
     const texto = busqueda.trim().toLocaleLowerCase();
@@ -1125,18 +1147,19 @@ export function TomaFisicaPanel({
 
         <div>
           <div className="toma-columna-titulo">
-            <h2>Deberían estar aquí</h2>
-            <span style={{ color: "var(--warning-base)" }}>{pendientes.length}</span>
-            <small>— según la campaña pasada</small>
+            <h2>Lo que hay en {ubicacion}</h2>
+            <span style={{ color: "var(--warning-base)" }}>
+              {pendientes.length} de {delArea.length}
+            </span>
+            <small>— falta ver / total del área</small>
           </div>
           <ul className="toma-lista">
-            {pendientes.length === 0 ? (
-              <li className="toma-vacio es-listo">
-                <Icon name="checkCircle" /> No queda nada pendiente en {ubicacion}.
-              </li>
+            {delArea.length === 0 ? (
+              <li className="toma-vacio">Todavía no hay nada anotado en {ubicacion}.</li>
             ) : (
-              pendientes.map((equipo) => (
-                <li key={equipo.id}>
+              delArea.map(({ equipo, pendiente }) => (
+                <li key={equipo.id} className={pendiente ? undefined : "es-leido"}>
+                  {!pendiente && <Icon name="check" />}
                   <div>
                     <strong>{equipo.nombre_equipo}</strong>
                     <span>
@@ -1145,7 +1168,7 @@ export function TomaFisicaPanel({
                         : "Sin etiqueta · no se puede escanear"}
                     </span>
                   </div>
-                  {!equipo.id_patrimonial && (
+                  {pendiente && !equipo.id_patrimonial && (
                     <button
                       type="button"
                       className="ghost"
@@ -1155,20 +1178,22 @@ export function TomaFisicaPanel({
                       Sí está
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="toma-btn-perdido"
-                    onClick={() => void noAparece(equipo.id)}
-                    disabled={ocupado || prueba}
-                  >
-                    No está
-                  </button>
+                  {pendiente && (
+                    <button
+                      type="button"
+                      className="toma-btn-perdido"
+                      onClick={() => void noAparece(equipo.id)}
+                      disabled={ocupado || prueba}
+                    >
+                      No está
+                    </button>
+                  )}
                 </li>
               ))
             )}
           </ul>
           <p className="toma-nota">
-            Cuando esta columna queda vacía, el área está terminada.
+            Cuando ya no queda ninguno sin tilde, el área está terminada.
           </p>
         </div>
       </div>

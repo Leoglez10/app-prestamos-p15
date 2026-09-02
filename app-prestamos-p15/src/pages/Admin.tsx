@@ -396,6 +396,7 @@ function InventarioPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterUbicacion, setFilterUbicacion] = useState("");
   // El inventario de la prepa son miles de filas y la tabla no vive dentro de un
   // scroll virtual: pintarlas todas congela la pagina en cada tecla del buscador.
   const [visibles, setVisibles] = useState(FILAS_POR_PAGINA);
@@ -564,7 +565,10 @@ function InventarioPanel() {
       eq.ubicacion,
     ].some(campo => (campo ?? "").toLowerCase().includes(termino));
     const matchesCategory = filterCategory ? eq.categoria_id.toString() === filterCategory : true;
-    return matchesSearch && matchesCategory;
+    const matchesUbicacion = filterUbicacion
+      ? (eq.ubicacion ?? "").trim() === filterUbicacion
+      : true;
+    return matchesSearch && matchesCategory && matchesUbicacion;
   });
 
   // `prestable:` no es un estado sino una vista: con el inventario de Patrimonio
@@ -576,6 +580,12 @@ function InventarioPanel() {
     if (valor === "prestable:0") return !esPrestableEfectivo(eq);
     return eq.estado === valor;
   };
+
+  // Los lugares salen del propio inventario: no hay catalogo de aulas y la
+  // columna la escribe la toma fisica, asi que la unica lista real es esta.
+  const ubicaciones = Array.from(
+    new Set(equipos.map(eq => (eq.ubicacion ?? "").trim()).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
 
   const statusChips = [
     { value: "", label: "Todos" },
@@ -601,7 +611,7 @@ function InventarioPanel() {
   // sentido y ademas esconderia los primeros resultados.
   useEffect(() => {
     setVisibles(FILAS_POR_PAGINA);
-  }, [searchTerm, filterCategory, filterStatus]);
+  }, [searchTerm, filterCategory, filterStatus, filterUbicacion]);
 
   const toggleSort = (key: typeof sortKey) => {
     if (sortKey === key) {
@@ -621,7 +631,7 @@ function InventarioPanel() {
     event.currentTarget.closest("details")?.removeAttribute("open");
   };
 
-  const hasActiveFilters = Boolean(searchTerm || filterCategory || filterStatus);
+  const hasActiveFilters = Boolean(searchTerm || filterCategory || filterStatus || filterUbicacion);
 
   const inventarioSummary = {
     disponibles: filteredEquipos.filter((equipo) => equipo.estado === "disponible").length,
@@ -657,7 +667,7 @@ function InventarioPanel() {
     const filtersLine = inventarioPdf.includeFilters
       ? `<div class="meta"><strong>Filtros aplicados:</strong> búsqueda ${html(searchTerm || "ninguna")} | categoría ${html(
           filterCategory ? categorias.find((categoria) => categoria.id === Number(filterCategory))?.nombre || "seleccionada" : "todas",
-        )} | estado ${html(filterStatus || "todos")}</div>`
+        )} | estado ${html(filterStatus || "todos")} | lugar ${html(filterUbicacion || "todos")}</div>`
       : "";
 
     const notesBlock = inventarioPdf.notes.trim()
@@ -823,7 +833,7 @@ function InventarioPanel() {
           <Icon name="search" size="1.05rem" className="admin-filters-icon" />
           <input
             type="search"
-            placeholder="Buscar por nombre o ID..."
+            placeholder="Buscar por nombre, ID o lugar..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             onKeyDown={buscadorPistola}
@@ -850,6 +860,14 @@ function InventarioPanel() {
           <option value="extraviado">Extraviado</option>
           <option value="mantenimiento">Mantenimiento</option>
         </select>
+        <select
+          className={filterUbicacion ? "is-active" : undefined}
+          value={filterUbicacion}
+          onChange={e => setFilterUbicacion(e.target.value)}
+        >
+          <option value="">Todos los lugares</option>
+          {ubicaciones.map(lugar => <option key={lugar} value={lugar}>{lugar}</option>)}
+        </select>
         {hasActiveFilters && (
           <button
             type="button"
@@ -858,6 +876,7 @@ function InventarioPanel() {
               setSearchTerm("");
               setFilterCategory("");
               setFilterStatus("");
+              setFilterUbicacion("");
             }}
           >
             Limpiar filtros

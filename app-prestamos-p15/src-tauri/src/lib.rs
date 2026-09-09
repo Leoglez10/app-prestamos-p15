@@ -10,6 +10,7 @@ use std::{
     path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
 };
+use rust_xlsxwriter::{Format, Workbook};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_opener::OpenerExt;
 
@@ -185,6 +186,61 @@ fn guardar_reporte_inventario(app: AppHandle, nombre: String, contenido: String)
     let destino = dir.join(nombre_seguro);
     fs::write(&destino, contenido)
         .map_err(|error| format!("No se pudo escribir el reporte: {error}"))?;
+
+    let _ = app.opener().open_path(dir.display().to_string(), None::<&str>);
+
+    Ok(destino.display().to_string())
+}
+
+/// El mismo reporte, pero como `.xlsx` de verdad.
+///
+/// Es lo que se entrega a Patrimonio: ellos trabajan en Excel, y el CSV les
+/// pide el paso de importarlo con el separador correcto. El CSV sigue
+/// existiendo porque es el que esta app vuelve a leer para fusionar el trabajo
+/// de dos computadoras.
+///
+/// Recibe las filas ya armadas (encabezado incluido) porque la regla de que
+/// pone `S`, `N` o vacio vive en TypeScript y no se duplica aca.
+#[tauri::command]
+fn guardar_reporte_inventario_excel(
+    app: AppHandle,
+    nombre: String,
+    filas: Vec<Vec<String>>,
+) -> Result<String, String> {
+    let nombre_seguro = Path::new(&nombre)
+        .file_name()
+        .and_then(|parte| parte.to_str())
+        .ok_or_else(|| "Nombre de archivo invalido.".to_string())?;
+
+    let dir = reportes_dir(&app)?;
+    let destino = dir.join(nombre_seguro);
+
+    let mut libro = Workbook::new();
+    let hoja = libro.add_worksheet();
+    hoja.set_name("Toma fisica")
+        .map_err(|error| format!("No se pudo armar el Excel: {error}"))?;
+
+    let encabezado = Format::new().set_bold();
+
+    for (fila, columnas) in filas.iter().enumerate() {
+        for (columna, valor) in columnas.iter().enumerate() {
+            // Los indices de rust_xlsxwriter son u32/u16: un inventario no llega
+            // ni cerca del limite, pero el cast tiene que existir igual.
+            let (f, c) = (fila as u32, columna as u16);
+            let escrito = if fila == 0 {
+                hoja.write_string_with_format(f, c, valor, &encabezado)
+            } else {
+                // Todo como texto a proposito: los IDs patrimoniales son digitos
+                // y Excel los volveria numeros, comiendose los ceros de adelante.
+                hoja.write_string(f, c, valor)
+            };
+            escrito.map_err(|error| format!("No se pudo escribir el Excel: {error}"))?;
+        }
+    }
+
+    libro
+        .save(&destino)
+        .map_err(|error| format!("No se pudo guardar el Excel: {error}"))?;
 
     let _ = app.opener().open_path(dir.display().to_string(), None::<&str>);
 
@@ -418,7 +474,8 @@ pub fn run() {
             celular_registrar_dispositivo,
             patrimonio::leer_excel_patrimonio,
             transaccion::ejecutar_transaccion,
-            guardar_reporte_inventario
+            guardar_reporte_inventario,
+            guardar_reporte_inventario_excel
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

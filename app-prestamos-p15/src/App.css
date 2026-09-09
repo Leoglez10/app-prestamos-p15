@@ -1888,6 +1888,46 @@ button.ghost {
   gap: 0.5rem;
 }
 
+/* Cada descarga es botón + una línea que dice a quién va ese archivo. Sin la
+   línea los dos botones parecen el mismo archivo en dos formatos, y el CSV
+   termina en el correo de Patrimonio. */
+.toma-descarga {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.toma-descarga small {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+/* Verde y no azul: es la entrega, el final del recorrido. El azul de la app
+   es el botón de "seguir trabajando". */
+.toma-boton-excel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  background: var(--success-base);
+  border-color: var(--success-base);
+  color: #fff;
+  box-shadow: 0 8px 16px -6px rgba(5, 150, 105, 0.55);
+}
+
+.toma-boton-excel:focus-visible {
+  outline-color: var(--success-base);
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.25);
+}
+
+.toma-boton-excel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 /* El <input type="file"> nativo pinta su propio botón y un "no file selected"
    en inglés que no se puede estilar. Se esconde y se dispara desde acá. */
 .boton-archivo {

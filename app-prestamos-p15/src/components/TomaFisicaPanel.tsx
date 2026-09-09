@@ -25,6 +25,7 @@ import {
   createCategoria,
   createEquipo,
   exportarReporteInventario,
+  exportarReporteInventarioExcel,
   getCategorias,
   getEquipos,
   getInicioCampana,
@@ -594,11 +595,13 @@ export function TomaFisicaPanel({
     await recargar();
   };
 
-  const exportar = async () => {
+  const exportar = async (formato: "xlsx" | "csv" = "xlsx") => {
     setOcupado(true);
     setError("");
     try {
-      const ruta = await exportarReporteInventario(equipos.map(comoRevisable), inicioCampana);
+      const exportador =
+        formato === "xlsx" ? exportarReporteInventarioExcel : exportarReporteInventario;
+      const ruta = await exportador(equipos.map(comoRevisable), inicioCampana);
       setAviso(`Reporte guardado en ${ruta}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -728,13 +731,38 @@ export function TomaFisicaPanel({
           <aside className="toma-lateral">
             <h2>La campaña</h2>
             <p>
-              Una campaña es un recorrido completo del edificio. Lo que se revisó antes de que
-              arrancara no cuenta.
+              Un recorrido completo del edificio. Lo revisado antes de que arrancara no cuenta.
             </p>
             <div className="toma-lateral-acciones">
-              <button type="button" className="ghost" onClick={() => void exportar()} disabled={ocupado}>
-                <Icon name="save" /> Exportar reporte para Patrimonio
-              </button>
+              {/* Dos archivos con los mismos datos y destinos distintos. El
+                  botón dice para quién es cada uno, porque el único error caro
+                  acá es entregarle a Patrimonio el que la app usa para sí misma. */}
+              <div className="toma-descarga">
+                <button
+                  type="button"
+                  className="toma-boton-excel"
+                  onClick={() => void exportar("xlsx")}
+                  disabled={ocupado}
+                >
+                  <Icon name="save" size="1.2rem" /> Descargar Excel para Patrimonio
+                </button>
+                <small>Archivo .xlsx listo para entregar. Se abre directo en Excel.</small>
+              </div>
+
+              <div className="toma-descarga">
+                <button
+                  type="button"
+                  className="ghost"
+                  onClick={() => void exportar("csv")}
+                  disabled={ocupado}
+                >
+                  <Icon name="save" size="1.05rem" /> Descargar CSV para otra computadora
+                </button>
+                <small>
+                  Es el que se sube abajo, en <strong>Traer la toma física de otra computadora</strong>.
+                </small>
+              </div>
+
               <button type="button" className="toma-link-danger" onClick={() => void nuevaCampana()} disabled={ocupado}>
                 Iniciar campaña nueva
               </button>

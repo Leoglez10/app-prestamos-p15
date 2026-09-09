@@ -14,6 +14,7 @@ import {
 export type { PlanImportacion };
 import {
   construirReporteCsv,
+  filasDelReporte,
   nombreDelReporte,
   type EquipoRevisable,
 } from "../utils/tomaFisica";
@@ -2595,6 +2596,25 @@ export const exportarReporteInventario = async (
   return invoke<string>("guardar_reporte_inventario", {
     nombre: nombreDelReporte(new Date()),
     contenido: construirReporteCsv(equipos, inicioCampana),
+  });
+};
+
+/**
+ * El mismo reporte, en `.xlsx`.
+ *
+ * Este es el que se entrega: Patrimonio trabaja en Excel y el CSV les exige
+ * saber elegir el separador al abrirlo. El CSV se queda porque es el que
+ * `leerReporteTomaFisica` vuelve a leer para juntar dos computadoras.
+ */
+export const exportarReporteInventarioExcel = async (
+  equipos: EquipoRevisable[],
+  inicioCampana: string | null
+): Promise<string> => {
+  requireTauriRuntime();
+
+  return invoke<string>("guardar_reporte_inventario_excel", {
+    nombre: nombreDelReporte(new Date(), "xlsx"),
+    filas: filasDelReporte(equipos, inicioCampana),
   });
 };
 

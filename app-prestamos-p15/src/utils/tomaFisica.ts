@@ -106,20 +106,20 @@ const COLUMNAS_REPORTE = [
 ] as const;
 
 /**
- * El reporte que se le devuelve a Patrimonio.
+ * Las filas del reporte que se le devuelve a Patrimonio, encabezado incluido.
  *
  * Reproduce la columna `Localizado` de su propio archivo, que es justamente lo
  * que una toma física produce: qué apareció, dónde, y qué no apareció.
  *
- * Sale como CSV con `;` y BOM UTF-8 a propósito: así Excel en español lo abre en
- * columnas y con los acentos bien, en vez de una sola columna llena de símbolos.
- * Un `.xlsx` de verdad obligaría a sumar una librería de escritura para no
- * ganar nada.
+ * Sale como matriz y no como texto porque hay dos salidas sobre los MISMOS
+ * datos: el CSV que esta app vuelve a leer para fusionar dos computadoras, y el
+ * `.xlsx` que se entrega. Armarlas por separado sería garantizar que un día
+ * digan cosas distintas.
  */
-export const construirReporteCsv = (
+export const filasDelReporte = (
   equipos: EquipoRevisable[],
   inicioCampana: string | null
-): string => {
+): string[][] => {
   const filas = equipos.map((equipo) => {
     const revisado = fueRevisado(equipo, inicioCampana);
     const perdido = !revisado && fueNoLocalizado(equipo, inicioCampana);
@@ -142,20 +142,37 @@ export const construirReporteCsv = (
       localizado,
       cuando,
       quien,
-    ]
-      .map(campoCsv)
-      .join(";");
+    ].map((valor) => valor ?? "");
   });
 
-  return `﻿${COLUMNAS_REPORTE.map(campoCsv).join(";")}\n${filas.join("\n")}\n`;
+  return [[...COLUMNAS_REPORTE], ...filas];
+};
+
+/**
+ * El mismo reporte, como CSV.
+ *
+ * Va con `;` y BOM UTF-8 a propósito: así Excel en español lo abre en columnas
+ * y con los acentos bien, en vez de una sola columna llena de símbolos. Este es
+ * además el archivo que `importarReporte` vuelve a leer para fusionar el
+ * trabajo de dos computadoras; el `.xlsx` es solo para entregar.
+ */
+export const construirReporteCsv = (
+  equipos: EquipoRevisable[],
+  inicioCampana: string | null
+): string => {
+  const [encabezado, ...filas] = filasDelReporte(equipos, inicioCampana);
+
+  return `\ufeff${encabezado.map(campoCsv).join(";")}\n${filas
+    .map((fila) => fila.map(campoCsv).join(";"))
+    .join("\n")}\n`;
 };
 
 /** `reporte-inventario-2026-08-25.csv` */
-export const nombreDelReporte = (ahora: Date): string => {
+export const nombreDelReporte = (ahora: Date, extension: "csv" | "xlsx" = "csv"): string => {
   const iso = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(
     ahora.getDate()
   ).padStart(2, "0")}`;
-  return `reporte-inventario-${iso}.csv`;
+  return `reporte-inventario-${iso}.${extension}`;
 };
 
 /**

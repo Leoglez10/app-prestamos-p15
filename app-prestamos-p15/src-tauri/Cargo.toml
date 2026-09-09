@@ -40,4 +40,5 @@ getrandom = "0.3"
 # Rust; el resto del importador (validar e insertar) vive en TypeScript.
 # Ver docs/PLAN_IMPORTACION_PATRIMONIO.md §6 P3.
 calamine = "0.36.1"
+rust_xlsxwriter = { version = "0.99.0", default-features = false, features = ["zlib"] }
 

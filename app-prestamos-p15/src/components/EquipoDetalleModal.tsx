@@ -16,7 +16,7 @@ import { Icon } from "./Icon";
 import { formatSqliteDateTime } from "../utils/datetime";
 import { getHistorialEquipo, type Equipo, type HistorialEquipo } from "../hooks/useInventory";
 import { esPrestableEfectivo } from "../utils/equipoFicha";
-import { colorEstado, etiquetaEstadoCorta } from "../utils/estados";
+import { colorEstado, etiquetaEstado } from "../utils/estados";
 
 type Props = {
   equipo: Equipo | null;
@@ -192,7 +192,7 @@ export function EquipoDetalleModal({ equipo, onClose, onEditar }: Props) {
                 <Bloque
                   marca={<Punto color={colorDelEstado.punto} />}
                   label="Estado"
-                  valor={etiquetaEstadoCorta(equipo.estado)}
+                  valor={etiquetaEstado(equipo.estado)}
                   style={{ background: colorDelEstado.fondo, borderColor: colorDelEstado.borde, color: colorDelEstado.texto }}
                 />
               )}

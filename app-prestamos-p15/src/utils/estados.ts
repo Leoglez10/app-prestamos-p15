@@ -21,7 +21,7 @@ export type Estado = {
 
 export const ESTADOS_FIJOS: Estado[] = [
   { valor: "disponible", etiqueta: "Disponible" },
-  { valor: "prestado", etiqueta: "Prestado (No remueve el préstamo)" },
+  { valor: "prestado", etiqueta: "Prestado" },
   { valor: "extraviado", etiqueta: "Extraviado" },
   { valor: "mantenimiento", etiqueta: "Mantenimiento" },
   { valor: "para_baja", etiqueta: "Para baja" },
@@ -68,17 +68,6 @@ export const etiquetaEstado = (valor: string, personalizados: Estado[] = []): st
   const legible = valor.replace(/_/g, " ").trim();
   return legible ? legible.charAt(0).toUpperCase() + legible.slice(1) : valor;
 };
-
-/**
- * La misma etiqueta, sin el paréntesis de ayuda.
- *
- * "Prestado (No remueve el préstamo)" avisa de lo que pasa al guardar: tiene
- * sentido dentro del `<select>` del formulario y ninguno en una ficha, donde
- * el estado se está leyendo, no eligiendo. Solo recorta a los estados fijos:
- * los personalizados llegan por el slug, que nunca trae paréntesis.
- */
-export const etiquetaEstadoCorta = (valor: string, personalizados: Estado[] = []): string =>
-  etiquetaEstado(valor, personalizados).replace(/\s*\([^)]*\)\s*$/, "").trim();
 
 /**
  * Los cuatro colores del bloque grande de estado en la ficha del equipo.

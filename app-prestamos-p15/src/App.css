@@ -3290,6 +3290,58 @@ li.toma-vacio.es-listo {
   white-space: pre-wrap;
 }
 
+/* Keep scanner controls and completion actions visible on laptop displays.
+   Long inventories scroll inside their own columns, not behind the taskbar. */
+.admin-main:has(> .toma-recorrido) { padding: 1rem; }
+.toma-recorrido { min-height: 0; gap: 0.75rem; }
+.toma-cierre-cabeza > .toma-tarjeta-icono { display: grid; place-items: center; }
+.toma-consulta .toma-salir { margin-left: auto; }
+.toma-consulta-resultado {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--success-base);
+  border-radius: 12px;
+  background: #d2efdf;
+  color: #0f5138;
+}
+.toma-consulta-resultado h2 { display: flex; align-items: center; gap: 0.5rem; }
+.toma-lista strong, .toma-consulta-resultado { overflow-wrap: anywhere; }
+.toma-columna-titulo { flex-wrap: wrap; }
+
+@media (min-width: 760px) and (min-height: 560px) {
+  .admin-main:has(> .toma-recorrido) { overflow: hidden; }
+  .toma-recorrido { height: 100%; }
+  .toma-recorrido > :not(.toma-columnas):not(.toma-cierre) { flex-shrink: 0; }
+  .toma-barra { padding: 0.65rem 0.85rem; gap: 0.75rem; }
+  .toma-barra-area strong { font-size: 1.3rem; }
+  .toma-escaneo { padding: 0.75rem 1rem; gap: 1rem; }
+  .toma-escaneo input { min-height: 56px; font-size: 1.4rem; }
+  .toma-escaneo-texto label { font-size: 1.1rem; }
+  .toma-tarjeta { padding: 0.65rem 1rem; }
+  .toma-tarjeta-icono { width: 48px; height: 48px; }
+  .toma-columnas {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .toma-columnas > div { display: flex; flex-direction: column; min-height: 0; }
+  .toma-columnas .toma-lista { overflow-y: auto; min-height: 0; scrollbar-gutter: stable; }
+  .toma-lista li { padding: 0.55rem 0.7rem; gap: 0.5rem; }
+  .toma-lista li > small { display: none; }
+  .toma-nota { margin-top: 0.4rem; font-size: 0.8rem; }
+  .toma-cierre { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+  .toma-cierre-cabeza { flex-shrink: 0; padding: 0.85rem 1rem; }
+  .toma-cierre-cuerpo { overflow-y: auto; min-height: 0; padding: 0.75rem 1rem; }
+  .toma-cierre-acciones .ghost { min-height: 48px; }
+  /* Linking/creation forms need normal scrolling rather than clipped fields. */
+  .admin-main:has(.toma-huerfano), .admin-main:has(> .toma-consulta) { overflow-y: auto; }
+  .toma-recorrido:has(.toma-huerfano), .toma-consulta { height: auto; }
+}
+/* Reserve the warning row: inserting it on blur can move a button between
+   pointer-down and click, silently swallowing Undo or Finish. */
+.toma-sin-foco-aviso.is-focused { visibility: hidden; }
+
 /* Toda la fila abre el detalle; los controles internos siguen mandando en su
    propio clic. */
 .admin-table tr.row-clickable { cursor: pointer; }

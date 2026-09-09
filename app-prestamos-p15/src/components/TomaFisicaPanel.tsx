@@ -20,6 +20,7 @@
  */
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "./Icon";
+import { EscaneoRapido } from "./EscaneoRapido";
 import {
   buscarPorIdPatrimonial,
   createCategoria,
@@ -183,6 +184,7 @@ export function TomaFisicaPanel({
   // tocar la base. Es la unica forma de ensayar el recorrido con equipos reales
   // sin dejar la campana llena de revisiones falsas que despues hay que limpiar.
   const [prueba, setPrueba] = useState(false);
+  const [consultaRapida, setConsultaRapida] = useState(false);
 
   const quienRevisa = adminUser.nombre;
 
@@ -230,9 +232,9 @@ export function TomaFisicaPanel({
 
   // Admin esconde su barra lateral mientras dura el recorrido.
   useEffect(() => {
-    onRecorrido?.(ubicacionFijada);
+    onRecorrido?.(ubicacionFijada || consultaRapida);
     return () => onRecorrido?.(false);
-  }, [ubicacionFijada, onRecorrido]);
+  }, [ubicacionFijada, consultaRapida, onRecorrido]);
 
   // La tarjeta del disparo se va sola: nadie va a soltar la pistola para
   // cerrarla, y el tiempo que dura es la ventana para deshacer.
@@ -358,7 +360,7 @@ export function TomaFisicaPanel({
   const escanear = async (e?: FormEvent) => {
     e?.preventDefault();
     const leido = codigo.trim();
-    if (!leido || ocupado) return;
+    if (!leido || ocupado || !ubicacionFijada || cerrando || consultaRapida) return;
 
     setOcupado(true);
     setError("");
@@ -431,7 +433,9 @@ export function TomaFisicaPanel({
 
   /** Vuelve atrás el último disparo. La pistola dispara contra lo que se le ponga enfrente. */
   const deshacer = async (equipoId: number, previo: Previo) => {
+    if (ocupado) return;
     setOcupado(true);
+    setError("");
     try {
       if (!prueba) await revertirRevision(equipoId, previo);
       setLeidos((actuales) => actuales.filter((leido) => leido.equipo.id !== equipoId));
@@ -614,12 +618,19 @@ export function TomaFisicaPanel({
     return <section>Cargando inventario…</section>;
   }
 
+  if (consultaRapida) {
+    return <EscaneoRapido onCerrar={() => setConsultaRapida(false)} />;
+  }
+
   // Paso 1: la ubicación se elige UNA vez por recorrido, no por objeto.
   if (!ubicacionFijada) {
     return (
       <section className="toma-inicio">
         <div className="toma-inicio-titulo">
           <h1>Toma de inventario</h1>
+          <button type="button" className="ghost toma-salir" onClick={() => setConsultaRapida(true)}>
+            <Icon name="search" /> Escaneo rápido · consultar ubicación
+          </button>
           <p>
             {inicioCampana
               ? `Campaña abierta el ${inicioCampana.slice(0, 10)} · recorre ${quienRevisa}`
@@ -929,19 +940,19 @@ export function TomaFisicaPanel({
         {aviso && <div className="feedback success">{aviso}</div>}
 
         <div className="toma-cierre-acciones">
-          <button type="button" className="toma-cta" onClick={cerrarRecorrido}>
+          <button type="button" className="toma-cta" disabled={ocupado} onClick={cerrarRecorrido}>
             <Icon name="mapPin" size="1.3rem" /> Seguir en otra área
           </button>
           <button
             type="button"
             className="ghost"
-            onClick={() => void exportar()}
+            onClick={() => void exportar("xlsx")}
             disabled={ocupado}
           >
-            <Icon name="save" /> Exportar reporte
+            <Icon name="save" /> Descargar Excel para Patrimonio
           </button>
-          <button type="button" className="toma-link-danger" onClick={() => setCerrando(false)}>
-            Volver a escanear aquí
+          <button type="button" className="ghost" disabled={ocupado} onClick={() => { setCerrando(false); enfocarEscaneo(); }}>
+            <Icon name="barcode" /> Volver a escanear aquí
           </button>
         </div>
       </section>
@@ -971,7 +982,7 @@ export function TomaFisicaPanel({
             <div style={{ width: `${progreso.porcentaje}%` }} />
           </div>
         </div>
-        <button type="button" className="ghost toma-salir" onClick={cerrarRecorrido}>
+        <button type="button" className="ghost toma-salir" disabled={ocupado} onClick={cerrarRecorrido}>
           <Icon name="x" /> Salir del recorrido
         </button>
       </header>
@@ -997,8 +1008,8 @@ export function TomaFisicaPanel({
         />
       </form>
 
-      {!foco && !desconocido && (
-        <div className="toma-sin-foco-aviso">
+      {!desconocido && (
+        <div className={`toma-sin-foco-aviso${foco ? " is-focused" : ""}`} aria-hidden={foco}>
           <Icon name="alert" /> El campo perdió el foco: la pistola está disparando al vacío.
           <button type="button" onClick={enfocarEscaneo}>Recuperarlo</button>
         </div>
@@ -1237,6 +1248,12 @@ export function TomaFisicaPanel({
                   <span>{detalleDe(leido.equipo)}</span>
                 </div>
                 <small>{leido.cuando}</small>
+                <button type="button" className="ghost" disabled={ocupado}
+                  aria-label={`Deshacer lectura de ${leido.equipo.nombre_equipo}, ${leido.equipo.id_patrimonial ?? leido.equipo.id}`}
+                  title="Restaura la revisión y ubicación anteriores; no elimina el equipo ni su etiqueta."
+                  onClick={() => void deshacer(leido.equipo.id, leido.previo)}>
+                  <Icon name="refresh" /> Deshacer
+                </button>
               </li>
             ))}
           </ul>
@@ -1295,7 +1312,7 @@ export function TomaFisicaPanel({
         </div>
       </div>
 
-      <button type="button" className="ghost toma-terminar" onClick={() => setCerrando(true)}>
+      <button type="button" className="ghost toma-terminar" disabled={ocupado} onClick={() => setCerrando(true)}>
         <Icon name="checkCircle" size="1.3rem" /> Terminar {ubicacion}
       </button>
 

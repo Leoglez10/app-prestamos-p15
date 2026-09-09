@@ -5,6 +5,8 @@ import Admin from "./pages/Admin";
 import PrestamoRapido from "./pages/PrestamoRapido";
 import { useAutoBackup } from "./hooks/useAutoBackup";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { UpdateProvider } from "./updates/UpdateProvider";
+import { UpdateNotice } from "./components/UpdateNotice";
 import "./App.css";
 
 function App() {
@@ -12,14 +14,17 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/kiosko" element={<Kiosk />} />
-          <Route path="/prestamo-rapido" element={<PrestamoRapido />} />
-        </Routes>
-      </ErrorBoundary>
+      <UpdateProvider>
+        <ErrorBoundary>
+          <UpdateNotice />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/kiosko" element={<Kiosk />} />
+            <Route path="/prestamo-rapido" element={<PrestamoRapido />} />
+          </Routes>
+        </ErrorBoundary>
+      </UpdateProvider>
     </BrowserRouter>
   );
 }

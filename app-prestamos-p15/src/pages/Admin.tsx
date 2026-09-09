@@ -60,6 +60,7 @@ import { etiquetaEstado, listaEstados, type Estado } from "../utils/estados";
 import { useEscaneoGlobal } from "../hooks/useEscaneoGlobal";
 import { useEntradaPistola } from "../hooks/usePistola";
 import { confirmDialog, alertDialog } from "../utils/confirm";
+import { UpdateSettingsPanel } from "../components/UpdateSettingsPanel";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
   auto: "Automático",
@@ -2602,6 +2603,8 @@ function ConfiguracionPanel({ adminUser }: { adminUser: Profesor }) {
           Controles administrativos y respaldo rápido de la base local.
         </p>
       </div>
+
+      <UpdateSettingsPanel />
 
       <div className="panel" style={{ display: "grid", gap: "0.8rem" }}>
         <h3 style={{ margin: 0 }}>Kiosko</h3>

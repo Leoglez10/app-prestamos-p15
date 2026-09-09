@@ -32,6 +32,63 @@ body {
   min-height: 100vh;
 }
 
+/* In normal flow: never covers a loan form or competes with modal dialogs. */
+.update-notice {
+  margin: 1rem auto;
+  width: min(1200px, calc(100% - 2rem));
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--brand-primary);
+  border-radius: 12px;
+  background: var(--surface-default);
+}
+
+.update-notice p,
+.update-settings p {
+  margin: 0 0 0.75rem;
+}
+
+.update-settings h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 0.75rem;
+}
+
+.update-actions button {
+  width: auto;
+}
+
+.update-notes {
+  max-height: 12rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: var(--text-secondary);
+}
+
+.update-progress {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.update-progress progress {
+  width: 100%;
+  accent-color: var(--brand-primary);
+}
+
+.update-notice :focus-visible,
+.update-settings :focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
 .dashboard {
   max-width: 1240px;
   margin: 0 auto;

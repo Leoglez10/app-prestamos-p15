@@ -437,9 +437,26 @@ fn local_ip() -> Result<String, String> {
     Ok(address.ip().to_string())
 }
 
+#[tauri::command]
+fn get_update_readiness() -> &'static str {
+    if !cfg!(all(target_os = "windows", target_arch = "x86_64")) {
+        "unsupported"
+    } else if cfg!(debug_assertions) {
+        "development"
+    } else {
+        "ready"
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(desktop)]
+    let builder = builder
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init());
+
+    builder
         .setup(|app| {
             // The phone server is optional: if it cannot start, the desktop app
             // must keep working, so failures are logged inside `iniciar`.
@@ -464,6 +481,7 @@ pub fn run() {
         .plugin(tauri_plugin_sql::Builder::default().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            get_update_readiness,
             get_database_url,
             create_backup,
             list_backups,

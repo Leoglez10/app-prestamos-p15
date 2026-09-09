@@ -151,6 +151,13 @@ export function EquipoDetalleModal({ equipo, onClose, onEditar }: Props) {
                   <span style={{ color: "var(--text-secondary)", lineHeight: 1.5 }}>{equipo.descripcion}</span>
                 </Dato>
               ) : null}
+              {equipo.observaciones ? (
+                <Dato label="Observaciones">
+                  <span style={{ color: "var(--text-secondary)", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                    {equipo.observaciones}
+                  </span>
+                </Dato>
+              ) : null}
             </div>
           </div>
 

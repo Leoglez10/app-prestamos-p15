@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS inventario (
     modelo TEXT,
     num_serie TEXT,           -- informativo: el Excel trae 11 duplicados, no es llave
     descripcion TEXT,         -- specs en texto libre (procesador, memoria, medidas)
+    observaciones TEXT,       -- notas libres de la casa; el Excel de Patrimonio nunca la trae
     resguardante_codigo TEXT, -- codigo de empleado de quien responde por el bien
     resguardante_nombre TEXT, -- NO se dan de alta en `profesores`: no es login
     fecha_adquisicion TEXT,   -- ISO 'YYYY-MM-DD'
@@ -35,7 +36,7 @@ CREATE TABLE IF NOT EXISTS inventario (
     -- Localizado del reporte sale de las dos: S / N / vacio.
     no_localizado_en TEXT,
     no_localizado_por TEXT,
-    estado TEXT DEFAULT 'disponible', -- 'disponible', 'prestado', 'extraviado', 'mantenimiento'
+    estado TEXT DEFAULT 'disponible', -- el catalogo vive en src/utils/estados.ts
     es_prestable INTEGER NOT NULL DEFAULT 1,
     es_granel INTEGER NOT NULL DEFAULT 0,
     stock_total INTEGER NOT NULL DEFAULT 1,

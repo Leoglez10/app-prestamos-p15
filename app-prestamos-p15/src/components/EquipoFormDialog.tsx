@@ -15,19 +15,26 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Icon } from "./Icon";
 import {
+  addEstadoPersonalizado,
+  createCategoria,
   createEquipo,
+  getEstadosPersonalizados,
+  getUbicacionesConocidas,
   updateEquipo,
   type Categoria,
   type Equipo,
 } from "../hooks/useInventory";
 import { generarIdentificadores } from "../utils/identificadores";
+import { listaEstados, type Estado } from "../utils/estados";
+import { promptDialog } from "../utils/confirm";
 
-// Los ocho campos de la ficha de Patrimonio se llenan y se limpian en bloque.
+// Los campos de la ficha se llenan y se limpian en bloque.
 const FICHA_VACIA = {
   marca: "",
   modelo: "",
   num_serie: "",
   descripcion: "",
+  observaciones: "",
   resguardante_codigo: "",
   resguardante_nombre: "",
   fecha_adquisicion: "",
@@ -57,6 +64,12 @@ type Props = {
   onCerrar: () => void;
   /** Se llama SOLO si la base aceptó la escritura. */
   onGuardado: (idPatrimonial: string | null) => void | Promise<void>;
+  /**
+   * Una categoría creada desde acá ya existe en la base aunque después se
+   * cancele el alta. Sin este aviso, la pantalla de atrás sigue mostrando la
+   * lista vieja hasta que algo más la recargue.
+   */
+  onCategoriaCreada?: () => void | Promise<void>;
 };
 
 export function EquipoFormDialog({
@@ -66,6 +79,7 @@ export function EquipoFormDialog({
   prefill,
   onCerrar,
   onGuardado,
+  onCategoriaCreada,
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -81,6 +95,19 @@ export function EquipoFormDialog({
   const [cantidadUnidades, setCantidadUnidades] = useState("1");
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [estadosExtra, setEstadosExtra] = useState<Estado[]>([]);
+  const [ubicacionesConocidas, setUbicacionesConocidas] = useState<string[]>([]);
+  // Una categoría recién creada tiene que estar en el `<select>` en el mismo
+  // gesto. Se guarda aparte de la prop porque el padre recarga su lista después,
+  // no durante.
+  const [categoriasExtra, setCategoriasExtra] = useState<Categoria[]>([]);
+
+  const opcionesCategoria = useMemo(() => {
+    const conocidas = new Set(categorias.map((categoria) => categoria.id));
+    return [...categorias, ...categoriasExtra.filter((categoria) => !conocidas.has(categoria.id))];
+  }, [categorias, categoriasExtra]);
+
+  const opcionesEstado = useMemo(() => listaEstados(estadosExtra), [estadosExtra]);
 
   // El formulario se rellena al ABRIR, no en cada render: mientras está abierto
   // lo que manda es lo que la persona escribió, no lo que le pasaron por props.
@@ -97,6 +124,11 @@ export function EquipoFormDialog({
     setGuardando(false);
     setCantidadUnidades("1");
 
+    // Los dos catálogos que no vienen por props. Se releen en cada apertura
+    // porque la toma física agrega ubicaciones mientras la app está abierta.
+    void getEstadosPersonalizados().then(setEstadosExtra).catch(() => setEstadosExtra([]));
+    void getUbicacionesConocidas().then(setUbicacionesConocidas).catch(() => setUbicacionesConocidas([]));
+
     if (editando) {
       setNombre(editando.nombre_equipo);
       setIdentificador(editando.identificador ?? "");
@@ -106,6 +138,7 @@ export function EquipoFormDialog({
         modelo: editando.modelo ?? "",
         num_serie: editando.num_serie ?? "",
         descripcion: editando.descripcion ?? "",
+        observaciones: editando.observaciones ?? "",
         resguardante_codigo: editando.resguardante_codigo ?? "",
         resguardante_nombre: editando.resguardante_nombre ?? "",
         fecha_adquisicion: editando.fecha_adquisicion ?? "",
@@ -141,6 +174,45 @@ export function EquipoFormDialog({
     [identificador, cantidadUnidades, editando]
   );
 
+  // Crear la categoría acá adentro y no "en Inventario, después": quien está
+  // registrando un aparato que no encaja en ninguna ya sabe cómo se llama la
+  // que falta, y mandarlo a otra pantalla es donde se abandona el alta.
+  const agregarCategoria = async () => {
+    const nombreNuevo = await promptDialog("Nombre de la categoría nueva", {
+      placeholder: "Ej. Proyectores",
+    });
+    if (!nombreNuevo) return;
+
+    try {
+      // Nace no prestable por lo mismo que el alta al vuelo: qué se presta se
+      // decide en Inventario, no mientras se registra un aparato.
+      const id = await createCategoria(nombreNuevo, false);
+      setCategoriasExtra((actuales) => [
+        ...actuales,
+        { id, nombre: nombreNuevo.trim(), es_prestable: 0, total_articulos: 0 },
+      ]);
+      setCategoriaId(String(id));
+      await onCategoriaCreada?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear la categoría");
+    }
+  };
+
+  const agregarEstado = async () => {
+    const nombreNuevo = await promptDialog("Nombre del estado nuevo", {
+      placeholder: "Ej. En comodato",
+    });
+    if (!nombreNuevo) return;
+
+    try {
+      const estado = await addEstadoPersonalizado(nombreNuevo);
+      setEstadosExtra(await getEstadosPersonalizados());
+      setEstadoEdit(estado.valor);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear el estado");
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!nombre || !categoriaId || guardando) return;
@@ -168,6 +240,7 @@ export function EquipoFormDialog({
           id_patrimonial: null,
           ...ficha,
           categoria_id: Number(categoriaId),
+          estado: estadoEdit,
           es_prestable: esPrestable ? 1 : 0,
           es_granel: 1,
           stock_total: Number(stockTotal) || 1,
@@ -192,6 +265,7 @@ export function EquipoFormDialog({
             id_patrimonial: unaSolaUnidad ? idPatrimonial || null : null,
             num_serie: unaSolaUnidad ? ficha.num_serie || null : null,
             categoria_id: Number(categoriaId),
+            estado: estadoEdit,
             es_prestable: esPrestable ? 1 : 0,
             es_granel: 0,
             stock_total: 1,
@@ -230,12 +304,17 @@ export function EquipoFormDialog({
             </div>
             <div>
               <label>Categoría</label>
-              <select value={categoriaId} onChange={e => setCategoriaId(e.target.value)} required>
-                <option value="">-- Seleccionar --</option>
-                {categorias.map(c => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
-                ))}
-              </select>
+              <div className="admin-field-con-alta">
+                <select value={categoriaId} onChange={e => setCategoriaId(e.target.value)} required>
+                  <option value="">-- Seleccionar --</option>
+                  {opcionesCategoria.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+                <button type="button" className="ghost" onClick={() => void agregarCategoria()} title="Crear una categoría nueva">
+                  <Icon name="plus" /> Nueva
+                </button>
+              </div>
             </div>
           </div>
 
@@ -331,24 +410,30 @@ export function EquipoFormDialog({
               <span>Mostrar en kiosko</span>
               <span className="admin-toggle-pill">{esPrestable ? 'Sí' : 'No'}</span>
             </button>
-            {editando && (
-              <div>
-                <label>Estado</label>
+            {/* El estado también se elige al dar de alta: un aparato que llega
+                para baja o que va directo a resguardo entra así, sin tener que
+                crearlo disponible y editarlo enseguida. */}
+            <div>
+              <label>Estado</label>
+              <div className="admin-field-con-alta">
                 <select value={estadoEdit} onChange={e => setEstadoEdit(e.target.value)} required>
-                  <option value="disponible">Disponible</option>
-                  <option value="prestado">Prestado (No remueve el préstamo)</option>
-                  <option value="extraviado">Extraviado</option>
-                  <option value="mantenimiento">Mantenimiento</option>
+                  {opcionesEstado.map(estado => (
+                    <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
+                  ))}
                 </select>
+                <button type="button" className="ghost" onClick={() => void agregarEstado()} title="Crear un estado nuevo">
+                  <Icon name="plus" /> Nuevo
+                </button>
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Plegado: el alta común es nombre + categoría. Estos campos los llena
-              la importación del Excel, no la mano, salvo correcciones. */}
-          <details className="admin-form-section ficha-patrimonio">
-            <summary>Ficha del equipo (marca, modelo, resguardante…)</summary>
-            <div className="admin-field-pair" style={{ marginTop: '0.7rem' }}>
+          {/* Estuvo plegada mientras el alta común era nombre + categoría. Con la
+              toma física caminando el edificio, el resguardante es el dato que
+              más se corrige, y un acordeón cerrado es un campo que nadie llena. */}
+          <div className="admin-form-section ficha-patrimonio">
+            <div className="admin-form-section-title">Ficha del equipo</div>
+            <div className="admin-field-pair">
               <div>
                 <label>Marca</label>
                 <input value={ficha.marca} onChange={e => setFicha(f => ({ ...f, marca: e.target.value }))} placeholder="Ej. DELL" />
@@ -365,7 +450,19 @@ export function EquipoFormDialog({
               )}
               <div>
                 <label>Ubicación</label>
-                <input value={ficha.ubicacion} onChange={e => setFicha(f => ({ ...f, ubicacion: e.target.value }))} placeholder="Ej. Aula 12" />
+                {/* `datalist` y no un `select`: la lista son los lugares que ya
+                    existen, pero escribir uno nuevo tiene que seguir siendo
+                    posible — la mitad del edificio se nombra caminándolo. */}
+                <input
+                  value={ficha.ubicacion}
+                  onChange={e => setFicha(f => ({ ...f, ubicacion: e.target.value }))}
+                  placeholder="Ej. Aula 12"
+                  list="ubicaciones-conocidas"
+                  autoComplete="off"
+                />
+                <datalist id="ubicaciones-conocidas">
+                  {ubicacionesConocidas.map(lugar => <option key={lugar} value={lugar} />)}
+                </datalist>
               </div>
               <div>
                 <label>Código del resguardante</label>
@@ -389,7 +486,20 @@ export function EquipoFormDialog({
                 rows={2}
               />
             </div>
-          </details>
+            {/* Aparte de la descripción a propósito: una es lo que el aparato
+                ES (specs, y eso lo pisa la reimportación de Patrimonio) y la
+                otra es lo que le PASA — por qué está obsoleto, qué le falta,
+                qué se le hizo. Ese texto lo escribe la casa y no lo toca nadie más. */}
+            <div style={{ marginTop: '0.8rem' }}>
+              <label>Observaciones</label>
+              <textarea
+                value={ficha.observaciones}
+                onChange={e => setFicha(f => ({ ...f, observaciones: e.target.value }))}
+                placeholder="Notas: por qué está así, qué le falta, qué se le hizo…"
+                rows={2}
+              />
+            </div>
+          </div>
           </div>
 
           </div>

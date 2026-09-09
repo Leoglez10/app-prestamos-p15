@@ -22,6 +22,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { Icon } from "./Icon";
 import {
   buscarPorIdPatrimonial,
+  createCategoria,
   createEquipo,
   exportarReporteInventario,
   getCategorias,
@@ -49,7 +50,7 @@ import {
   type EquipoRevisable,
 } from "../utils/tomaFisica";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
-import { confirmDialog } from "../utils/confirm";
+import { confirmDialog, promptDialog } from "../utils/confirm";
 
 /** Lo que hay que guardar para poder deshacer un disparo. */
 type Previo = {
@@ -536,6 +537,23 @@ export function TomaFisicaPanel({
    * edificio es inventario; prestarlo es una decisión aparte que toma la escuela
    * desde Admin, nunca un efecto secundario de escanear una etiqueta.
    */
+  const agregarCategoria = async () => {
+    const nombreNuevo = await promptDialog("Nombre de la categoría nueva", {
+      placeholder: "Ej. Proyectores",
+    });
+    if (!nombreNuevo) return;
+
+    try {
+      // No prestable por lo mismo que el alta entera: escanear no decide qué
+      // se presta. Ver el comentario de `darDeAlta`.
+      const id = await createCategoria(nombreNuevo, false);
+      setCategorias(await getCategorias());
+      setAlta((actual) => (actual ? { ...actual, categoriaId: String(id) } : actual));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear la categoría");
+    }
+  };
+
   const darDeAlta = async () => {
     if (!desconocido || !alta || prueba || ocupado) return;
     const nombre = alta.nombre.trim();
@@ -1052,18 +1070,26 @@ export function TomaFisicaPanel({
                   </div>
                   <div>
                     <label htmlFor="alta-categoria">Categoría</label>
-                    <select
-                      id="alta-categoria"
-                      value={alta.categoriaId}
-                      onChange={(e) => setAlta((actual) => (actual ? { ...actual, categoriaId: e.target.value } : actual))}
-                    >
-                      <option value="">-- Elegir --</option>
-                      {categorias.map((categoria) => (
-                        <option key={categoria.id} value={categoria.id}>
-                          {categoria.nombre}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="admin-field-con-alta">
+                      <select
+                        id="alta-categoria"
+                        value={alta.categoriaId}
+                        onChange={(e) => setAlta((actual) => (actual ? { ...actual, categoriaId: e.target.value } : actual))}
+                      >
+                        <option value="">-- Elegir --</option>
+                        {categorias.map((categoria) => (
+                          <option key={categoria.id} value={categoria.id}>
+                            {categoria.nombre}
+                          </option>
+                        ))}
+                      </select>
+                      {/* La categoría que falta se crea sin salir del recorrido:
+                          mandar a Inventario a quien tiene la pistola en la mano
+                          es donde el alta se abandona. */}
+                      <button type="button" className="ghost" onClick={() => void agregarCategoria()} title="Crear una categoría nueva">
+                        <Icon name="plus" /> Nueva
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <small>
@@ -1260,6 +1286,7 @@ export function TomaFisicaPanel({
           es_prestable: false,
         }}
         onCerrar={() => setFormCompleto(false)}
+        onCategoriaCreada={async () => setCategorias(await getCategorias())}
         onGuardado={async (idPatrimonial) => {
           if (alta?.categoriaId) setUltimaCategoria(alta.categoriaId);
           await cerrarElAlta(idPatrimonial);

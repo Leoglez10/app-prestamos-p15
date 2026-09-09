@@ -7,6 +7,7 @@ import {
   Profesor,
   BackupInfo,
   createCategoria,
+  getEstadosPersonalizados,
   createBackup,
   createEquipo,
   createProfesor,
@@ -55,6 +56,7 @@ import { RedCelularPanel } from "../components/RedCelularPanel";
 import { EquipoDetalleModal } from "../components/EquipoDetalleModal";
 import { TomaFisicaPanel } from "../components/TomaFisicaPanel";
 import { EquipoFormDialog } from "../components/EquipoFormDialog";
+import { etiquetaEstado, listaEstados, type Estado } from "../utils/estados";
 import { useEscaneoGlobal } from "../hooks/useEscaneoGlobal";
 import { useEntradaPistola } from "../hooks/usePistola";
 import { confirmDialog, alertDialog } from "../utils/confirm";
@@ -385,6 +387,7 @@ function PdfDesignerPanel({
 function InventarioPanel() {
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [estadosPersonalizados, setEstadosPersonalizados] = useState<Estado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -425,9 +428,14 @@ function InventarioPanel() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [eqs, cats] = await Promise.all([getEquipos(), getCategorias()]);
+      const [eqs, cats, estados] = await Promise.all([
+        getEquipos(),
+        getCategorias(),
+        getEstadosPersonalizados(),
+      ]);
       setEquipos(eqs);
       setCategorias(cats);
+      setEstadosPersonalizados(estados);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al cargar datos");
     } finally {
@@ -587,14 +595,17 @@ function InventarioPanel() {
     new Set(equipos.map(eq => (eq.ubicacion ?? "").trim()).filter(Boolean))
   ).sort((a, b) => a.localeCompare(b, "es", { numeric: true }));
 
+  // Los estados salen del catálogo compartido, así un estado nuevo aparece en el
+  // filtro sin tocar esta pantalla. Se muestran solo los que alguna fila usa: la
+  // lista completa llenaría la barra de chips que siempre marcan cero.
+  const estadosEnUso = new Set(baseEquipos.map((eq) => eq.estado));
   const statusChips = [
     { value: "", label: "Todos" },
     { value: "prestable:1", label: "Prestables" },
     { value: "prestable:0", label: "Solo inventario" },
-    { value: "disponible", label: "Disponibles" },
-    { value: "prestado", label: "Prestados" },
-    { value: "extraviado", label: "Extraviados" },
-    { value: "mantenimiento", label: "Mantenimiento" },
+    ...listaEstados(estadosPersonalizados)
+      .filter((estado) => estadosEnUso.has(estado.valor))
+      .map((estado) => ({ value: estado.valor, label: estado.etiqueta })),
   ];
 
   const countForStatus = (value: string) =>
@@ -855,10 +866,9 @@ function InventarioPanel() {
           <option value="">Todos los estados</option>
           <option value="prestable:1">Solo prestables</option>
           <option value="prestable:0">Solo inventario</option>
-          <option value="disponible">Disponible</option>
-          <option value="prestado">Prestado</option>
-          <option value="extraviado">Extraviado</option>
-          <option value="mantenimiento">Mantenimiento</option>
+          {listaEstados(estadosPersonalizados).map(estado => (
+            <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
+          ))}
         </select>
         <select
           className={filterUbicacion ? "is-active" : undefined}
@@ -968,7 +978,17 @@ function InventarioPanel() {
                 </tr>
               ) : null}
               {filteredEquipos.slice(0, visibles).map(eq => (
-                <tr key={eq.id} style={{ borderBottom: '1px solid var(--border-subtle)', background: editando?.id === eq.id ? 'var(--surface-sunken)' : 'transparent' }}>
+                <tr
+                  key={eq.id}
+                  className="row-clickable"
+                  style={{ borderBottom: '1px solid var(--border-subtle)', background: editando?.id === eq.id ? 'var(--surface-sunken)' : 'transparent' }}
+                  onClick={(event) => {
+                    // Los controles de la fila (menú, Devolver, el propio nombre)
+                    // ya tienen su acción; solo el espacio vacío abre el detalle.
+                    if ((event.target as HTMLElement).closest('button, summary, a, input, select')) return;
+                    setDetalleId(eq.id);
+                  }}
+                >
                   <td style={{ padding: '0.55rem 1rem' }}>
                     <button type="button" className="row-link" onClick={() => setDetalleId(eq.id)}>
                       {eq.nombre_equipo}
@@ -1023,7 +1043,7 @@ function InventarioPanel() {
                       </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span className={`state ${eq.estado}`} style={{ width: 'fit-content' }}>{eq.estado}</span>
+                        <span className={`state ${eq.estado}`} style={{ width: 'fit-content' }}>{etiquetaEstado(eq.estado, estadosPersonalizados)}</span>
                         {eq.estado === 'prestado' && eq.prestamo_activo_profe && (
                           <small style={{ color: 'var(--brand-primary)', fontWeight: '500' }}>
                             A: {eq.prestamo_activo_profe}
@@ -1683,6 +1703,7 @@ function CategoriasPanel() {
   const [equipoNombre, setEquipoNombre] = useState("");
   const [equipoIdentificador, setEquipoIdentificador] = useState("");
   const [equipoEstado, setEquipoEstado] = useState("disponible");
+  const [estadosPersonalizados, setEstadosPersonalizados] = useState<Estado[]>([]);
   const [equipoEsPrestable, setEquipoEsPrestable] = useState(true);
   const [equipoEsGranel, setEquipoEsGranel] = useState(false);
   const [equipoStockTotal, setEquipoStockTotal] = useState("1");
@@ -1705,8 +1726,9 @@ function CategoriasPanel() {
   const loadCategorias = async () => {
     try {
       setLoading(true);
-      const rows = await getCategorias();
+      const [rows, estados] = await Promise.all([getCategorias(), getEstadosPersonalizados()]);
       setCategorias(rows);
+      setEstadosPersonalizados(estados);
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudieron cargar las categorías.");
@@ -2086,10 +2108,9 @@ function CategoriasPanel() {
                   required
                 />
                 <select value={equipoEstado} onChange={(e) => setEquipoEstado(e.target.value)}>
-                  <option value="disponible">Disponible</option>
-                  <option value="prestado">Prestado</option>
-                  <option value="extraviado">Extraviado</option>
-                  <option value="mantenimiento">Mantenimiento</option>
+                  {listaEstados(estadosPersonalizados).map(estado => (
+                    <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
+                  ))}
                 </select>
                 <button
                   type="button"

@@ -140,6 +140,7 @@ body {
 
 input,
 select,
+textarea,
 button {
   width: 100%;
   font: inherit;
@@ -301,6 +302,29 @@ button.ghost {
 
 .state.extraviado {
   background: var(--text-secondary);
+}
+
+.state.para_baja {
+  background: #b45309;
+}
+
+.state.baja {
+  background: #7f1d1d;
+}
+
+.state.en_resguardo {
+  background: #0f766e;
+}
+
+.state.obsoleto {
+  background: #6d28d9;
+}
+
+/* Un estado personalizado no tiene regla propia: sin este color de base saldría
+   con texto blanco sobre nada. Las reglas de arriba lo pisan por especificidad
+   (dos clases contra una), así que el orden acá no importa. */
+.state {
+  background: #475569;
 }
 
 .state.activo {
@@ -766,10 +790,27 @@ button.ghost {
   color: white;
 }
 
-.ficha-patrimonio > summary {
-  cursor: pointer;
-  font-weight: 700;
-  list-style-position: inside;
+/* El select y su botón de alta comparten renglón: el botón se queda con lo que
+   necesita su texto y el select se lleva el resto. */
+.admin-field-con-alta {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.admin-field-con-alta > select {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-field-con-alta > button {
+  width: auto;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  padding-inline: 0.7rem;
 }
 
 .admin-dialog input,
@@ -843,6 +884,12 @@ button.ghost {
   font-size: 1rem;
   line-height: 1.55;
   white-space: pre-line;
+}
+
+/* Solo el diálogo de escribir un nombre trae campo: sin esto el input queda
+   pegado a los botones y se le acierta al equivocado. */
+.app-confirm form input {
+  margin-bottom: 1.1rem;
 }
 
 .app-confirm-actions {
@@ -3202,3 +3249,8 @@ li.toma-vacio.es-listo {
   text-align: left;
   white-space: pre-wrap;
 }
+
+/* Toda la fila abre el detalle; los controles internos siguen mandando en su
+   propio clic. */
+.admin-table tr.row-clickable { cursor: pointer; }
+.admin-table tr.row-clickable:hover { background: var(--surface-sunken) !important; }

@@ -3,6 +3,7 @@ import Database from "@tauri-apps/plugin-sql";
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
+import { ESTADOS_FIJOS, slugEstado, type Estado } from "../utils/estados";
 import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, esPrestableEfectivo, type FichaEquipo } from "../utils/equipoFicha";
 import {
   planificarImportacion,
@@ -62,6 +63,8 @@ export type Equipo = {
   modelo: string | null;
   num_serie: string | null;
   descripcion: string | null;
+  // Notas libres de la casa, no de Patrimonio: el Excel nunca la trae.
+  observaciones: string | null;
   resguardante_codigo: string | null;
   resguardante_nombre: string | null;
   fecha_adquisicion: string | null;
@@ -426,6 +429,7 @@ const prepareDatabase = async (db: Database): Promise<void> => {
     "modelo",
     "num_serie",
     "descripcion",
+    "observaciones",
     "resguardante_codigo",
     "resguardante_nombre",
     "fecha_adquisicion",
@@ -652,17 +656,78 @@ export const updateSetting = async (key: string, value: string): Promise<void> =
   );
 };
 
-export const createCategoria = async (nombre: string, esPrestable = true): Promise<void> => {
+/**
+ * Devuelve el id de la categoria recien creada: quien la crea desde un
+ * formulario la necesita seleccionada al instante, y volver a leer la lista
+ * entera para buscarla por nombre es una consulta de mas por cada alta.
+ */
+/**
+ * Los estados que la persona agrego a mano.
+ *
+ * Viven en `app_settings` y no en una tabla propia: son media docena de
+ * nombres sin relaciones, sin fechas y sin nada que consultar por separado.
+ * Una tabla para eso serian tres migraciones y un panel de ABM para guardar lo
+ * mismo que cabe en una linea de JSON.
+ */
+const CLAVE_ESTADOS = "estados_personalizados";
+
+export const getEstadosPersonalizados = async (): Promise<Estado[]> => {
+  const db = await getDb();
+  const filas = await db.select<Array<{ value: string }>>(
+    "SELECT value FROM app_settings WHERE key = ?",
+    [CLAVE_ESTADOS]
+  );
+  if (filas.length === 0) return [];
+
+  try {
+    const guardado: unknown = JSON.parse(filas[0].value);
+    if (!Array.isArray(guardado)) return [];
+    // Se filtra al leer, no al escribir: un JSON a mano o de una version vieja
+    // no puede dejar la pantalla de inventario en blanco.
+    return guardado.filter(
+      (estado): estado is Estado =>
+        typeof estado === "object" &&
+        estado !== null &&
+        typeof (estado as Estado).valor === "string" &&
+        typeof (estado as Estado).etiqueta === "string"
+    );
+  } catch {
+    return [];
+  }
+};
+
+/** Devuelve el estado ya normalizado, exista o no de antes. */
+export const addEstadoPersonalizado = async (nombre: string): Promise<Estado> => {
+  const etiqueta = nombre.trim();
+  const valor = slugEstado(etiqueta);
+  if (!valor) {
+    throw new Error("El nombre del estado tiene que tener al menos una letra o un numero.");
+  }
+
+  const fijo = ESTADOS_FIJOS.find((estado) => estado.valor === valor);
+  if (fijo) return fijo;
+
+  const actuales = await getEstadosPersonalizados();
+  const existente = actuales.find((estado) => estado.valor === valor);
+  if (existente) return existente;
+
+  const nuevo: Estado = { valor, etiqueta };
+  await updateSetting(CLAVE_ESTADOS, JSON.stringify([...actuales, nuevo]));
+  return nuevo;
+};
+
+export const createCategoria = async (nombre: string, esPrestable = true): Promise<number> => {
   const cleanedName = nombre.trim();
   if (!cleanedName) {
     throw new Error("El nombre de categoria es obligatorio.");
   }
 
   const db = await getDb();
-  await db.execute("INSERT INTO categorias (nombre, es_prestable) VALUES (?, ?)", [
+  const resultado = await db.execute("INSERT INTO categorias (nombre, es_prestable) VALUES (?, ?)", [
     cleanedName,
     esPrestable ? 1 : 0,
   ]);
+  return Number(resultado.lastInsertId);
 };
 
 export const updateCategoria = async (id: number, nombre: string, esPrestable = true): Promise<void> => {
@@ -974,6 +1039,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
         modelo: null,
         num_serie: null,
         descripcion: null,
+        observaciones: null,
         resguardante_codigo: null,
         resguardante_nombre: null,
         fecha_adquisicion: null,
@@ -1046,6 +1112,7 @@ export const getEquipos = async (categoriaId?: number | null): Promise<Equipo[]>
       modelo: null,
       num_serie: null,
       descripcion: null,
+      observaciones: null,
       resguardante_codigo: null,
       resguardante_nombre: null,
       fecha_adquisicion: null,
@@ -1122,18 +1189,21 @@ export const createPrestamoRapido = async ({
       throw new Error(`El equipo con ID ${numId} está marcado como no prestable.`);
     }
 
+    // El estado se mira ANTES de partir por granel. El granel nunca se marca
+    // solo (su disponibilidad sale del stock), pero desde que existen "Para
+    // baja", "Baja" y "En resguardo" alguien lo marca a mano — y un equipo dado
+    // de baja que igual se puede prestar es peor que no tener el estado.
+    if (row.estado !== "disponible") {
+      throw new Error(`El equipo con ID ${numId} no está disponible.`);
+    }
+
     if (row.es_granel === 1) {
       const stock_disponible = (row as any).stock_disponible;
       if (stock_disponible < count) {
         throw new Error(`Stock insuficiente para equipo ID ${numId}. Solicitados: ${count}, Disponibles: ${stock_disponible}`);
       }
-    } else {
-      if (count > 1) {
-        throw new Error(`El equipo con ID ${numId} es único y no se puede prestar más de 1 vez.`);
-      }
-      if (row.estado !== "disponible") {
-        throw new Error(`El equipo único con ID ${numId} no está disponible.`);
-      }
+    } else if (count > 1) {
+      throw new Error(`El equipo con ID ${numId} es único y no se puede prestar más de 1 vez.`);
     }
   }
 
@@ -1179,6 +1249,7 @@ export type CreateEquipoInput = FichaEquipo & {
   nombre_equipo: string;
   identificador: string | null;
   categoria_id: number;
+  estado?: string;
   es_prestable: number;
   es_granel: number;
   stock_total: number;
@@ -1189,8 +1260,14 @@ export type CreateEquipoInput = FichaEquipo & {
  * la sentencia suelta para meter miles de ellas en una sola transaccion.
  */
 const sentenciaCrearEquipo = (input: CreateEquipoInput): SentenciaSql => {
-  // `estado` no viene del formulario: un equipo nuevo siempre nace disponible.
-  const cambios: Record<string, string | number | null> = { ...cambiosDeEquipo(input), estado: "disponible" };
+  // Un equipo nuevo nace disponible salvo que el alta diga otra cosa: dar de
+  // alta algo que ya llega para baja o que se guarda en resguardo es lo normal
+  // caminando el edificio, y obligar a crearlo y despues editarlo son dos
+  // pantallas para un dato que la persona ya tenia en la mano.
+  const cambios: Record<string, string | number | null> = {
+    ...cambiosDeEquipo(input),
+    estado: input.estado?.trim() || "disponible",
+  };
   const columnas = Object.keys(cambios);
 
   return {
@@ -1799,12 +1876,13 @@ const requireEquipoDisponible = async (db: Database, equipoId: number): Promise<
     throw new Error(`El equipo "${row.nombre_equipo}" está marcado como no prestable.`);
   }
 
-  if (row.es_granel === 1) {
-    if (row.stock_disponible < 1) {
-      throw new Error(`Stock insuficiente para "${row.nombre_equipo}". Disponibles: ${row.stock_disponible}`);
-    }
-  } else if (row.estado !== "disponible") {
-    throw new Error(`El equipo único "${row.nombre_equipo}" no está disponible.`);
+  // Mismo orden que en `createPrestamoRapido`: el estado manda sobre el stock.
+  if (row.estado !== "disponible") {
+    throw new Error(`El equipo "${row.nombre_equipo}" no está disponible.`);
+  }
+
+  if (row.es_granel === 1 && row.stock_disponible < 1) {
+    throw new Error(`Stock insuficiente para "${row.nombre_equipo}". Disponibles: ${row.stock_disponible}`);
   }
 
   return row;
@@ -2469,6 +2547,26 @@ export const getUbicacionesRecientes = async (limite = 6): Promise<string[]> => 
       ORDER BY visto DESC
       LIMIT ?`,
     [limite]
+  );
+  return filas.map((fila) => fila.ubicacion);
+};
+
+/**
+ * Todos los lugares que el inventario ya conoce, no solo los recorridos.
+ *
+ * `getUbicacionesRecientes` mira `revisado_en` porque la toma fisica ofrece
+ * "donde estuviste". El formulario necesita lo otro: cualquier lugar ya escrito
+ * en una ficha, para que nadie vuelva a teclear "Site 1" y termine con "site1",
+ * "Site1" y "Site 1" contandose como tres aulas distintas.
+ */
+export const getUbicacionesConocidas = async (): Promise<string[]> => {
+  const db = await getDb();
+  const filas = await db.select<Array<{ ubicacion: string }>>(
+    `SELECT ubicacion, MAX(revisado_en) AS visto
+       FROM inventario
+      WHERE TRIM(COALESCE(ubicacion, '')) <> ''
+      GROUP BY ubicacion
+      ORDER BY visto IS NULL, visto DESC, ubicacion`
   );
   return filas.map((fila) => fila.ubicacion);
 };

@@ -80,3 +80,77 @@ export const confirmDialog = (message: string, options: DialogOptions = {}): Pro
 export const alertDialog = async (message: string, options: DialogOptions = {}): Promise<void> => {
   await showDialog(message, { ...options, withCancel: false });
 };
+
+/**
+ * Lo que seria `window.prompt`, que el mismo WKUIDelegate se traga igual que
+ * `confirm`. Devuelve `null` si se cancela, para que quien lo llama distinga
+ * "no quiso" de "escribio vacio".
+ */
+export const promptDialog = (
+  message: string,
+  options: DialogOptions & { placeholder?: string; initialValue?: string } = {},
+): Promise<string | null> => {
+  const {
+    confirmLabel = "Agregar",
+    cancelLabel = "Cancelar",
+    placeholder = "",
+    initialValue = "",
+  } = options;
+
+  return new Promise((resolve) => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "app-confirm";
+
+    const form = document.createElement("form");
+    form.method = "dialog";
+
+    const text = document.createElement("p");
+    text.className = "app-confirm-message";
+    text.textContent = message;
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = initialValue;
+    input.placeholder = placeholder;
+    input.autocomplete = "off";
+
+    const actions = document.createElement("div");
+    actions.className = "app-confirm-actions";
+
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "ghost";
+    cancel.textContent = cancelLabel;
+    cancel.addEventListener("click", () => dialog.close());
+
+    const accept = document.createElement("button");
+    accept.type = "submit";
+    accept.textContent = confirmLabel;
+
+    let answer: string | null = null;
+    // El submit del form es el mismo camino para el boton y para Enter: sin
+    // esto, escribir y apretar Enter cerraba el dialogo sin devolver nada.
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const escrito = input.value.trim();
+      if (!escrito) {
+        input.focus();
+        return;
+      }
+      answer = escrito;
+      dialog.close();
+    });
+
+    dialog.addEventListener("close", () => {
+      dialog.remove();
+      resolve(answer);
+    });
+
+    actions.append(cancel, accept);
+    form.append(text, input, actions);
+    dialog.append(form);
+    document.body.append(dialog);
+    dialog.showModal();
+    input.focus();
+  });
+};

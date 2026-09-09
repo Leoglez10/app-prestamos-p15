@@ -21,6 +21,8 @@ export type FichaEquipo = {
   modelo?: string | null;
   num_serie?: string | null;
   descripcion?: string | null;
+  /** Notas libres de la casa: por qué está así, qué le falta, qué se le hizo. */
+  observaciones?: string | null;
   resguardante_codigo?: string | null;
   resguardante_nombre?: string | null;
   fecha_adquisicion?: string | null;
@@ -57,6 +59,7 @@ export const COLUMNAS_FICHA_EQUIPO = [
   "modelo",
   "num_serie",
   "descripcion",
+  "observaciones",
   "resguardante_codigo",
   "resguardante_nombre",
   "fecha_adquisicion",

@@ -598,8 +598,8 @@ setSelectedEquipoIds([]);
           font-size: 1.15rem;
           line-height: 1;
         }
-        /* Keep session controls anchored at the bottom, but make logout an
-           unmistakable primary utility for quick equipment returns. */
+        /* Anchored to the foot of the left column, sized to match the catalog's
+           confirm button so both primary actions read as one row. */
         .kiosk-exit-bar {
           flex: 0 0 auto;
           margin-top: auto;
@@ -615,13 +615,13 @@ setSelectedEquipoIds([]);
           justify-content: center;
           align-items: center;
           gap: 0.5rem;
-          min-height: 44px;
-          padding: 0.65rem 0.9rem;
+          min-height: 82px;
+          padding: 0.9rem 1.4rem;
           border: 1px solid var(--border-subtle);
-          border-radius: 12px;
+          border-radius: 16px;
           background: var(--surface-default);
           color: var(--text-secondary);
-          font-size: 0.9rem;
+          font-size: 1.05rem;
           font-weight: 700;
           text-decoration: none;
           white-space: nowrap;
@@ -629,8 +629,8 @@ setSelectedEquipoIds([]);
           transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease;
         }
         .exit-btn svg {
-          width: 18px;
-          height: 18px;
+          width: 22px;
+          height: 22px;
           flex: 0 0 auto;
         }
         .exit-btn:hover {
@@ -638,18 +638,18 @@ setSelectedEquipoIds([]);
           color: var(--text-primary);
         }
         .exit-btn-danger {
-          min-height: 52px;
-          padding: 0.8rem 1.15rem;
+          min-height: 82px;
+          padding: 0.9rem 1.6rem;
           background: #b91c1c;
           border-color: #991b1b;
           color: #fff;
-          font-size: 1.02rem;
+          font-size: 1.3rem;
           font-weight: 800;
           box-shadow: 0 8px 18px rgba(185, 28, 28, 0.24);
         }
         .exit-btn-danger svg {
-          width: 21px;
-          height: 21px;
+          width: 27px;
+          height: 27px;
           stroke-width: 2.25;
         }
         .exit-btn-danger:hover {
@@ -661,16 +661,16 @@ setSelectedEquipoIds([]);
         /* Only one action glows at a time: this one when everything is returned,
            the confirm button when something is selected. */
         .exit-btn-danger.logout-nudge {
-          min-height: 64px;
-          padding: 1rem 1.5rem;
-          font-size: 1.2rem;
+          min-height: 94px;
+          padding: 1rem 1.8rem;
+          font-size: 1.45rem;
           font-weight: 900;
           background: #dc2626;
           animation: logoutNudge 1.6s ease-in-out infinite;
         }
         .exit-btn-danger.logout-nudge svg {
-          width: 25px;
-          height: 25px;
+          width: 31px;
+          height: 31px;
         }
         @keyframes logoutNudge {
           0%, 100% {
@@ -1375,14 +1375,6 @@ setSelectedEquipoIds([]);
           outline: 2px solid var(--brand-primary);
           outline-offset: 2px;
         }
-        .inventory-toolbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          flex-wrap: wrap;
-        }
         .section-kicker {
           color: var(--brand-primary);
           font-size: 0.82rem;
@@ -1459,16 +1451,22 @@ setSelectedEquipoIds([]);
           font-weight: 700;
           cursor: pointer;
         }
-        .catalog-actionbar {
-          flex: 0 0 auto;
+        /* Catalog header: title on the left, cart count + confirm on the right. */
+        .catalog-head {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 0.8rem;
           flex-wrap: wrap;
+          margin-bottom: 0.6rem;
+        }
+        /* Cart count under the grid, then a rule separating it from the
+           full-width confirm button at the foot of the card. */
+        .catalog-actionbar {
+          flex: 0 0 auto;
           margin-top: 0.7rem;
-          padding-top: 0.7rem;
-          border-top: 1px solid var(--border-subtle);
+          padding-bottom: 0.7rem;
+          border-bottom: 1px solid var(--border-subtle);
         }
         /* Subtle glow so teachers notice the confirm action once the cart has items. */
         .confirm-nudge {
@@ -1574,20 +1572,21 @@ setSelectedEquipoIds([]);
         `}
       </style>
 
-      <nav className="kiosk-nav">
-        <div className="kiosk-brand">
-          <img src={logoP15} alt="Logo Preparatoria Quince" />
-          <span>Preparatoria 15</span>
-        </div>
-        {/* Exit actions live at the bottom-left once logged in (see .kiosk-exit-bar);
-            the login screen still needs its escape hatch up here. */}
-        {!loggedInProfesor && (
+      {/* Branding bar belongs to the login screen only. Once a teacher is in,
+          the row gives its height to the catalog and the session actions move
+          into the left column (see .kiosk-exit-bar). */}
+      {!loggedInProfesor && (
+        <nav className="kiosk-nav">
+          <div className="kiosk-brand">
+            <img src={logoP15} alt="Logo Preparatoria Quince" />
+            <span>Preparatoria 15</span>
+          </div>
           <Link to="/" className="nav-btn">
             <Icon name="home" />
             Volver a Inicio
           </Link>
-        )}
-      </nav>
+        </nav>
+      )}
 
       {(statusMessage || errorMessage) && (
         <div style={{
@@ -1715,8 +1714,8 @@ setSelectedEquipoIds([]);
           {/* Right Column: New Loan */}
           {settings.kiosk_show_catalogo !== 'false' && (
             <div className="glass-card" style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-              <div className="inventory-toolbar" style={{ flex: '0 0 auto' }}>
-                <h2 style={{ fontSize: '1.15rem', margin: '0 0 0.6rem' }}>Tomar equipo nuevo</h2>
+              <div className="catalog-head" style={{ flex: '0 0 auto' }}>
+                <h2 style={{ fontSize: '1.15rem', margin: 0 }}>Tomar equipo nuevo</h2>
               </div>
               <div style={{ display: 'flex', gap: '1rem', flex: 1, minHeight: 0 }}>
                 {/* Categories Sidebar */}
@@ -2050,27 +2049,28 @@ setSelectedEquipoIds([]);
                     })}
                   </div>
 
-                  {/* Bottom action bar: the primary action is always on screen. */}
                   <div className="catalog-actionbar">
                     <span className="muted-metric">
                       {selectedEquipoIds.length === 0
                         ? 'Selecciona equipos para continuar.'
                         : `${selectedEquipoIds.length} articulo(s) listos`}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => void handlePrestamo()}
-                      className={`kiosk-btn-primary ${selectedEquipoIds.length > 0 && !submitting ? 'confirm-nudge' : ''}`}
-                      disabled={selectedEquipoIds.length === 0 || submitting}
-                      style={{ padding: '0.8rem 1.6rem', fontSize: '1rem', margin: 0, width: 'auto', minWidth: '220px' }}
-                    >
-                      {submitting
-                        ? 'Registrando...'
-                        : `Confirmar y Llevar ${selectedEquipoIds.length > 0 ? `(${selectedEquipoIds.length})` : ''}`}
-                    </button>
                   </div>
                 </div>
               </div>
+
+              {/* Full-width primary action across the foot of the catalog card. */}
+              <button
+                type="button"
+                onClick={() => void handlePrestamo()}
+                className={`kiosk-btn-primary ${selectedEquipoIds.length > 0 && !submitting ? 'confirm-nudge' : ''}`}
+                disabled={selectedEquipoIds.length === 0 || submitting}
+                style={{ flex: '0 0 auto', minHeight: '82px', padding: '0.9rem 1.6rem', fontSize: '1.05rem', margin: '0.8rem 0 0' }}
+              >
+                {submitting
+                  ? 'Registrando...'
+                  : `Confirmar y Llevar ${selectedEquipoIds.length > 0 ? `(${selectedEquipoIds.length})` : ''}`}
+              </button>
             </div>
           )}
 

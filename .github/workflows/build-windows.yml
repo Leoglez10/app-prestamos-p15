@@ -22,7 +22,18 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+
+      - name: Check updater signing configuration
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY) -or
+              [string]::IsNullOrWhiteSpace($env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD)) {
+            throw "Configure both updater signing secrets before building a release."
+          }
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -36,10 +47,21 @@ jobs:
       - name: Install Bun
         run: npm install -g bun
 
+      - name: Test frontend (includes lint)
+        working-directory: ./app-prestamos-p15
+        run: npm test
+
+      - name: Test Rust
+        working-directory: ./app-prestamos-p15
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+
+      # tauri's beforeBuildCommand runs the TypeScript check and Vite production build.
       - name: build tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: ./app-prestamos-p15
           tagName: v__VERSION__
@@ -47,6 +69,8 @@ jobs:
           releaseBody: "Automated build of the application."
           releaseDraft: false
           prerelease: false
+          includeUpdaterJson: true
+          updaterJsonPreferNsis: true
           args: --target x86_64-pc-windows-msvc
 
   build-manual:

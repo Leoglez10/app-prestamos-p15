@@ -41,6 +41,11 @@ getrandom = "0.3"
 # Ver docs/PLAN_IMPORTACION_PATRIMONIO.md §6 P3.
 calamine = "0.36.1"
 rust_xlsxwriter = { version = "0.99.0", default-features = false, features = ["zlib"] }
+# Envio de los reportes de problemas al Worker (ver worker/README.md).
+# rustls en lugar del TLS del sistema para no depender de una build de OpenSSL en Windows.
+# 0.13 y no 0.12: es la version que ya entra por tauri-plugin-updater, asi no se
+# compilan dos reqwest distintos dentro del mismo binario.
+reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
 
 [target.'cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))'.dependencies]
 tauri-plugin-updater = "2"

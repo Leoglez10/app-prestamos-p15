@@ -1,0 +1,17 @@
+name = "prestamos-p15-feedback"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+# GITHUB_TOKEN is NOT stored here. Set it once with:
+#   npx wrangler secret put GITHUB_TOKEN
+
+# Native rate limiting binding, no extra resource to create.
+# Shape per https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+# (top-level [[ratelimits]], not the older [[unsafe.bindings]] form). period must be 10 or 60.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60

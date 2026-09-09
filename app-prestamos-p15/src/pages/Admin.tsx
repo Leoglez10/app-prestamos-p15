@@ -61,6 +61,7 @@ import { useEscaneoGlobal } from "../hooks/useEscaneoGlobal";
 import { useEntradaPistola } from "../hooks/usePistola";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 import { UpdateSettingsPanel } from "../components/UpdateSettingsPanel";
+import { ReportarProblemaPanel } from "../components/ReportarProblemaPanel";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
   auto: "Automático",
@@ -2605,6 +2606,8 @@ function ConfiguracionPanel({ adminUser }: { adminUser: Profesor }) {
       </div>
 
       <UpdateSettingsPanel />
+
+      <ReportarProblemaPanel />
 
       <div className="panel" style={{ display: "grid", gap: "0.8rem" }}>
         <h3 style={{ margin: 0 }}>Kiosko</h3>

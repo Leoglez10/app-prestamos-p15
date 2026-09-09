@@ -1,5 +1,6 @@
 mod celular;
 mod certificado;
+mod feedback;
 mod patrimonio;
 mod transaccion;
 
@@ -490,6 +491,7 @@ pub fn run() {
             restore_backup_from_path,
             local_ip,
             celular_registrar_dispositivo,
+            feedback::reportar_problema,
             patrimonio::leer_excel_patrimonio,
             transaccion::ejecutar_transaccion,
             guardar_reporte_inventario,

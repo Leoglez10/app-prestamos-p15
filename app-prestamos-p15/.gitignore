@@ -31,3 +31,9 @@ src-tauri/target-codex-*
 *.sw?
 # Local Pi runtime state
 .atl/
+
+# Local Pi/agent runtime state
+.pi/
+
+# Wrangler local state
+worker/.wrangler/

@@ -21,12 +21,13 @@ export interface UpdateState {
   notice: boolean;
   error?: "check" | "install" | "restart";
 }
-interface UpdateDependencies {
+export interface UpdateDependencies {
   isDesktop(): boolean;
   readiness(): Promise<UpdateReadiness>;
   check(): Promise<UpdateResource | null>;
   relaunch(): Promise<void>;
   schedule?: (callback: () => void, milliseconds: number) => () => void;
+  onInstallConsent?: (version: string, notes?: string) => void;
 }
 export const isUpdateBusy = (state: UpdateState) =>
   ["checking", "confirming", "downloading", "installing", "restarting"].includes(state.status);
@@ -119,6 +120,13 @@ export function createUpdateController(deps: UpdateDependencies) {
       const consent = await confirm();
       if (epoch !== generation) return;
       if (!consent || (started && owners === 0)) { publish({ status: "available" }); return; }
+      // Windows kills the process inside the installer, so the note has to exist
+      // before the download starts. Losing it must never abort a consented update.
+      try {
+        deps.onInstallConsent?.(update.version, update.body);
+      } catch {
+        // Nothing to recover: history is a courtesy, the update is the point.
+      }
       publish({ status: "downloading", received: 0, total: undefined });
       await update.downloadAndInstall((event) => {
         if (epoch !== generation || state.status !== "downloading") return;

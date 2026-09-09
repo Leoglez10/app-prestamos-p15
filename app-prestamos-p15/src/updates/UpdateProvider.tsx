@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { createUpdateController } from "../utils/updateController";
 import type { UpdateReadiness } from "../utils/updateController";
+import { browserStorage, notePendingUpdate } from "../utils/updateHistory";
 import { UpdateContext } from "./updateContext";
 
 // One controller per webview, not per render or route. Imports alone perform no IPC.
@@ -27,6 +28,7 @@ const controller = createUpdateController({
     const { relaunch } = await import("@tauri-apps/plugin-process");
     await relaunch();
   },
+  onInstallConsent: (version, notes) => notePendingUpdate(browserStorage(), version, notes),
 });
 
 export function UpdateProvider({ children }: { children: ReactNode }) {

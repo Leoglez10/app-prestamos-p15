@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createUpdateController, UPDATE_INTERVAL_MS } from "./updateController.ts";
-import type { UpdateProgress, UpdateReadiness, UpdateResource } from "./updateController.ts";
+import type {
+  UpdateDependencies, UpdateProgress, UpdateReadiness, UpdateResource,
+} from "./updateController.ts";
 
 const tick = () => new Promise<void>((resolve) => queueMicrotask(resolve));
 function pending<T>() {
@@ -18,7 +20,7 @@ function fixture() {
     downloadAndInstall: async (listener) => { calls.download++; progress = listener; },
     close: async () => { calls.close++; },
   };
-  const deps = {
+  const deps: UpdateDependencies = {
     isDesktop: () => true,
     readiness: async (): Promise<UpdateReadiness> => { calls.readiness++; return "ready"; },
     check: async (): Promise<UpdateResource | null> => { calls.check++; return update; },
@@ -234,6 +236,27 @@ test("remount during a native installation cannot start another operation", asyn
   detachNew();
   await tick();
   assert.equal(f.calls.close, 1);
+});
+
+test("only consent records the pending update, and a broken recorder cannot stop it", async () => {
+  const f = fixture();
+  const consents: Array<[string, string | undefined]> = [];
+  f.deps.onInstallConsent = (version: string, notes?: string) => { consents.push([version, notes]); };
+  const controller = createUpdateController(f.deps);
+  await controller.check();
+  await controller.install(async () => false);
+  assert.deepEqual(consents, []);
+  await controller.install(async () => true);
+  assert.deepEqual(consents, [["1.0.0", "<script>not HTML</script>"]]);
+  assert.equal(f.calls.download, 1);
+
+  const broken = fixture();
+  broken.deps.onInstallConsent = () => { throw new Error("storage unavailable"); };
+  const resilient = createUpdateController(broken.deps);
+  await resilient.check();
+  await resilient.install(async () => true);
+  assert.equal(resilient.getSnapshot().status, "installed");
+  assert.equal(broken.calls.download, 1);
 });
 
 test("failed restart is retryable but can never reinstall or recheck", async () => {

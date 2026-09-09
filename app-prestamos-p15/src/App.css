@@ -43,9 +43,26 @@ body {
   background: var(--surface-default);
 }
 
+/* Same shape as the notice, green accent: this one is good news, not a pending task. */
+.update-applied {
+  margin: 1rem auto;
+  width: min(1200px, calc(100% - 2rem));
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--success-base);
+  border-radius: 12px;
+  background: var(--surface-default);
+}
+
 .update-notice p,
-.update-settings p {
+.update-settings p,
+.update-applied p {
   margin: 0 0 0.75rem;
+}
+
+.update-applied summary {
+  color: var(--text-secondary);
+  cursor: pointer;
 }
 
 .update-settings h2 {
@@ -88,7 +105,8 @@ body {
 }
 
 .update-notice :focus-visible,
-.update-settings :focus-visible {
+.update-settings :focus-visible,
+.update-applied :focus-visible {
   outline: 3px solid var(--brand-primary);
   outline-offset: 3px;
 }

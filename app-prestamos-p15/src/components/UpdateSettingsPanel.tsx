@@ -1,8 +1,19 @@
+import { useEffect, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
+import { isTauri } from "@tauri-apps/api/core";
 import { useUpdates } from "../updates/updateContext";
 import { isUpdateBusy } from "../utils/updateController";
 
 export function UpdateSettingsPanel() {
   const { controller, state } = useUpdates();
+  // The installed version is the only proof an update actually landed.
+  const [appVersion, setAppVersion] = useState("");
+  useEffect(() => {
+    if (!isTauri()) return;
+    let alive = true;
+    getVersion().then((version) => { if (alive) setAppVersion(version); }, () => {});
+    return () => { alive = false; };
+  }, []);
   const unavailable = ["browser", "unsupported", "development"].includes(state.status);
   const installed = state.status === "installed" || state.error === "restart";
   const message = state.status === "browser"
@@ -25,6 +36,7 @@ export function UpdateSettingsPanel() {
   return (
     <section className="panel update-settings" aria-labelledby="update-settings-heading">
       <h2 id="update-settings-heading">Actualizaciones</h2>
+      {appVersion ? <p className="update-version">Versión instalada: <strong>{appVersion}</strong></p> : null}
       <p role="status">{message}</p>
       <p>La búsqueda no descarga ni instala nada. Windows cerrará la aplicación solo después de tu confirmación y la descarga; guardá tu trabajo antes de actualizar.</p>
       <div className="update-actions">

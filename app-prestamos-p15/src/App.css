@@ -64,6 +64,10 @@ body {
   width: auto;
 }
 
+.update-version {
+  color: var(--text-secondary);
+}
+
 .update-notes {
   max-height: 12rem;
   overflow: auto;

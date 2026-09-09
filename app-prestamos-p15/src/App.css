@@ -689,6 +689,23 @@ button.ghost {
   align-items: start;
 }
 
+/* La ficha del equipo no son dos columnas iguales: la izquierda es una tarjeta
+   de identidad de ancho fijo (la placa de Patrimonio manda) y la derecha ocupa
+   lo que sobre. `stretch` es lo que deja que la descripción crezca hasta
+   igualar la altura de la tarjeta. */
+.equipo-detalle-cols {
+  display: grid;
+  grid-template-columns: 344px 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 760px) {
+  .equipo-detalle-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-field-pair {
   display: grid;
   gap: 0.7rem;

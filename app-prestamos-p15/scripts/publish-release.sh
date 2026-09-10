@@ -11,8 +11,11 @@
 #   2. Si se pasa una nueva version, la escribe en tauri.conf.json y (por defecto)
 #      la sincroniza en package.json y src-tauri/Cargo.toml.
 #   3. Verifica working tree limpio y HEAD pusheado a origin/main.
-#   4. Commitea "release: vX.Y.Z" (solo si hubo bump).
-#   5. Crea el tag v<version> y lo pushea. La CI (.github/workflows/build-windows.yml)
+#   4. Sella la version en los docs de cara al usuario (README, CHANGELOG y manual)
+#      con scripts/stamp-release-docs.sh, para que el PDF del manual que arma la CI
+#      desde el tag ya sea el de esta version.
+#   5. Commitea "release: vX.Y.Z" (solo si hubo bump).
+#   6. Crea el tag v<version> y lo pushea. La CI (.github/workflows/build-windows.yml)
 #      se dispara en tags v* y publica el Release con el instalador .exe/.msi.
 #
 # Requisitos:
@@ -27,6 +30,11 @@ CONF="$ROOT/src-tauri/tauri.conf.json"
 PKG="$ROOT/package.json"
 CARGO="$ROOT/src-tauri/Cargo.toml"
 LOCK="$ROOT/src-tauri/Cargo.lock"
+# README y CHANGELOG viven en la raiz del repo, un nivel arriba del directorio de la app.
+REPO="$(cd "$ROOT/.." && pwd)"
+README="$REPO/README.md"
+CHANGELOG="$REPO/CHANGELOG.md"
+MANUAL="$ROOT/docs/MANUAL_PERSONAL.md"
 
 cd "$ROOT"
 
@@ -136,10 +144,23 @@ ensure_pushed() {
 # muere en ensure_clean (deadlock: no se puede reintentar ni publicar).
 rollback_versions() {
   local f
-  for f in "$CONF" "$PKG" "$CARGO" "$LOCK"; do
-    [ -f "$f" ] && git checkout -- "$f" 2>/dev/null || true
+  for f in "$CONF" "$PKG" "$CARGO" "$LOCK" "$README" "$CHANGELOG" "$MANUAL"; do
+    # `checkout HEAD --` y no `checkout --`: los docs ya pueden estar en el index
+    # cuando algo falla, y restaurar desde el index devolveria el archivo sellado.
+    [ -f "$f" ] && git checkout HEAD -- "$f" 2>/dev/null || true
   done
   echo "Fallo la publicacion. Versiones revertidas al estado del ultimo commit." >&2
+}
+
+# Sella la version en los docs de cara al usuario y los deja en el index. El commit
+# de release los lleva junto a los archivos de version: asi el tag siempre apunta a
+# un README, un CHANGELOG y un manual que hablan de la version que se publica.
+stamp_docs() {
+  local v="$1" f
+  bash "$ROOT/scripts/stamp-release-docs.sh" "$v"
+  for f in "$README" "$CHANGELOG" "$MANUAL"; do
+    if [ -f "$f" ]; then git add "$f"; fi
+  done
 }
 
 main() {
@@ -164,6 +185,16 @@ main() {
     if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
       echo "El tag $tag ya existe. Subi la version en tauri.conf.json y reintentá." >&2
       exit 1
+    fi
+    # Aun sin bump los docs pueden estar atrasados (por ejemplo, commits feat/fix
+    # sin entrada en el CHANGELOG). Se sellan y, si cambian, viajan en su propio
+    # commit antes del tag.
+    trap rollback_versions ERR
+    stamp_docs "$cur"
+    trap - ERR
+    if ! git diff --cached --quiet; then
+      git commit -m "docs: actualiza los documentos a v$cur"
+      git push
     fi
     git tag "$tag"
     git push origin "$tag"
@@ -192,6 +223,7 @@ main() {
   # A partir de aca se tocan archivos: cualquier fallo revierte el bump.
   trap rollback_versions ERR
   write_version "$new_version"
+  stamp_docs "$new_version"
 
   git add "$CONF"
   # `if` y no `a && b`: con `set -e` una lista `&&` que da falso aborta el script

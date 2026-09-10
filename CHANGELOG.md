@@ -8,6 +8,30 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.11.1] — 2026-09-10
+
+**La aplicación no cambia en esta versión.** Lo que se corrigió es la documentación
+que la acompaña, y el manual en PDF que trae este Release.
+
+### Cambiado
+
+- **El manual y el README ya coinciden con la app.** Dos cosas que decían mal:
+  explicaban cómo actualizar bajando el instalador de GitHub a mano, cuando la app
+  se actualiza sola desde la 0.10.0; y decían que el reporte para Patrimonio sale
+  en CSV, cuando el botón que se entrega genera un **Excel** desde la 0.9.0.
+- **Se documentó lo que faltaba**: el panel para **reportar un problema desde la
+  app**, el aviso de novedades después de actualizar, dónde ver la versión
+  instalada, y el **filtro por lugar** del inventario.
+
+### Interno
+
+- Cada versión publicada sella sola su número en el README, el CHANGELOG y el
+  manual, y agrega al CHANGELOG los cambios de ese tag
+  (`scripts/stamp-release-docs.sh`). Los números de versión de los documentos ya no
+  se editan a mano.
+
+---
+
 ## [0.11.0] — 2026-09-09
 
 ### Añadido

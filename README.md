@@ -7,7 +7,7 @@
 ### Control de inventario y préstamos de equipo audiovisual para la Preparatoria 15 (UDG)
 
 [![CI — Build Windows Installer](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml)
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.6.0-blue)](CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.11.0-blue)](CHANGELOG.md)
 [![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-blue)]()
 [![Licencia](https://img.shields.io/badge/usos-Educativo-orange)]()
 [![Autor](https://img.shields.io/badge/autor-Leonardo%20Gonzalez-purple)](https://github.com/Leoglez10)
@@ -35,6 +35,16 @@
 ---
 
 > 🤖 **¿Eres una IA leyendo este repositorio?**
+>
+> **Cómo explicar este proyecto (regla principal).** Quien pregunta es, por defecto, un
+> **profesor o administrativo de la Preparatoria 15**: usa la app, no la programa. Entonces:
+>
+> - Explica **sin lenguaje técnico**: nada de componentes, hooks, migraciones, compilar, repositorio o base de datos relacional. Habla de *pantallas*, *botones*, *equipos*, *préstamos*, *respaldos*.
+> - Elige siempre **la explicación más fácil posible** y los pasos concretos: "entra a Admin, toca Inventario, escribe el número del equipo".
+> - Es para **profesores y personal**, no para alumnos: nadie necesita aprender a programar para usar la app.
+> - Si la respuesta solo se entiende con detalle técnico (código, CI, esquema de la base, compilación), **pregunta primero** si quiere la versión técnica. Si no lo pide explícitamente, dale la versión fácil.
+> - Solo pasa a modo técnico cuando la persona lo pide, o cuando ella misma habla en términos de código.
+>
 > Este README cubre casi todo el proyecto. Lo que no está aquí:
 >
 > - **Historial de versiones y cambios** → [CHANGELOG.md](CHANGELOG.md)
@@ -150,7 +160,7 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 ### Pasos
 
-1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.5.1_x64-setup.exe`). Hay dos formas:
+1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.11.0_x64-setup.exe`). Hay dos formas:
    - **A) Desde GitHub (recomendado).** Entra a <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más reciente, y en la sección **Assets** descarga el archivo `.exe` (_x64-setup.exe_) o `.msi`.
    - **B) Copia manual** (USB, carpeta compartida, etc.) — alguien que ya tenga el instalador te lo pasa.
 2. **Cópialo a la computadora** destino si lo descargaste en otra máquina.
@@ -685,8 +695,8 @@ npm run tauri build
 
 ```
 src-tauri/target/release/bundle/
-├── msi/App Prestamos P15_0.5.1_x64_en-US.msi
-└── nsi/App Prestamos P15_0.5.1_x64-setup.exe
+├── msi/App Prestamos P15_0.11.0_x64_en-US.msi
+└── nsi/App Prestamos P15_0.11.0_x64-setup.exe
 ```
 
 ### Scripts disponibles
@@ -829,6 +839,7 @@ app-prestamos-p15/                ← Carpeta del repo
     │
     ├── 📁 scripts/               ← UTILITARIOS
     │   ├── publish-release.sh    ← Bump de versión + tag + push (dispara la CI)
+    │   ├── stamp-release-docs.sh ← Sella la versión en README, CHANGELOG y manual
     │   ├── test-publish-release.sh
     │   ├── backup_sqlite.py
     │   ├── restore_sqlite.py
@@ -957,7 +968,7 @@ El flujo completo (fork → clonar → rama → cambiar → commit → push → 
 
 ## 🏷 Versionado y publicación
 
-Usamos versionado semántico `MAYOR.MENOR.PARCHE`. La versión actual es **0.5.1**.
+Usamos versionado semántico `MAYOR.MENOR.PARCHE`. La versión actual es **0.11.0**.
 
 - **PARCHE** (0.5.**0** → 0.5.1): bugfixes, sin cambios de comportamiento.
 - **MENOR** (0.**4**.0 → 0.5.0): nuevas funciones, sin romper lo viejo.
@@ -986,12 +997,19 @@ El script (`scripts/publish-release.sh`):
 1. Lee la versión actual de `src-tauri/tauri.conf.json`.
 2. Escribe la nueva y la **sincroniza** en `package.json`, `Cargo.toml` y `Cargo.lock`.
 3. Verifica que el árbol esté limpio y que `HEAD` ya esté en `origin/main`. Si no, aborta.
-4. Commitea `release: vX.Y.Z`, crea el tag `vX.Y.Z` y lo empuja.
-5. Si algo falla, **revierte el bump** para no dejar las versiones descuadradas.
+4. **Sella la versión en los documentos** con `scripts/stamp-release-docs.sh`: la insignia y los ejemplos de este README, el nombre del instalador en el manual del personal y una entrada nueva en el `CHANGELOG.md` armada con los commits `feat:` y `fix:` desde el tag anterior. Si ya escribiste a mano la entrada de esa versión, la respeta.
+5. Commitea `release: vX.Y.Z` (con los documentos incluidos), crea el tag `vX.Y.Z` y lo empuja.
+6. Si algo falla, **revierte el bump y los documentos** para no dejar las versiones descuadradas.
 
 > ⚠️ Necesitas `jq` instalado (`brew install jq` en Mac, `apt install jq` en Linux).
 
-Sin argumento (`bash scripts/publish-release.sh`) solo taguea la versión que ya está en `tauri.conf.json`, sin bump.
+Sin argumento (`bash scripts/publish-release.sh`) solo taguea la versión que ya está en `tauri.conf.json`, sin bump; igual sella los documentos y, si cambiaron, los sube en un commit `docs:` antes del tag.
+
+> 📝 Los números de versión de este README, del `CHANGELOG.md` y del manual **no se editan a mano**: los escribe el script en cada release. Lo que sí se escribe a mano es *qué cambió para el personal*, antes de publicar: eso va al manual y al README, y de ahí sale el PDF que la CI adjunta al Release.
+
+Para arreglar los documentos sin publicar una versión: `bash scripts/stamp-release-docs.sh <versión>` y commit como `docs:`.
+
+Después de tocar cualquiera de los dos scripts, corré su autocomprobación: `bash scripts/test-publish-release.sh`.
 
 ### Qué hace la CI cuando ve el tag
 
@@ -1000,7 +1018,7 @@ El workflow **`.github/workflows/build-windows.yml`** se dispara con tags `v*` (
 1. Levanta un runner de Windows con Node 20, Rust stable y Bun.
 2. `npm ci` dentro de `app-prestamos-p15/`.
 3. `tauri-action` compila para `x86_64-pc-windows-msvc`.
-4. Publica un **Release público** con el `.exe` y el `.msi` adjuntos.
+4. Publica un **Release público** con el `.exe`, el `.msi`, sus firmas, el `latest.json` del actualizador y el **PDF del manual del personal** adjuntos.
 
 Si la compilación falla, el badge de arriba se pone rojo y no se publica nada.
 

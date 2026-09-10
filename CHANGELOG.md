@@ -8,6 +8,102 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.11.0] — 2026-09-09
+
+### Añadido
+
+- **Reportar un problema desde la app.** En **Configuración** aparece el panel *Reportar un problema*:
+  eliges si es una falla o una sugerencia, escribes el título y lo que pasó, y la app manda el reporte
+  sola. No necesitas cuenta de GitHub ni saber programar; el reporte llega igual al mantenedor
+  (`worker/`, `src-tauri/src/feedback.rs`).
+
+### Corregido
+
+- **El estado "Prestado" mostraba texto de más.** En el inventario la etiqueta decía
+  *"Prestado (No remueve el préstamo)"*, un aviso que solo tenía sentido dentro del menú de estados.
+  Ahora dice solo **Prestado** (`src/utils/estados.ts`).
+
+---
+
+## [0.10.2] — 2026-09-09
+
+### Añadido
+
+- **Aviso de que la app se actualizó.** Al abrirla después de una actualización, la app confirma la
+  versión nueva y muestra las novedades de esa versión. Antes la actualización pasaba en silencio y no
+  había forma de saber si había entrado (`src/components/UpdateApplied.tsx`,
+  `src/utils/updateHistory.ts`).
+
+### Cambiado
+
+- **Las notas de cada versión se arman solas** con los cambios del tag, así que el Release de GitHub y
+  el aviso dentro de la app cuentan lo mismo.
+
+---
+
+## [0.10.1] — 2026-09-09
+
+### Añadido
+
+- **La versión instalada se ve en Configuración**, para saber qué tienes sin abrir el instalador ni
+  mirar la pantalla de inicio.
+
+---
+
+## [0.10.0] — 2026-09-09
+
+### Añadido
+
+- **Actualizaciones desde la app.** La app busca una versión nueva al abrir y cada 6 horas. Cuando hay
+  una, te avisa y **no descarga nada hasta que aceptas**; también te advierte antes de cerrarse para
+  instalar. Ya no hace falta entrar a GitHub a bajar el instalador a mano.
+- **Instalador firmado.** Cada versión publicada se firma y la app solo instala actualizaciones con esa
+  firma, así que nadie puede colarle un archivo falso.
+
+---
+
+## [0.9.0] — 2026-09-08
+
+### Añadido
+
+- **La ficha del equipo se llena entera desde una sola pantalla**, sin saltar entre vistas para
+  completar los datos.
+- **La ficha de detalle muestra arriba lo que más se busca**: la placa, el estado y la ubicación.
+- **Toma física más rápida.** Escaneo continuo, deshacer fila por fila si te equivocas, y el recorrido
+  completo entra en la pantalla de una laptop.
+- **El reporte para Patrimonio sale en Excel**, listo para entregar.
+
+### Cambiado
+
+- **Kiosko más cómodo.** El botón de confirmar queda por encima del pie del catálogo y la barra de
+  marca se esconde al entrar, así la pantalla no pelea con el dedo.
+
+---
+
+## [0.8.0] — 2026-09-02
+
+### Añadido
+
+- **Filtro por lugar en el inventario** y el padrón completo del área a la vista.
+- **Toma física con el padrón del área** y aviso al cerrar una campaña si quedaron equipos sin escanear,
+  para no cerrar un conteo a medias.
+
+### Corregido
+
+- **Las carpetas de respaldos y reportes se crean al abrir la app.** Si no existían, guardar un respaldo
+  o un reporte fallaba sin explicación.
+
+### Cambiado
+
+- **El manual del personal** ahora trae índice con números de página, portada limpia y cubre toda la app.
+
+### Interno
+
+- Logo de 309 KB a 18.7 KB (la app abre más liviana), script de DMG para Mac y `eslint` con las Rules of
+  Hooks de React para que no vuelva a entrar el error de pantalla en blanco del Kiosko.
+
+---
+
 ## [0.7.2] — 2026-09-01
 
 ### Corregido

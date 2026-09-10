@@ -133,7 +133,7 @@ funcionando, salta al siguiente.
 ## Paso 1: conseguir el instalador
 
 Es un archivo que termina en `.exe` o `.msi`, por ejemplo
-`App.Prestamos.P15_0.11.0_x64-setup.exe`. Hay dos formas de conseguirlo:
+`App.Prestamos.P15_0.11.1_x64-setup.exe`. Hay dos formas de conseguirlo:
 
 - **Desde GitHub (lo recomendado).** Entra a
   <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más

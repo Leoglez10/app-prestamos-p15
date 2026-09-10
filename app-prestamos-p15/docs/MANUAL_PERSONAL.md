@@ -19,7 +19,7 @@ lang: es
 11. [Calendario de mantenimiento](#calendario-de-mantenimiento) — qué toca cada semana, mes y ciclo
 12. [Preguntas rápidas](#preguntas-rápidas)
 13. [Glosario](#glosario)
-14. [Dónde está lo demás](#dónde-está-lo-demás) — ayuda, videos, documentación
+14. [Dónde está lo demás](#dónde-está-lo-demás) — ayuda, reportar un problema, videos, documentación
 
 > En el PDF, este índice trae el número de página de cada capítulo y de cada
 > sección. En GitHub, cada línea es un enlace.
@@ -115,10 +115,12 @@ extraviado o en mantenimiento.
 | **Salida a evento** | Varios equipos salen juntos a un lugar y unas fechas |
 | **Códigos de barras** | La pistola dispara sola, sin configurar nada |
 | **Importar Patrimonio** | El Excel oficial se carga con plan previo y respaldo automático |
-| **Toma de inventario físico** | Campañas por área, modo prueba y reporte para Patrimonio |
+| **Toma de inventario físico** | Campañas por área, modo prueba y reporte en Excel para Patrimonio |
 | **Dos computadoras a la vez** | Una presta mientras otra cuenta; el trabajo se fusiona |
 | **Reportes en PDF** | Filtrados por fecha, estado o categoría |
 | **Respaldo automático** | Cada 12 horas, con subida a Google Drive si la conectas |
+| **Se actualiza sola** | La app avisa cuando hay versión nueva y la instala con un clic |
+| **Reportar un problema** | Desde la app, sin cuenta de GitHub |
 | **Sin internet** | Todo funciona con la red apagada |
 
 ---
@@ -336,6 +338,29 @@ los reportes los siguen viendo correctamente. En **Inventario** aparecen con un
 > correcto: hay material afuera de verdad, y el sistema no debe fingir que
 > regresó. Después decides si se recupera o se marca extraviado.
 
+## Encontrar un equipo en el inventario
+
+**Admin** → pestaña **Inventario**. Arriba de la lista hay un buscador y **tres
+filtros que se combinan entre sí**:
+
+| Filtro | Para qué |
+|---|---|
+| **Todas las categorías** | Ver solo laptops, solo proyectores, solo adaptadores |
+| **Todos los estados** | Solo prestables, solo inventario, o un estado concreto |
+| **Todos los lugares** | Ver el padrón de **un salón o un área**: qué debería estar ahí |
+
+La lista de lugares se arma sola con las ubicaciones que ya existen en tu
+inventario: no hay que escribirlas. El buscador también entiende el lugar, además
+del nombre y el ID patrimonial.
+
+> **Un filtro olvidado se ve igual que un inventario vacío.** Por eso los filtros
+> puestos se **marcan en color** y aparece un botón para limpiarlos todos de una
+> vez. Si alguien dice que "falta equipo", revisa eso antes que nada.
+
+Toca un equipo para abrir su ficha: arriba salen las tres cosas que uno busca
+—**placa, estado y ubicación**— y desde esa misma pantalla se completa toda la
+información, sin saltar entre vistas.
+
 ## Dar de alta un equipo
 
 1. **Admin** → pestaña **Inventario** → **Nuevo**.
@@ -432,6 +457,13 @@ catálogo completo, y el resto de ajustes de esa pantalla.
 
 En esa misma pestaña están los **respaldos** —automáticos y manuales— y la
 **restauración**. Ver el capítulo [Respaldos](#respaldos).
+
+Arriba de todo, esa pestaña tiene dos paneles más:
+
+- **Actualizaciones** — la versión instalada y el botón para buscar una nueva. Ver
+  [Actualizaciones](#actualizaciones).
+- **Reportar un problema** — para contarle al mantenedor qué salió mal, desde la
+  app. Ver [Reportar un problema desde la app](#reportar-un-problema-desde-la-app).
 
 ## Sacar reportes y guardarlos como PDF
 
@@ -581,14 +613,24 @@ nunca activa préstamos por su cuenta.
 
 ## El reporte que va a Patrimonio
 
-Se exporta como **CSV** con punto y coma y BOM UTF-8, a propósito: así Excel en
-español lo abre en columnas y con los acentos bien.
+Hay **dos botones y dos archivos**, con los mismos datos y destinos distintos. El
+botón dice para quién es cada uno:
 
-- **Nombre:** `reporte-inventario-<fecha>.csv`
-- **Dónde queda:** `%AppData%\com.p15.prestamos\reportes`
+| Botón | Archivo | Para qué |
+|---|---|---|
+| **Descargar Excel para Patrimonio** | `reporte-inventario-<fecha>.xlsx` | **El que se entrega.** Abre directo en Excel |
+| **Descargar CSV para otra computadora** | `reporte-inventario-<fecha>.csv` | Solo para juntar el trabajo de dos computadoras |
+
+> **El único error caro acá es entregar el archivo equivocado.** A Patrimonio va el
+> **Excel**. El CSV es el que la app usa para sí misma: se sube en *Traer la toma
+> física de otra computadora*.
+
+- **Dónde quedan:** `%AppData%\com.p15.prestamos\reportes`
   Es una carpeta **hermana** de `backups`, no está adentro.
 - **Columnas:** Id · Descripción · Marca · Modelo · Num Serie · Resguardante ·
   Ubicación · Localizado · Revisado · Revisó
+- El CSV va con punto y coma y BOM UTF-8 a propósito: así Excel en español lo abre
+  en columnas y con los acentos bien.
 
 ### La columna "Localizado" tiene TRES estados, no dos
 
@@ -776,7 +818,7 @@ Donde `<TUSUARIO>` es el nombre de usuario de Windows. Adentro hay esto:
 | `prestamos.db-wal` | Cache de escritura de la base | **Nunca** |
 | `prestamos.db-shm` | Memoria compartida de la base | **Nunca** |
 | `backups\` | Todos los respaldos, automáticos y manuales | Solo respaldos viejos que ya no necesites |
-| `reportes\` | Los CSV de la toma física | Sí, una vez entregados a Patrimonio |
+| `reportes\` | Los reportes de la toma física, en Excel y en CSV | Sí, una vez entregados a Patrimonio |
 
 **Atajo para llegar:** Win + R → escribe `%AppData%\com.p15.prestamos` → Enter.
 
@@ -1072,18 +1114,51 @@ Es el relevo de ida, sin vuelta:
 
 ## Actualizaciones
 
+**La app se actualiza sola. Ya no hay que bajar el instalador de GitHub.**
+
+Busca una versión nueva al abrir y cada 6 horas mientras está abierta. Cuando
+encuentra una, aparece un aviso arriba de la pantalla.
+
 ### Cómo actualizo la app
 
-1. En la versión instalada, crea un respaldo manual y copia ese `.db` fuera de
-   la computadora.
-2. Anota la versión actual desde la pantalla de inicio.
-3. **CIERRA la app.** No actualices con la app abierta.
-4. En GitHub Releases, descarga el instalador y el archivo
-   `manual-personal-app-prestamos-p15.pdf` de la **misma versión**.
-5. Instala el nuevo `.exe` o `.msi` **encima**. No hace falta desinstalar.
-6. Abre la app. La base se conserva y las migraciones corren solas.
+1. **Crea un respaldo manual** y copia ese `.db` fuera de la computadora. Esto no
+   cambió: es tu vuelta atrás si algo sale raro.
+2. Termina lo que estés haciendo y **cierra los préstamos a medias**. Al final la
+   app se cierra para instalar.
+3. En el aviso de arriba de la pantalla vas a leer:
+   *"Versión X disponible. No se descarga nada hasta que confirmes."*
+   Abre **Notas de la versión** si quieres ver qué trae.
+4. Toca **Actualizar ahora…**. La app pide confirmación una vez más y solo
+   entonces empieza a descargar; vas viendo los KB que bajan.
+5. Cuando termina la descarga avisa que **Windows va a cerrar la aplicación**
+   para instalar. Déjala trabajar.
+6. Abre la app de nuevo. Aparece **Novedades de esta versión** con lo que cambió;
+   toca **Entendido**.
 7. Prueba un inicio de sesión, abre Inventario y confirma que los préstamos
    activos siguen presentes antes de volver a operar.
+
+> **No estás obligado a actualizar en ese momento.** El botón **Más tarde** guarda
+> el aviso por lo que queda de la sesión y **no descarga nada**. Actualiza cuando
+> no tengas gente esperando en el mostrador.
+
+La base de datos se conserva y las migraciones corren solas.
+
+### Qué versión tengo, y buscar una a mano
+
+Admin → **Configuración** → panel **Actualizaciones**. Ahí dice
+**Versión instalada** y hay un botón **Buscar actualizaciones**.
+
+Buscar **no descarga ni instala nada**: solo pregunta si hay algo nuevo. Si no
+hay internet o el servidor no responde, el panel lo dice y no pasa nada más; la
+app sigue funcionando normal, no necesita red para operar.
+
+### ¿Y si me pasan un instalador por USB?
+
+La app **solo instala actualizaciones firmadas** por el repositorio oficial, así
+que nadie puede colarle un archivo falso por el aviso de actualización. Instalar a
+mano un `.exe` que te pasaron sigue siendo posible (es lo del capítulo
+*Instalar la app*), pero pídele a la persona responsable del sistema que lo baje
+de la página oficial de Releases.
 
 ### Actualicé y algo se ve raro
 
@@ -1207,15 +1282,30 @@ completo sin escribir en la base.
 Antes de pedir soporte, anota estas cinco cosas. Con eso otra persona puede
 ayudarte sin adivinar:
 
-1. La **versión** que aparece en la pantalla de inicio.
+1. La **versión** instalada (Configuración → Actualizaciones).
 2. La pantalla y el botón exactos donde ocurrió.
 3. El mensaje completo del error; toma una foto si hace falta.
 4. Lo último que funcionó y lo último que cambió.
 5. La fecha del respaldo más reciente. **No borres ni reemplaces archivos**
    mientras esperas ayuda.
 
-Entrega esa información a la persona responsable del sistema en la escuela. Si
-esa persona mantiene el repositorio, puede abrir un reporte en
+### Reportar un problema desde la app
+
+No hace falta cuenta de GitHub ni saber programar. Admin → **Configuración** →
+panel **Reportar un problema** → botón **Escribir un reporte…**. Te pide tres
+cosas:
+
+1. **¿Qué querés contarnos?** — *Un problema* o *Una sugerencia*.
+2. **Título** — en una línea, qué pasó.
+3. **Descripción** — qué estabas haciendo, qué esperabas que pasara y qué pasó en
+   su lugar.
+
+Envías y sale *"Gracias, el reporte se envió."* El reporte llega al mantenedor con
+lo que escribiste, nada más: **no manda tu base de datos, ni PINes, ni nombres de
+profesores**. Cuéntalo tú si hace falta, pero nunca escribas un PIN ahí.
+
+Si la app no abre, entrega esa información a la persona responsable del sistema en
+la escuela. Esa persona puede abrir un reporte en
 <https://github.com/Leoglez10/app-prestamos-p15/issues> sin adjuntar la base de
 datos, PINes ni información personal.
 

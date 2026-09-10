@@ -139,11 +139,13 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 - ✅ Lectura de **códigos de barras** en kiosko, inventario y toma física — **la pistola dispara sola**, sin depender de que la etiqueta mande `Enter`
 - ✅ **Escaneo global** en Inventario: apuntas a una etiqueta y se abre la ficha, sin hacer clic en ningún campo primero
 - ✅ Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
-- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, **modo prueba** para entrenar sin tocar la base, y reporte para Patrimonio
+- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
 - ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
 - ✅ **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
 - ✅ Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
 - ✅ Reportes imprimibles en PDF (vía "imprimir" del navegador interno)
+- ✅ **Se actualiza sola**: la app avisa cuando hay versión nueva y la instala con un clic, sin bajar nada a mano
+- ✅ **Reportar un problema desde la app**, sin cuenta de GitHub ni saber programar
 - ✅ Respaldo y restauración de la base de datos **desde dentro de la app**
 - ✅ Sesión de admin con expiración de 8 horas
 - ✅ Trabaja **sin internet** (todo es local)
@@ -222,12 +224,14 @@ La app viene con un administrador precargado (solo para empezar):
 2. Escribe tu **código** y tu **PIN**.
 3. Tienes pestañas:
    - **Inventario** → dar de alta, editar, ver detalle; menú de fila (⋮): forzar devolución, marcar perdido, eliminar; diseñar/imprimir PDF del inventario; panel de importación del Excel de Patrimonio
+     - 🔎 **Tres filtros** arriba de la lista, y se combinan entre sí: *Todas las categorías*, *Todos los estados* y ***Todos los lugares*** (este último se arma solo con las ubicaciones que ya existen en tu inventario). El buscador también entiende el lugar. Si dejaste un filtro puesto se marca en color, y hay un botón para limpiarlos todos de una vez.
+     - La ficha de detalle abre con lo que más se busca arriba: **placa, estado y ubicación**, y se completa entera desde esa misma pantalla.
      - 🔫 **Escaneo global**: con la pestaña abierta, apunta la pistola a cualquier etiqueta y se abre la ficha de ese equipo. No necesitas hacer clic en el buscador primero. Si sí tienes un campo enfocado, el código se escribe ahí (el buscador reemplaza el código anterior en vez de concatenarlo).
    - **Toma de inventario** → campañas de conteo físico con lector de códigos ([ver sección completa](#-toma-de-inventario-físico))
    - **Categorías** → crear/editar categorías y decidir si son **Prestable** o *Solo inventario*
    - **Profesores** → dar de alta profesores que pueden usar el kiosko, marcar admins + PIN
    - **Reportes** → filtrar por fecha / estado / categoría e imprimir en PDF; observaciones de entrega/devolución
-   - **Configuración** → ajustes del kiosko, respaldos automáticos y manuales, restauración
+   - **Configuración** → **Actualizaciones** (versión instalada y buscar versión nueva), **Reportar un problema**, ajustes del kiosko, respaldos automáticos y manuales, restauración
 
 > 💡 **Concepto clave — Prestable vs Solo inventario:** un equipo *prestable* aparece en el kiosko para pedirse; uno *solo inventario* solo existe para llevar el conteo (un proyector del salón fijo, por ejemplo). Lo decides tú por categoría o por equipo: **la importación del Excel nunca activa préstamos por su cuenta**.
 
@@ -320,7 +324,14 @@ Escaneas una etiqueta y la app no reconoce el código. Antes eso te obligaba a a
 
 ### 📄 El reporte que va a Patrimonio
 
-Se exporta como **CSV con `;` y BOM UTF-8**, a propósito: así Excel en español lo abre en columnas y con los acentos bien. Sale con el nombre `reporte-inventario-<fecha>.csv` y se guarda en `%AppData%\com.p15.prestamos\reportes`, una carpeta **hermana** de `backups` (no está adentro).
+Son **dos botones y dos archivos distintos**, con los mismos datos y destinos diferentes. El botón dice para quién es cada uno, porque el único error caro acá es entregarle a Patrimonio el que la app usa para sí misma:
+
+| Botón | Archivo | Para qué |
+|---|---|---|
+| **Descargar Excel para Patrimonio** | `reporte-inventario-<fecha>.xlsx` | **El que se entrega.** Abre directo en Excel, sin pasos de importación |
+| **Descargar CSV para otra computadora** | `reporte-inventario-<fecha>.csv` | Solo para juntar el trabajo de dos computadoras: es el que se sube en *Traer la toma física de otra computadora* |
+
+Los dos se guardan en `%AppData%\com.p15.prestamos\reportes`, una carpeta **hermana** de `backups` (no está adentro). El CSV va con `;` y BOM UTF-8 a propósito, así Excel en español lo abre en columnas y con los acentos bien.
 
 Columnas: `Id · Descripción · Marca · Modelo · Num Serie · Resguardante · Ubicación · Localizado · Revisado · Revisó`
 
@@ -538,10 +549,33 @@ Más info en `docs/sqlite-backup-restore-guide.md`.
 
 ### Actualizar la app a una nueva versión
 
-1. **CIERRA la app** (muy importante, no actualices con la app abierta).
+**La app se actualiza sola. No tienes que bajar nada de GitHub.**
+
+Busca versión nueva al abrir y cada 6 horas mientras está abierta. Cuando encuentra una, aparece un aviso arriba de la pantalla:
+
+1. El aviso dice **"Versión X disponible. No se descarga nada hasta que confirmes."** Puedes abrir **Notas de la versión** para ver qué trae.
+2. **Crea un respaldo** antes de actualizar (Configuración → Respaldos), y guarda lo que tengas a medias.
+3. Toca **Actualizar ahora…**. La app te pide confirmación una vez más, muestra la descarga en KB y avisa que **Windows va a cerrar la aplicación** para instalar.
+   - Si prefieres seguir trabajando, toca **Más tarde**: el aviso se va por esta sesión y no descarga nada.
+4. Cuando termina, abre la app de nuevo. Aparece **Novedades de esta versión** con lo que cambió; toca **Entendido**.
+
+La base de datos se conserva intacta y las migraciones corren solas.
+
+> 🔒 La app **solo instala actualizaciones firmadas** por el repositorio oficial. Un archivo que venga de otro lado no se instala, ni por error ni a propósito.
+
+**Buscar una actualización a mano**: Admin → Configuración → **Actualizaciones**. Ahí se ve la **versión instalada** y el botón **Buscar actualizaciones**. Buscar no descarga ni instala nada por su cuenta.
+
+**Si no hay internet** o el servidor no responde, el panel lo dice y no pasa nada más: la app sigue funcionando normal, es 100 % offline. Reintenta cuando tengas conexión.
+
+<details>
+<summary>Instalar a mano (solo si el actualizador no funciona)</summary>
+
+1. **CIERRA la app**.
 2. **Crea un respaldo** por seguridad.
-3. Instala el nuevo `.exe`/`.msi` (puedes instalar encima, no necesitas desinstalar).
-4. Abre la app. La base de datos se conserva intacta y la app hace las migraciones necesarias sola.
+3. Baja el `.exe`/`.msi` de [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases) e instálalo **encima** (no necesitas desinstalar).
+4. Abre la app.
+
+</details>
 
 > ⚠️ Si algo sale raro después de actualizar, sigue los pasos de [Respaldo y recuperación](#-respaldo-y-recuperación-importante) para volver atrás.
 
@@ -938,7 +972,17 @@ No. **Cámbialo en cuanto entres**, pero ten presente que la versión actual con
 
 ### No programas: reporta (es lo más útil)
 
-¿Encontraste un problema o se te ocurre una mejora? Abre un Issue con formulario guiado:
+**La forma más fácil: desde la app.** Admin → **Configuración** → panel **Reportar un problema** → botón **Escribir un reporte…**. Te pide tres cosas:
+
+1. **¿Qué querés contarnos?** — *Un problema* o *Una sugerencia*.
+2. **Título** — en una línea, qué pasó.
+3. **Descripción** — qué estabas haciendo, qué esperabas que pasara y qué pasó en su lugar.
+
+Envías y listo: sale *"Gracias, el reporte se envió."* **No necesitas cuenta de GitHub ni saber programar.** El reporte llega igual al mantenedor.
+
+> 💡 Cuenta **qué equipo y qué pantalla** eran, y a qué hora pasó. Con eso se arregla mucho más rápido que con "no funciona".
+
+**Desde GitHub** (si ya tienes cuenta, o si la app no abre): abre un Issue con formulario guiado:
 
 👉 **[github.com/Leoglez10/app-prestamos-p15/issues/new/choose](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose)**
 

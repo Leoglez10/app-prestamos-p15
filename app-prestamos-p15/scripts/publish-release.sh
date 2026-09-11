@@ -36,15 +36,6 @@ README="$REPO/README.md"
 CHANGELOG="$REPO/CHANGELOG.md"
 MANUAL="$ROOT/docs/MANUAL_PERSONAL.md"
 
-# Estado de avance de la publicacion. El rollback lo necesita para no prometer una
-# reversion que ya es imposible: una vez creado el commit, "devolver los archivos"
-# no significa nada (ver rollback_versions).
-PRE_SHA=""
-TAG_NAME=""
-COMMIT_DONE=0
-COMMIT_PUSHED=0
-TAG_CREATED=0
-
 cd "$ROOT"
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -148,46 +139,17 @@ ensure_pushed() {
   fi
 }
 
-# Deshace la publicacion si el script falla despues de tocar archivos.
-#
-# Que hace depende de hasta donde llego, porque las tres etapas finales son
-# irreversibles de forma distinta:
-#   - antes del commit  -> los archivos se pueden devolver a PRE_SHA
-#   - commit sin pushear-> se puede deshacer el commit local y volver a PRE_SHA
-#   - commit ya pusheado-> NO se revierte: el estado es correcto y solo falta el tag
-# Sin esta distincion, un fallo al pushear el tag decia "versiones revertidas" sin
-# revertir nada y empujaba a elegir una version mayor cuando solo faltaba el push.
+# Deshace los archivos de version si el script falla despues de escribirlos.
+# Sin esto un fallo a mitad de camino deja el tree sucio y el siguiente intento
+# muere en ensure_clean (deadlock: no se puede reintentar ni publicar).
 rollback_versions() {
-  local base="${PRE_SHA:-HEAD}"
-  local tag="${TAG_NAME:-v?}"
   local f
-  local msg="Fallo la publicacion."
-
-  if [ "${TAG_CREATED:-0}" = "1" ]; then
-    echo "$msg El commit y el tag $tag ya existen en local, pero el tag no llego al remoto." >&2
-    echo "Completa la publicacion con: git push origin $tag" >&2
-    echo "No vuelvas a correr el script: elegiria una version mayor sin necesidad." >&2
-    return 0
-  fi
-
-  if [ "${COMMIT_PUSHED:-0}" = "1" ]; then
-    echo "$msg El commit de release ya esta en origin y los archivos quedaron correctos." >&2
-    echo "Falta solo el tag. Completa la publicacion con: git tag $tag && git push origin $tag" >&2
-    return 0
-  fi
-
-  if [ "${COMMIT_DONE:-0}" = "1" ]; then
-    git reset --hard "$base" >/dev/null 2>&1 || true
-    echo "$msg Se deshizo el commit de release local y el arbol volvio a $base." >&2
-    return 0
-  fi
-
   for f in "$CONF" "$PKG" "$CARGO" "$LOCK" "$README" "$CHANGELOG" "$MANUAL"; do
-    # `checkout <sha> --` y no `checkout --`: los docs ya pueden estar en el index
+    # `checkout HEAD --` y no `checkout --`: los docs ya pueden estar en el index
     # cuando algo falla, y restaurar desde el index devolveria el archivo sellado.
-    [ -f "$f" ] && git checkout "$base" -- "$f" 2>/dev/null || true
+    [ -f "$f" ] && git checkout HEAD -- "$f" 2>/dev/null || true
   done
-  echo "$msg Versiones revertidas al estado previo ($base)." >&2
+  echo "Fallo la publicacion. Versiones revertidas al estado del ultimo commit." >&2
 }
 
 # Sella la version en los docs de cara al usuario y los deja en el index. El commit
@@ -221,30 +183,22 @@ main() {
     ensure_pushed
     local tag="v$cur"
     if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-      echo "El tag $tag ya existe. Sube la version en tauri.conf.json y vuelve a intentar." >&2
+      echo "El tag $tag ya existe. Subi la version en tauri.conf.json y reintentá." >&2
       exit 1
     fi
     # Aun sin bump los docs pueden estar atrasados (por ejemplo, commits feat/fix
     # sin entrada en el CHANGELOG). Se sellan y, si cambian, viajan en su propio
     # commit antes del tag.
-    #
-    # El trap se mantiene armado durante el commit y el tag, no solo durante el
-    # sellado: un fallo al pushear necesita decir que paso de verdad.
-    PRE_SHA="$(git rev-parse HEAD)"
-    TAG_NAME="$tag"
     trap rollback_versions ERR
     stamp_docs "$cur"
+    trap - ERR
     if ! git diff --cached --quiet; then
       git commit -m "docs: actualiza los documentos a v$cur"
-      COMMIT_DONE=1
       git push
-      COMMIT_PUSHED=1
     fi
-    git tag "$TAG_NAME"
-    TAG_CREATED=1
-    git push origin "$TAG_NAME"
-    trap - ERR
-    echo "Listo. Tag $TAG_NAME pusheado. La CI va a compilar y publicar el release."
+    git tag "$tag"
+    git push origin "$tag"
+    echo "Listo. Tag $tag pusheado. La CI va a compilar y publicar el release."
     return
   fi
 
@@ -258,7 +212,7 @@ main() {
     exit 1
   fi
   if git rev-parse -q --verify "refs/tags/v$new_version" >/dev/null; then
-    echo "El tag v$new_version ya existe. Elige una version mayor." >&2
+    echo "El tag v$new_version ya existe. Elegi una version mayor." >&2
     exit 1
   fi
 
@@ -266,11 +220,7 @@ main() {
   ensure_clean
   ensure_pushed
 
-  # Punto de retorno: a partir de aca se tocan archivos, se crea un commit y se
-  # crea un tag. Cada bandera se enciende DESPUES del paso que representa, asi el
-  # rollback nunca confunde un paso completado con uno que no llego a terminar.
-  PRE_SHA="$(git rev-parse HEAD)"
-  TAG_NAME="v$new_version"
+  # A partir de aca se tocan archivos: cualquier fallo revierte el bump.
   trap rollback_versions ERR
   write_version "$new_version"
   stamp_docs "$new_version"
@@ -285,15 +235,13 @@ main() {
   fi
 
   git commit -m "release: v$new_version"
-  COMMIT_DONE=1
   git push
-  COMMIT_PUSHED=1
 
-  git tag "$TAG_NAME"
-  TAG_CREATED=1
-  git push origin "$TAG_NAME"
+  local tag="v$new_version"
+  git tag "$tag"
+  git push origin "$tag"
   trap - ERR
-  echo "Listo. Tag $TAG_NAME pusheado. La CI va a compilar y publicar el release."
+  echo "Listo. Tag $tag pusheado. La CI va a compilar y publicar el release."
 }
 
 main "$@"

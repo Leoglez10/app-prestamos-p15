@@ -7,35 +7,16 @@ Hay dos formas de contribuir y **ninguna requiere que te den acceso al repositor
 
 ## Camino 1: Reportar problemas o proponer mejoras (para todos)
 
-Si usas la app — profesor, administrativo, becario — esto es lo único que necesitas.
-Hay dos formas de reportar y **ninguna requiere cuenta de GitHub**.
-
-### Opción A: desde la app (la más fácil)
-
-Dentro de la app: **Admin → Configuración → Reportar un problema → Escribir un reporte…**
-
-Te pide tres cosas y nada más:
-
-1. **¿Qué quieres contarnos?** — *Un problema* o *Una sugerencia*.
-2. **Título** — en una línea, qué pasó.
-3. **Descripción** — qué estabas haciendo, qué esperabas que pasara y qué pasó en su lugar.
-
-Al enviar, la app adjunta sola la versión instalada y el sistema operativo, y abre un
-issue en este repositorio. No se envía ningún dato de préstamos ni de personas.
-
-### Opción B: desde GitHub
-
-Si prefieres el navegador, o si justamente lo que no abre es la app:
+Si usas la app — profesor, administrativo, becario — esto es lo único que necesitas:
 
 1. Entra a <https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose>.
 2. Elige el formulario que corresponda:
    - **🐛 Reportar un problema** — algo no funcionó como debería.
    - **💡 Sugerir una mejora** — te gustaría que la app hiciera algo nuevo.
-3. Llena el formulario. Mientras más contexto des (qué intentabas, qué pasó, una
-   captura), más rápido se puede resolver. El campo **¿Vuelve a pasar?** es el que más
-   ayuda a distinguir un error de un accidente.
+3. Llena el formulario. No necesitas saber programar; mientras más contexto des
+   (qué intentabas, qué pasó, una captura), más rápido se puede resolver.
 
-> Antes de reportar, revisa las [Dudas frecuentes](README.md#-dudas-frecuentes)
+> Antes de abrir un issue, checa las [Dudas frecuentes](README.md#-dudas-frecuentes)
 > del README: varios problemas comunes ya tienen respuesta ahí.
 
 **Flujo completo del usuario:**
@@ -45,25 +26,10 @@ Usar la app
    ↓
 Encontrar problema o tener una idea
    ↓
-Reportar desde la app  o  abrir un Issue (formulario)
+Abrir Issue (formulario)
    ↓
 El mantenedor lo resuelve y sale en una versión nueva
 ```
-
-### Cómo se leen los reportes
-
-Cada reporte recibe etiquetas para saber por dónde va sin abrirlo:
-
-| Etiqueta | Qué significa |
-|---|---|
-| `área: …` | Qué parte de la app es (kiosko, inventario, respaldos, actualizaciones…) |
-| `prioridad: alta` / `media` / `baja` | Qué tan urgente es para el plantel |
-| `estado: necesita información` | Falta un dato para poder reproducirlo |
-| `estado: en curso` | Ya se está trabajando |
-| `origen: app` | Llegó con el botón de la app, no desde GitHub |
-
-Si alguien te pide más datos, la etiqueta `estado: necesita información` marca que el
-reporte quedó en pausa esperándote.
 
 ---
 
@@ -74,9 +40,7 @@ No necesitas permisos de escritura: trabajas sobre tu propia copia y propones el
 
 ### Requisitos previos
 
-1. **Node.js** 22.18 o superior (la CI usa la 24) → <https://nodejs.org/>
-   Hace falta esa versión mínima porque `npm test` ejecuta `node --test` sobre archivos
-   `.ts` con el soporte nativo de TypeScript de Node.
+1. **Node.js** 20 o superior → <https://nodejs.org/>
 2. **Rust** (rustup) → <https://rustup.rs/>
 3. **Git** → <https://git-scm.com/>
 4. En Windows: **Microsoft C++ Build Tools** y **WebView2 Runtime**
@@ -155,10 +119,6 @@ git push -u origin feat/mi-cambio
 | **Usuarios de la app** | Instalan el `.exe`, usan la app y reportan Issues. |
 | **Responsable de audiovisuales** | Inventario, respaldos y restauración ([guía](README.md#-respaldo-y-recuperación-importante)). |
 | **Mantenedor del repo** | Revisa PRs, decide qué entra y publica versiones. |
-
-> 🧰 **Si eres quien mantiene el repositorio**: las respuestas listas para contestar
-> reportes, con la etiqueta que toca en cada caso, están en
-> [`docs/PLANTILLAS_RESPUESTA.md`](app-prestamos-p15/docs/PLANTILLAS_RESPUESTA.md).
 | **Colaboradores de código** | Fork → rama → PR. Sin acceso de escritura directa a `main`. |
 
 ---

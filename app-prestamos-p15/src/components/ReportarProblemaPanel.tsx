@@ -1,29 +1,6 @@
 import { useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { validarReporte, TITULO_MAX, DESCRIPCION_MAX } from "../utils/reporteProblema";
-import { abrirEnlace, esClicSimple, NUEVO_REPORTE_URL, REPORTES_URL } from "../utils/enlaces";
-
-/**
- * An external link that always leaves the app. The Tauri webview cannot navigate
- * out on its own, so a plain left click is handed to the system browser, while
- * modified clicks keep the behaviour the browser would have given them.
- */
-function EnlaceExterno({ url, children }: { url: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(event) => {
-        if (!esClicSimple(event)) return;
-        event.preventDefault();
-        void abrirEnlace(url);
-      }}
-    >
-      {children}
-    </a>
-  );
-}
 
 export function ReportarProblemaPanel() {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -59,7 +36,7 @@ export function ReportarProblemaPanel() {
       setEnviado(true);
       dialogRef.current?.close();
     } catch (err) {
-      setError(typeof err === "string" ? err : "No se pudo enviar el reporte. Vuelve a intentar en un rato.");
+      setError(typeof err === "string" ? err : "No se pudo enviar el reporte. Volvé a intentar en un rato.");
     } finally {
       setEnviando(false);
     }
@@ -79,13 +56,6 @@ export function ReportarProblemaPanel() {
         <p role="status">Los reportes solo se pueden enviar desde la aplicación de escritorio.</p>
       )}
 
-      <p className="reportar-problema-enlaces">
-        También puedes revisarlos desde el navegador:{" "}
-        <EnlaceExterno url={REPORTES_URL}>ver los reportes abiertos</EnlaceExterno>
-        {" · "}
-        <EnlaceExterno url={NUEVO_REPORTE_URL}>escribir uno en GitHub</EnlaceExterno>.
-      </p>
-
       <dialog
         ref={dialogRef}
         className="admin-dialog"
@@ -93,7 +63,7 @@ export function ReportarProblemaPanel() {
         onClose={() => abrirRef.current?.focus()}
       >
         <form onSubmit={enviar} style={{ display: "grid", gap: "0.8rem" }}>
-          <label htmlFor="reporte-tipo">¿Qué quieres contarnos?</label>
+          <label htmlFor="reporte-tipo">¿Qué querés contarnos?</label>
           <select id="reporte-tipo" ref={tipoRef} value={tipo} onChange={(e) => setTipo(e.target.value)}>
             <option value="bug">Un problema</option>
             <option value="sugerencia">Una sugerencia</option>

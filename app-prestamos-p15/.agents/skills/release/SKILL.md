@@ -20,7 +20,7 @@ Use when the user asks to publish a release, create a tag, bump the version, or 
 - Before releasing, the skill MUST commit and push any pending functional work first (see Pre-Release Step). Only AFTER `HEAD == origin/main` is the tree ready for the release script.
 - Version format MUST be `X.Y.Z` (semver). No `v` prefix in the version argument to the script.
 - Tags use `v` prefix: `v0.1.4`. The script adds it automatically.
-- CI runs on a push to `main`, on `tags: v*`, and manually. **A push to `main` that carries `feat:` or `fix:` commits RELEASES BY ITSELF**: it bumps the patch version, stamps the docs, commits `release: vX.Y.Z` and publishes the signed Release. A push with only `docs:`/`chore:`/`ci:`/`style:`/`test:` publishes nothing. Pushing functional work to `main` IS releasing it — there is no separate confirmation step.
+- CI triggers on `tags: v*` only (not on push to main). Without a tag push, NO release happens.
 - Wait for CI to complete (~7-8 min). A green run does NOT guarantee the release exists; verify assets explicitly.
 - Every release MUST ship updated user-facing docs. `scripts/publish-release.sh` calls `scripts/stamp-release-docs.sh`, which stamps the version into `README.md`, `CHANGELOG.md` and `docs/MANUAL_PERSONAL.md`. NEVER edit those version numbers by hand.
 - The stamper only handles version numbers and a generated `feat:`/`fix:` CHANGELOG section. Whatever the release CHANGES for the staff (a new screen, a moved button, a different flow) MUST be written into `README.md` and `docs/MANUAL_PERSONAL.md` BEFORE the release, in the Docs Step below. The manual PDF the CI attaches to the tag is built from that Markdown, so anything missing there is missing from the PDF the staff downloads.
@@ -31,7 +31,7 @@ Use when the user asks to publish a release, create a tag, bump the version, or 
 
 ```
 app-prestamos-p15/                    # git root
-├── .github/workflows/build-windows.yml  # CI: release gate + build (push to main, tags v*, manual)
+├── .github/workflows/build-windows.yml  # CI: triggers on tags v*
 └── app-prestamos-p15/                # app code (run script here)
     ├── scripts/publish-release.sh    # release automation
     ├── scripts/stamp-release-docs.sh # stamps version into README/CHANGELOG/manual
@@ -60,8 +60,6 @@ Version source of truth: `src-tauri/tauri.conf.json`. The script syncs `package.
 | User gives exact version (e.g. "0.2.0") | Use that version directly |
 | User wants release of current version (no bump) | Run `bash scripts/publish-release.sh` with no version arg |
 | Tag already exists for target version | STOP. Bump to a higher version. Never force-overwrite tags |
-| You need to CONTROL the version number | Use `scripts/publish-release.sh <version>` manually. A plain push to `main` always cuts a PATCH bump |
-| You want to know what a push would release, without publishing | `bash scripts/release-gate.sh --range <tag>..HEAD` prints the decision and writes nothing |
 | CI failed | Read `gh run view <id> --log-failed`, fix, commit, push, re-tag with next version |
 | Release exists but no assets | CI didn't upload. Re-trigger by deleting tag+release and re-running with next patch |
 
@@ -95,7 +93,7 @@ Run BEFORE the release script, together with the Pre-Release Step, whenever the 
 3. **Publish**: Run `bash scripts/publish-release.sh <version>` from the app subdirectory (`app-prestamos-p15/app-prestamos-p15/`).
    - Script bumps 4 version files, stamps README/CHANGELOG/manual, commits "release: vX.Y.Z", pushes to main, creates tag, pushes tag.
    - Without a version argument it stamps the docs too, and commits them as `docs: actualiza los documentos a vX.Y.Z` before tagging.
-   - On failure BEFORE the release commit, it reverts the version files. After the commit it does NOT pretend to revert: the commit is already the truth, so it prints the exact command needed to finish (push the commit, or create and push the tag).
+   - On failure, script auto-reverts version files.
 4. **Monitor CI**: `gh run list --limit 3` then `gh run watch <id>` or poll `gh run view <id> --json status,conclusion`.
 5. **Verify tag**: `git tag -l "v*"` locally and `git ls-remote --tags origin` on remote.
 6. **Verify release**: `gh release view v<version> --json assets,isDraft,isPrerelease`. Confirm `isDraft: false`, `isPrerelease: false`, and assets list includes `.exe`, `.msi`, their `.sig`, `latest.json` and `manual-personal-app-prestamos-p15.pdf`.
@@ -112,10 +110,7 @@ Return:
 
 ## References
 
-- `scripts/publish-release.sh` — release automation script (read for the rollback logic)
-- `scripts/release-gate.sh` — the release decision; writes nothing, so it is safe to dry-run
-- `scripts/ci-bump-release.sh` — the CI-only bump + stamp + commit + push (never creates a tag)
-- `scripts/test-release-gate.sh` — self-check for the gate
+- `scripts/publish-release.sh` — release automation script (read for rollback logic)
 - `scripts/stamp-release-docs.sh` — stamps the version into README, CHANGELOG and the manual
 - `scripts/test-publish-release.sh` — run it after touching either script
 - `../.github/workflows/build-windows.yml` — CI workflow (at git root, not app subdirectory)

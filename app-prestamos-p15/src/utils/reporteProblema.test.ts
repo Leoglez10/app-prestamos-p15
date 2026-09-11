@@ -13,11 +13,11 @@ test("la sugerencia también es un tipo válido", () => {
 });
 
 test("cualquier otro tipo se rechaza", () => {
-  assert.equal(validarReporte({ ...base, tipo: "queja" }), "Elige si es un problema o una sugerencia.");
+  assert.equal(validarReporte({ ...base, tipo: "queja" }), "Elegí si es un problema o una sugerencia.");
 });
 
 test("el título en blanco no cuenta como título", () => {
-  assert.equal(validarReporte({ ...base, titulo: "   " }), "Escribe un título corto que resuma el problema.");
+  assert.equal(validarReporte({ ...base, titulo: "   " }), "Escribí un título corto que resuma el problema.");
 });
 
 test("el título justo en el límite pasa y uno más no", () => {

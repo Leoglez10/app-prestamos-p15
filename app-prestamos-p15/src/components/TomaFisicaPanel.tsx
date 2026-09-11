@@ -1,7 +1,7 @@
 /**
  * Toma física de inventario con la pistola de código de barras.
  *
- * El bucle es el producto: eliges la ubicación UNA vez y disparas contra cada
+ * El bucle es el producto: eliges la ubicación UNA vez y disparás contra cada
  * etiqueta. Cada escaneo resuelve el objeto, lo marca visto y le estampa dónde
  * estaba — sin teclear y sin cambiar de pantalla entre disparo y disparo.
  *
@@ -833,7 +833,7 @@ export function TomaFisicaPanel({
                       ? "Este no apareció"
                       : `Estos ${pendientes.length} no aparecieron`}
                   </h2>
-                  <small>— decídelo antes de irte, después ya no te acuerdas</small>
+                  <small>— decidí antes de irte, después ya no te acordás</small>
                 </div>
                 <ul className="toma-lista">
                   {pendientes.map((equipo) => (
@@ -1029,7 +1029,7 @@ export function TomaFisicaPanel({
             <div className="toma-tarjeta-cuerpo">
               <strong>Repetido</strong>
               <span>{ultimo.equipo.nombre_equipo} ya se leyó aquí.</span>
-              <small>No pasa nada: sigue con el siguiente.</small>
+              <small>No pasa nada: seguí con el siguiente.</small>
             </div>
           ) : (
             <>

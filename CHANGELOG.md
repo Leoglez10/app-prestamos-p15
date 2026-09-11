@@ -8,19 +8,6 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
-## [0.11.2] — 2026-09-11
-
-### Añadido
-
-- Enlace al tracker desde el panel de reportes
-
-### Corregido
-
-- El rollback distingue lo que si puede revertir
-- Los textos de la app pasan a español neutro
-
----
-
 ## [0.11.1] — 2026-09-10
 
 **La aplicación no cambia en esta versión.** Lo que se corrigió es la documentación

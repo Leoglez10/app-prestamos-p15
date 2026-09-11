@@ -2,12 +2,82 @@ name: Build Windows Installer
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Solo decidir si corresponderia un release; no compilar ni publicar"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      should_release: ${{ steps.gate.outputs.should_release }}
+      release_tag: ${{ steps.gate.outputs.release_tag }}
+      previous_tag: ${{ steps.gate.outputs.previous_tag }}
+      target_sha: ${{ steps.bump.outputs.target_sha || steps.gate.outputs.target_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Determine release flow
+        id: gate
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+          args=(
+            --event-name "${GITHUB_EVENT_NAME}"
+            --ref-type "${GITHUB_REF_TYPE}"
+            --ref-name "${GITHUB_REF_NAME}"
+            --sha "${GITHUB_SHA}"
+          )
+          if [ "${DRY_RUN}" = "true" ]; then
+            args+=(--dry-run)
+          fi
+          bash app-prestamos-p15/scripts/release-gate.sh "${args[@]}" | tee release-gate.out
+          while IFS='=' read -r key value; do
+            case "$key" in
+              should_release|reason|previous_tag|release_tag|functional_commits|target_sha|release_version)
+                echo "$key=$value" >> "$GITHUB_OUTPUT"
+                ;;
+            esac
+          done < release-gate.out
+
+      - name: Pre-bump frontend guard
+        if: steps.gate.outputs.should_release == 'true' && steps.gate.outputs.release_version != ''
+        working-directory: ./app-prestamos-p15
+        run: |
+          npm ci
+          npm test
+
+      - name: Bump, stamp, commit and push release
+        id: bump
+        if: steps.gate.outputs.should_release == 'true' && steps.gate.outputs.release_version != ''
+        run: |
+          bash app-prestamos-p15/scripts/ci-bump-release.sh "${{ steps.gate.outputs.release_version }}"
+          echo "target_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   build-tauri:
+    needs: prepare-release
+    if: needs.prepare-release.outputs.should_release == 'true'
     permissions:
       contents: write
     strategy:
@@ -21,6 +91,7 @@ jobs:
       # the previous tag and this one, and the default shallow clone has neither.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.prepare-release.outputs.target_sha }}
           fetch-depth: 0
 
       - name: setup node
@@ -65,8 +136,8 @@ jobs:
         id: notes
         shell: pwsh
         env:
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ needs.prepare-release.outputs.release_tag }}
+          PREVIOUS_TAG: ${{ needs.prepare-release.outputs.previous_tag }}
         run: |
           # git speaks UTF-8; without this the accents of the Spanish subjects
           # come back mangled through the console codepage.
@@ -74,22 +145,30 @@ jobs:
           $fallback = "Esta versión trae mejoras internas y correcciones menores."
           $features = @()
           $fixes = @()
-          if ($env:REF_TYPE -eq "tag") {
-            $tag = $env:REF_NAME
-            $previous = git describe --tags --abbrev=0 "$tag^" 2>$null
-            if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($previous)) {
-              foreach ($subject in @(git log --no-merges --format=%s "$previous..$tag")) {
-                if ($subject -match '^(?<type>feat|fix)(\([^)]*\))?!?:\s*(?<text>.+)$') {
-                  $text = $Matches['text'].Trim()
-                  if ($text.Length -gt 0) {
-                    $text = $text.Substring(0, 1).ToUpper() + $text.Substring(1)
-                    if ($Matches['type'] -eq 'feat') { $features += "- $text" } else { $fixes += "- $text" }
-                  }
+          # The tag does not exist yet: tauri-action creates it together with the
+          # release, which is what keeps tag and release atomic. The checked-out
+          # commit IS the commit that tag will point at, so HEAD is the correct
+          # upper end of the range in both the branch flow and the tag flow.
+          $range = if (-not [string]::IsNullOrWhiteSpace($env:PREVIOUS_TAG)) {
+            "$($env:PREVIOUS_TAG)..HEAD"
+          } else {
+            "HEAD"
+          }
+          $subjects = @(git log --no-merges --format=%s $range 2>$null)
+          $logExit = $LASTEXITCODE
+          if ($logExit -eq 0) {
+            foreach ($subject in $subjects) {
+              if ($subject -match '^(?<type>feat|fix)(\([^)]*\))?!?:\s*(?<text>.+)$') {
+                $text = $Matches['text'].Trim()
+                if ($text.Length -gt 0) {
+                  $text = $text.Substring(0, 1).ToUpper() + $text.Substring(1)
+                  if ($Matches['type'] -eq 'feat') { $features += "- $text" } else { $fixes += "- $text" }
                 }
               }
-            } else {
-              Write-Host "No previous tag found for $tag; using the generic release body."
             }
+          } else {
+            Write-Host "No release-note commits found for $range; using the generic release body."
+            $global:LASTEXITCODE = 0
           }
           $sections = @()
           if ($features.Count -gt 0) { $sections += (@("Novedades") + $features) -join "`n" }
@@ -120,13 +199,15 @@ jobs:
 
   build-manual:
     name: Build and attach staff manual
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build-tauri
+    if: needs.prepare-release.outputs.should_release == 'true'
+    needs: [prepare-release, build-tauri]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-release.outputs.target_sha }}
 
       - name: setup python
         uses: actions/setup-python@v5
@@ -142,13 +223,13 @@ jobs:
       - name: build staff manual PDF
         working-directory: ./app-prestamos-p15
         env:
-          MANUAL_VERSION: ${{ github.ref_name }}
+          MANUAL_VERSION: ${{ needs.prepare-release.outputs.release_tag }}
         run: python scripts/build-manual-pdf.py
 
       - name: attach staff manual to release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >-
-          gh release upload "${GITHUB_REF_NAME}"
+          gh release upload "${{ needs.prepare-release.outputs.release_tag }}"
           ./app-prestamos-p15/output/pdf/manual-personal-app-prestamos-p15.pdf
           --clobber

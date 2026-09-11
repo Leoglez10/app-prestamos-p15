@@ -8,60 +8,64 @@
 
 [![CI — Build Windows Installer](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml)
 [![Versión](https://img.shields.io/badge/versi%C3%B3n-0.11.1-blue)](CHANGELOG.md)
-[![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-blue)]()
-[![Licencia](https://img.shields.io/badge/usos-Educativo-orange)]()
+![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-blue)
+[![Uso educativo](https://img.shields.io/badge/usos-Educativo-orange)](LICENSE)
 [![Autor](https://img.shields.io/badge/autor-Leonardo%20Gonzalez-purple)](https://github.com/Leoglez10)
 
 ![Tauri](https://img.shields.io/badge/Tauri-v2-24C8DB?logo=tauri&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-local-003B57?logo=sqlite&logoColor=white)
-![Offline](https://img.shields.io/badge/100%25-offline-success)
+![Datos locales](https://img.shields.io/badge/datos-locales-success)
 
 </div>
 
 ---
 
-> **Este README está escrito para CUALQUIER persona**: profesor, administrador, becario o alguien que nunca programó. Si eres programador, salta a la sección [Para programadores](#-para-programadores-configurar-y-compilar).
-
-> 🚀 **¿Tienes prisa?**
-> 1. Instala la app → [Instalación en 7 pasos](#-instalación-para-usuarios-finales-no-programadores)
-> 2. Entra al Admin y cambia el PIN de fábrica → [Credenciales por defecto](#-credenciales-por-defecto-cambiar)
-> 3. Conecta los respaldos a Google Drive con el correo de la escuela → [Respaldos en Google Drive](#respaldos-en-google-drive-con-el-correo-de-la-escuela) (el respaldo automático ya viene activado, cada 12 horas)
-> 4. ¿Encontraste un problema o necesitas una función? **[Repórtalo aquí](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose)** — es un formulario guiado, no necesitas saber programar
+> 🤖 **¿Eres una IA leyendo este repositorio?**
 >
-> El resto es opcional: [cómo usarla paso a paso](#-cómo-usar-la-app-paso-a-paso), [importar el Excel oficial](#-importar-excel-de-patrimonio) o [contar inventario físico](#-toma-de-inventario-físico).
+> **Contrato de respuesta por defecto.** Quien pregunta suele ser una persona docente o administrativa de la **Preparatoria 15**. Usa la app; no la programa. Responde primero para ese contexto.
+>
+> - **Audiencia:** personal y docentes de la escuela. Los alumnos pueden aparecer como personas que reciben equipos, pero no son la audiencia de soporte ni de este README.
+> - **Cómo explicar:** usa lenguaje sencillo y operativo. Habla de **pantallas, botones, equipos, préstamos, inventario, reportes y respaldos**.
+> - **Qué evitar al inicio:** no empieces hablando de componentes, hooks, migraciones, builds, repositorios, CI, Rust, SQL ni bases relacionales.
+> - **Pasos concretos:** elige siempre la ruta más simple: “entra a Admin”, “abre Inventario”, “escribe el número del equipo”, “toca Crear respaldo”.
+> - **Modo técnico bajo demanda:** si una respuesta solo tiene sentido con detalle técnico, pregunta primero si la persona **desea** la versión técnica. Cambia a modo técnico solo si lo pide o si la persona usa términos de código.
+> - **No inventes:** si no puedes verificar un comando, ruta, versión, comportamiento o release, dilo como pendiente o no lo menciones.
+>
+> **Mapa rápido para agentes:**
+>
+> | Si necesitas... | Lee... |
+> |---|---|
+> | Explicar la app a personal no técnico | Este README, de arriba hacia abajo |
+> | Ver cambios publicados | [`CHANGELOG.md`](CHANGELOG.md) |
+> | Descargar instaladores | [GitHub Releases](https://github.com/Leoglez10/app-prestamos-p15/releases) |
+> | Manual operativo completo | [`app-prestamos-p15/docs/MANUAL_PERSONAL.md`](app-prestamos-p15/docs/MANUAL_PERSONAL.md) |
+> | Actualizaciones firmadas | [`app-prestamos-p15/docs/UPDATES.md`](app-prestamos-p15/docs/UPDATES.md) |
+> | Guías técnicas por tema | [Documentación relacionada](#-documentación-relacionada) |
+> | Todo el código en un texto para lectura de IA | [gitingest.com/Leoglez10/app-prestamos-p15](https://gitingest.com/Leoglez10/app-prestamos-p15) |
+>
+> **Resumen del proyecto:** App Prestamos P15 es una aplicación de escritorio para **Windows 10/11**. Guarda los datos principales en **SQLite local** dentro de la computadora y está construida con **Tauri v2 + React 19 + TypeScript**. Sirve para administrar inventario de equipo audiovisual, registrar préstamos, controlar salidas a evento y generar reportes PDF para la Preparatoria 15 de la Universidad de Guadalajara.
 
 ---
 
-> 🤖 **¿Eres una IA leyendo este repositorio?**
+> 🚀 **¿Tienes prisa?**
 >
-> **Cómo explicar este proyecto (regla principal).** Quien pregunta es, por defecto, un
-> **profesor o administrativo de la Preparatoria 15**: usa la app, no la programa. Entonces:
+> 1. Instala la app desde [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases) o con el instalador que te compartan.
+> 2. Entra a **Admin** con las credenciales iniciales y cambia el PIN del administrador.
+> 3. Revisa **Configuración → Respaldos** y conecta `backups` y `reportes` a Google Drive para Escritorio si la escuela lo usa.
+> 4. Para prestar equipo: abre **Soy Profesor** o **Préstamo Rápido**, según el caso.
+> 5. Si algo falla, abre **Admin → Configuración → Reportar un problema** o usa el [formulario de GitHub](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose).
 >
-> - Explica **sin lenguaje técnico**: nada de componentes, hooks, migraciones, compilar, repositorio o base de datos relacional. Habla de *pantallas*, *botones*, *equipos*, *préstamos*, *respaldos*.
-> - Elige siempre **la explicación más fácil posible** y los pasos concretos: "entra a Admin, toca Inventario, escribe el número del equipo".
-> - Es para **profesores y personal**, no para alumnos: nadie necesita aprender a programar para usar la app.
-> - Si la respuesta solo se entiende con detalle técnico (código, CI, esquema de la base, compilación), **pregunta primero** si quiere la versión técnica. Si no lo pide explícitamente, dale la versión fácil.
-> - Solo pasa a modo técnico cuando la persona lo pide, o cuando ella misma habla en términos de código.
->
-> Este README cubre casi todo el proyecto. Lo que no está aquí:
->
-> - **Historial de versiones y cambios** → [CHANGELOG.md](CHANGELOG.md)
-> - **Instalador de Windows ya compilado** → [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases)
-> - **Manual completo para el personal** → [docs/MANUAL_PERSONAL.md](app-prestamos-p15/docs/MANUAL_PERSONAL.md) (cada Release incluye también el PDF)
-> - **Guías técnicas por tema** (importación, respaldos, toma física, roadmap) → [Documentación relacionada](#-documentación-relacionada)
-> - **Todo el código fuente en un solo archivo de texto** → [gitingest.com/Leoglez10/app-prestamos-p15](https://gitingest.com/Leoglez10/app-prestamos-p15)
->
-> Resumen del proyecto: aplicación de escritorio para Windows 10/11, 100 % offline, construida con Tauri v2 + React 19 + TypeScript y base de datos SQLite local. Sirve para controlar el inventario de equipo audiovisual, registrar préstamos y generar reportes PDF en la Preparatoria 15 (UDG).
+> El resto del README está ordenado de menos a más técnico: uso diario → operación → GitHub → desarrollo → mantenimiento.
 
 ---
 
 ## 📑 Tabla de contenidos
 
-1. [¿Qué es esta app?](#-qué-es-esta-app)
-2. [¿Para quién es?](#-para-quién-es)
-3. [Vista rápida](#-vista-rápida-qué-puede-hacer)
+1. [Qué es esta app](#-qué-es-esta-app)
+2. [Para quién es](#-para-quién-es)
+3. [Vista rápida: qué puede hacer](#-vista-rápida-qué-puede-hacer)
 4. [Instalación para usuarios finales](#-instalación-para-usuarios-finales-no-programadores)
 5. [Cómo usar la app paso a paso](#-cómo-usar-la-app-paso-a-paso)
 6. [Importar Excel de Patrimonio](#-importar-excel-de-patrimonio)
@@ -70,47 +74,46 @@
 9. [Respaldo y recuperación](#-respaldo-y-recuperación-importante)
 10. [Mantenimiento](#-mantenimiento)
 11. [GitHub para principiantes](#-github-para-principiantes)
-12. [Para programadores](#-para-programadores-configurar-y-compilar)
-13. [Estructura del proyecto](#-estructura-del-proyecto-dónde-está-cada-cosa)
-14. [Dudas frecuentes](#-dudas-frecuentes)
-15. [Cómo contribuir](#-cómo-contribuir)
-16. [Versionado y publicación](#-versionado-y-publicación)
-17. [Documentación relacionada](#-documentación-relacionada)
-18. [Licencia y uso](#️-licencia-y-uso)
-19. [Créditos](#-créditos)
+12. [Reportar problemas y proponer mejoras](#-reportar-problemas-y-proponer-mejoras)
+13. [Para programadores: configurar y compilar](#-para-programadores-configurar-y-compilar)
+14. [Estructura del proyecto](#-estructura-del-proyecto-dónde-está-cada-cosa)
+15. [Versionado y publicación](#-versionado-y-publicación)
+16. [Dudas frecuentes](#-dudas-frecuentes)
+17. [Cómo contribuir](#-cómo-contribuir)
+18. [Documentación relacionada](#-documentación-relacionada)
+19. [Licencia y uso](#️-licencia-y-uso)
+20. [Créditos](#-créditos)
 
 ---
 
-## 🎯 ¿Qué es esta app?
+## 🎯 Qué es esta app
 
-Es un **programa de escritorio** (una aplicación que instalas en una computadora con Windows, NO en el navegador ni en el celular) que sirve para **llevar el control de los equipos audiovisuales** que la Preparatoria 15 presta a sus profesores y alumnos:
+App Prestamos P15 es un programa de escritorio para llevar el control del equipo audiovisual que se presta en la Preparatoria 15.
 
-- 🖥 Laptops
-- 🔌 Adaptadores HDMI
-- 📽 Proyectores
-- 🎤 Cualquier equipo prestable
+La app responde preguntas de operación diaria:
 
-La app responde a 3 preguntas básicas:
+1. **Qué equipos tiene la escuela.**
+2. **Dónde están.**
+3. **Quién los tiene prestados.**
+4. **Cuándo salieron y cuándo regresaron.**
+5. **Qué falta por revisar en una toma física.**
 
-1. **¿Qué equipo prestamos?**
-2. **¿A quién se lo prestamos?**
-3. **¿Cuándo nos lo devolvieron?**
+Piensa en ella como una libreta digital de préstamos, inventario y reportes. La diferencia es que queda historial, se pueden hacer respaldos y el personal puede consultar el estado de cada equipo sin depender de hojas sueltas.
 
-Y mantiene un historial completo: si el equipo está disponible, prestado, perdido o en reparación.
-
-> 💡 Piensa en ella como una **libreta digital de préstamos** — pero que no se pierde, no se borra, y la pueden usar varias personas al mismo tiempo (en la misma computadora).
+> ✅ Los datos principales viven en la computadora donde está instalada la app. No hay servidor central ni sincronización automática entre computadoras.
 
 ---
 
-## 👥 ¿Para quién es?
+## 👥 Para quién es
 
-| Rol | Qué hace en la app |
+| Persona | Qué hace en la app |
 |---|---|
-| 🎓 **Profesor** | Entra al "Kiosko", escribe su código UDG, pide un equipo y lo devuelve. **No necesita contraseña.** |
-| 🛡 **Administrador** | Entra al panel Admin con código + PIN: da de alta equipos, profesores, categorías, genera reportes, hace respaldos. |
-| ⚡ **Administrador de Préstamo Rápido** | Entra solo con su código (sin PIN) para registrar préstamos a **alumnos** con trazabilidad. |
+| **Docente** | Entra por **Soy Profesor**, escribe su código UDG, solicita equipos disponibles y devuelve lo que tiene activo. |
+| **Responsable de audiovisuales o administración** | Entra al **Admin** con código y PIN. Administra inventario, profesores, categorías, respaldos, reportes, actualizaciones y toma física. |
+| **Responsable de Préstamo Rápido** | Entra por **Préstamo Rápido** con su código y registra préstamos puntuales a alumnos o profesores, con trazabilidad de quién autorizó. |
+| **Mantenedor técnico** | Actualiza el código, revisa reportes, corre pruebas y publica versiones. |
 
-> ⚠️ **Importante**: la app está pensada para **una computadora compartida** (por ejemplo, la de la oficina de audiovisuales o la coordinación). No es una app web ni un sistema en la nube: los datos viven **dentro de esa computadora**.
+> ⚠️ La app está pensada para una computadora compartida de la oficina o coordinación. Si instalas la app en dos computadoras, cada una tiene su propia base local; no comparten datos en vivo.
 
 ---
 
@@ -120,35 +123,40 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 | Modo | Captura |
 |---|---|
-| **🏠 Inicio** — pantalla central con 3 tarjetas | ![Inicio](app-prestamos-p15/docs/img/inicio.png) |
-| **🛠 Admin** — acceso admin (código + PIN) | ![Admin](app-prestamos-p15/docs/img/admin.png) |
-| **⚡ Préstamo Rápido** — acceso admin (solo código) | ![Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido.png) |
-| **📱 Kiosko** — _(requiere Tauri + SQLite; ver nota)_ | _(pendiente)_ |
+| **Inicio** — dos tarjetas centrales: **Soy Profesor** y **Préstamo Rápido**; **Administrador** está arriba como enlace | ![Inicio](app-prestamos-p15/docs/img/inicio.png) |
+| **Admin** — acceso con código y PIN | ![Admin](app-prestamos-p15/docs/img/admin.png) |
+| **Préstamo Rápido** — acceso con código de administrador | ![Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido.png) |
 
 </div>
 
-> 📸 **Nota sobre las capturas**: las tres primeras se tomaron con `npm run dev` (Vite solo). Mostramos la pantalla en estado **pre-login**, antes de entrar. El **Kiosko** necesita la base de datos activa desde el arranque (no tiene estado pre-login), así que su captura real requiere `npm run tauri dev` con la app de escritorio. Para actualizarlas: `npm run dev` → abrir <http://localhost:1770/> → capturar y guardar en `docs/img/`.
-
 ### Funciones principales
 
-- ✅ Catálogo de equipos organizado por categorías
-- ✅ Préstamo a profesor (kiosko) y a alumno (préstamo rápido)
-- ✅ Manejo de **equipos únicos** (1 laptop = 1 registro) y **a granel** (10 adaptadores en 1 fila)
-- ✅ Estados: `disponible`, `prestado`, `extraviado`, `mantenimiento`
-- ✅ Sugerencia automática de **HDMI** al prestar una laptop
-- ✅ Lectura de **códigos de barras** en kiosko, inventario y toma física — **la pistola dispara sola**, sin depender de que la etiqueta mande `Enter`
-- ✅ **Escaneo global** en Inventario: apuntas a una etiqueta y se abre la ficha, sin hacer clic en ningún campo primero
-- ✅ Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
-- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
-- ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
-- ✅ **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
-- ✅ Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
-- ✅ Reportes imprimibles en PDF (vía "imprimir" del navegador interno)
-- ✅ **Se actualiza sola**: la app avisa cuando hay versión nueva y la instala con un clic, sin bajar nada a mano
-- ✅ **Reportar un problema desde la app**, sin cuenta de GitHub ni saber programar
-- ✅ Respaldo y restauración de la base de datos **desde dentro de la app**
-- ✅ Sesión de admin con expiración de 8 horas
-- ✅ Trabaja **sin internet** (todo es local)
+- Catálogo de equipos por categoría, ubicación, estado e identificador patrimonial.
+- Préstamos a docentes desde **Soy Profesor**.
+- **Préstamo Rápido** para registrar préstamos puntuales a alumnos o profesores.
+- **Salida a evento** para agrupar varios objetos que salen juntos a una actividad, con responsable, lugar, fechas y devoluciones por objeto.
+- Manejo de equipos únicos y equipos a granel.
+- Estados de inventario: `disponible`, `prestado`, `extraviado`, `mantenimiento`.
+- Sugerencia de HDMI cuando se presta una laptop.
+- Lectura de códigos de barras en kiosko, inventario y toma física.
+- Escaneo global en Inventario: si escaneas una etiqueta, se abre la ficha del equipo.
+- Importación del Excel oficial de Patrimonio con vista previa y respaldo antes de aplicar.
+- Toma de inventario físico por áreas, con modo prueba, alta al vuelo y reportes para Patrimonio.
+- Control de qué es **Prestable** y qué es **Solo inventario**, por categoría o por equipo.
+- Reportes imprimibles en PDF desde la app.
+- Respaldos automáticos, manuales y de pre-restauración.
+- Actualizador firmado para versiones publicadas de Windows x64.
+- Reporte de problemas desde la app hacia GitHub, sin que el personal necesite cuenta de GitHub.
+- Acceso desde celular por red local como función experimental documentada en [`app-prestamos-p15/docs/QR_CELULAR.md`](app-prestamos-p15/docs/QR_CELULAR.md).
+
+### Lo que requiere internet
+
+La operación principal es local: inventario, préstamos, reportes y respaldos en disco funcionan sin conexión. Hay dos funciones que sí usan red cuando las activas:
+
+| Función | Para qué usa red |
+|---|---|
+| Actualizador | Consulta `latest.json` en GitHub Releases y descarga la nueva versión cuando confirmas. |
+| Reportar un problema desde la app | Envía el reporte a un Cloudflare Worker, que abre un Issue en GitHub. |
 
 ---
 
@@ -156,946 +164,724 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 ### Requisitos
 
-- Una computadora con **Windows 10 o Windows 11**
-- El runtime **WebView2** (viene preinstalado en Windows 11; en Windows 10 puede que lo descargues de Microsoft: <https://developer.microsoft.com/microsoft-edge/webview2/>)
-- Que alguien haya generado el instalador `.exe` o `.msi` (ver [Para programadores](#-para-programadores-configurar-y-compilar))
+- Una computadora con **Windows 10 o Windows 11**.
+- **WebView2 Runtime**. Windows 11 normalmente ya lo incluye; en Windows 10 puede instalarse desde Microsoft: <https://developer.microsoft.com/microsoft-edge/webview2/>.
+- Un instalador `.exe` o `.msi` publicado en [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases) o compartido por el responsable técnico.
 
 ### Pasos
 
-1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.11.1_x64-setup.exe`). Hay dos formas:
-   - **A) Desde GitHub (recomendado).** Entra a <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más reciente, y en la sección **Assets** descarga el archivo `.exe` (_x64-setup.exe_) o `.msi`.
-   - **B) Copia manual** (USB, carpeta compartida, etc.) — alguien que ya tenga el instalador te lo pasa.
-2. **Cópialo a la computadora** destino si lo descargaste en otra máquina.
-3. **Doble clic** sobre el instalador.
-4. **Windows quizá mostrará una advertencia azul** ("Windows protegió su PC") porque no tenemos certificado de firma. No te preocupes:
-   - Haz clic en **"Más información"** → **"Ejecutar de todas formas"**.
-   - Esto es normal en apps de distribución interna sin certificado comercial.
-5. Sigue el asistente (Siguiente → Siguiente → Instalar).
-6. Al terminar, verás el ícono de la app en el escritorio o en el menú Inicio: **"App Prestamos P15"**.
-7. **Ábrela**. La primera vez crea la base de datos con datos de ejemplo.
+1. Consigue el instalador de la versión más reciente.
+2. Copia el archivo a la computadora donde se usará la app.
+3. Haz doble clic sobre el instalador.
+4. Si Windows muestra una advertencia de SmartScreen, confirma solo si el archivo viene del release oficial o del responsable técnico.
+5. Sigue el asistente de instalación.
+6. Abre **App Prestamos P15** desde el menú Inicio o el acceso directo.
+7. En el primer arranque, la app crea su base local si no existe.
 
-> ✅ Listo. No necesitas internet, no necesitas servidor, no necesitas configurar nada.
+### Credenciales por defecto (¡cambiar!)
 
-### Credenciales por defecto (¡CAMBIAR!)
-
-La app viene con un administrador precargado (solo para empezar):
+La app trae un administrador inicial para poder entrar por primera vez:
 
 | Campo | Valor |
 |---|---|
 | Código | `223992647` |
 | PIN | `#admin*p15#` |
 
-> ⚠️ **La primera vez que entres al Admin, cambia el PIN del administrador.** Aun así, la versión actual conserva la combinación de fábrica como acceso de recuperación para el código `223992647`; cambiar el PIN guardado NO desactiva ese fallback. Usa la app únicamente en el entorno interno previsto y corrige `loginAdmin` antes de tratarla como un sistema endurecido para producción.
+> ⚠️ Cambia el PIN al entrar por primera vez. La versión actual conserva esa combinación de fábrica como acceso de recuperación para el código `223992647`; cambiar el PIN guardado no desactiva ese fallback. Usa la app en el entorno interno previsto y no la expongas como sistema público.
 
 ---
 
 ## 🚶 Cómo usar la app paso a paso
 
-### Flujo 1: Un profesor quiere pedir prestado un equipo (Kiosko)
+### Flujo 1: un docente pide un equipo
 
-1. Abre la app. Verás 3 tarjetas grandes.
-2. Haz clic en **"Soy Profesor"**.
-3. Escribe tu **código UDG** (por ejemplo `223992647`) → Enter. No necesitas contraseña.
-4. Verás el catálogo: filtra con los **chips de categoría** o busca por nombre, marca, modelo o ID patrimonial.
-   - Si tienes lector de código de barras: **escanea y listo**. El equipo exacto aparece primero y se agrega solo, sin que tengas que apretar `Enter`. Si el equipo escaneado no está disponible, el buscador se limpia para que el siguiente disparo no se pegue al anterior.
-5. Toca el equipo para agregarlo al **carrito** (puedes pedir varios; los equipos a granel muestran cuántos quedan).
-   - 💡 Si pides una **laptop**, la app te sugiere agregar un **HDMI** disponible con un clic.
-6. Opcionalmente escribe **notas de entrega** → **Confirmar**.
-7. El sistema marca el equipo como prestado y registra fecha/hora. Aparece el modal de éxito y **la sesión se cierra sola en 3 segundos** (es una terminal compartida).
-8. Para **devolver**: entra de nuevo con tu código, ve a tus préstamos activos y devuelve uno por uno o toca **"Devolver todo"**.
+1. Abre la app.
+2. Toca **Soy Profesor**.
+3. Escribe tu código UDG y confirma.
+4. Busca el equipo por nombre, categoría, marca, modelo o identificador. Si tienes lector de códigos, escanea la etiqueta.
+5. Toca el equipo para agregarlo al carrito.
+6. Si la app sugiere HDMI para una laptop, agrega el adaptador si lo necesitas.
+7. Escribe notas de entrega si hace falta.
+8. Toca **Confirmar**.
+9. Para devolver, entra otra vez con tu código y devuelve uno por uno o usa **Devolver todo**.
 
-### Flujo 2: Préstamo a un alumno (Préstamo Rápido)
+### Flujo 2: Préstamo Rápido
 
-1. En la pantalla de inicio, clic en **"Préstamo Rápido"**.
-2. El admin entra con su **código** (sin PIN — esto es intencional, queda auditoría de quién autorizó).
-3. Llena el formulario: tipo (alumno o profesor), nombre/código, equipo (del inventario o texto libre) y notas.
-4. El sistema guarda automáticamente **quién autorizó** (tu nombre y código de admin).
-5. En el **historial** de abajo puedes buscar y filtrar por estado:
-   - `activo` — aún no se devuelve
-   - `vencido` — activo por **más de 24 horas**
-   - `devuelto` — cerrado
-6. Cuando el alumno regrese el equipo, márcalo como **devuelto** (o elimina el registro si fue un error).
+1. En la pantalla de inicio, toca **Préstamo Rápido**.
+2. Entra con tu código de administrador. No pide PIN; la app guarda quién autorizó.
+3. Elige si el préstamo es para alumno o profesor.
+4. Captura nombre, código, equipo y observaciones.
+5. Si corresponde, registra una **Salida a evento** para varios objetos que salen juntos.
+6. Revisa el historial con los filtros reales de la pantalla:
+   - **En préstamo**
+   - **Más de 1 día**
+   - **Devueltos**
+   - **Todos**
+7. Cuando regrese el equipo, marca la devolución desde el historial.
 
-> 📋 Esto sirve para **incidencias rápidas** donde un alumno necesita un equipo y no pasa por el kiosko del profesor.
+> 💡 Este flujo sirve para incidencias rápidas y salidas operativas donde el préstamo no pasa por el kiosko normal del docente.
 
-### Flujo 3: Administrar todo (Admin)
+### Flujo 3: administrar inventario, profesores y reportes
 
-1. En la pantalla de inicio, clic en **"Administrador"**.
-2. Escribe tu **código** y tu **PIN**.
-3. Tienes pestañas:
-   - **Inventario** → dar de alta, editar, ver detalle; menú de fila (⋮): forzar devolución, marcar perdido, eliminar; diseñar/imprimir PDF del inventario; panel de importación del Excel de Patrimonio
-     - 🔎 **Tres filtros** arriba de la lista, y se combinan entre sí: *Todas las categorías*, *Todos los estados* y ***Todos los lugares*** (este último se arma solo con las ubicaciones que ya existen en tu inventario). El buscador también entiende el lugar. Si dejaste un filtro puesto se marca en color, y hay un botón para limpiarlos todos de una vez.
-     - La ficha de detalle abre con lo que más se busca arriba: **placa, estado y ubicación**, y se completa entera desde esa misma pantalla.
-     - 🔫 **Escaneo global**: con la pestaña abierta, apunta la pistola a cualquier etiqueta y se abre la ficha de ese equipo. No necesitas hacer clic en el buscador primero. Si sí tienes un campo enfocado, el código se escribe ahí (el buscador reemplaza el código anterior en vez de concatenarlo).
-   - **Toma de inventario** → campañas de conteo físico con lector de códigos ([ver sección completa](#-toma-de-inventario-físico))
-   - **Categorías** → crear/editar categorías y decidir si son **Prestable** o *Solo inventario*
-   - **Profesores** → dar de alta profesores que pueden usar el kiosko, marcar admins + PIN
-   - **Reportes** → filtrar por fecha / estado / categoría e imprimir en PDF; observaciones de entrega/devolución
-   - **Configuración** → **Actualizaciones** (versión instalada y buscar versión nueva), **Reportar un problema**, ajustes del kiosko, respaldos automáticos y manuales, restauración
+1. En la parte superior de la pantalla de inicio, abre **Administrador**.
+2. Escribe tu código y PIN.
+3. Usa las pestañas del panel:
 
-> 💡 **Concepto clave — Prestable vs Solo inventario:** un equipo *prestable* aparece en el kiosko para pedirse; uno *solo inventario* solo existe para llevar el conteo (un proyector del salón fijo, por ejemplo). Lo decides tú por categoría o por equipo: **la importación del Excel nunca activa préstamos por su cuenta**.
+| Pestaña | Para qué sirve |
+|---|---|
+| **Inventario** | Dar de alta, editar, abrir fichas, forzar devolución, marcar perdido, eliminar y diseñar/imprimir PDF del inventario. |
+| **Toma de inventario** | Contar físicamente por áreas, importar Excel de Patrimonio, fusionar reportes de otra computadora y exportar reportes. |
+| **Categorías** | Crear categorías y decidir si son **Prestable** o **Solo inventario**. |
+| **Profesores** | Registrar docentes, marcar administradores y definir PIN. |
+| **Reportes** | Filtrar préstamos por fecha, estado o categoría e imprimir reportes. |
+| **Configuración** | Actualizaciones, reportar problema, ajustes del kiosko, respaldos y restauración. |
 
-### Flujo 4: Cerrar sesión
+> 💡 **Prestable vs Solo inventario:** un equipo prestable aparece para préstamo; uno de solo inventario existe para control físico, pero no se ofrece en el kiosko. La importación de Patrimonio no activa préstamos por sí sola.
 
-- En **Préstamo Rápido** y **Admin** hay un botón de **Cerrar sesión** arriba. Úsalo antes de irte.
-- En **Préstamo Rápido** la sesión se cierra automáticamente a las **8 horas**.
+### Flujo 4: cerrar sesión
+
+- En **Admin** y **Préstamo Rápido** hay botón de cerrar sesión.
+- En **Préstamo Rápido**, la sesión guardada en el navegador interno caduca a las **8 horas**.
+- En **Admin**, la sesión vive en la sesión actual de la ventana; cierra sesión al terminar si la computadora es compartida.
 
 ---
 
 ## 📥 Importar Excel de Patrimonio
 
-La app puede cargar el inventario oficial desde el **Excel de Patrimonio** sin teclear equipo por equipo.
+La app puede cargar el inventario oficial desde un archivo `.xlsx` de Patrimonio.
 
 ### Dónde está
 
-**Admin** ▸ pestaña **Inventario** ▸ panel de importación al final de la página.
+**Admin → Toma de inventario → Importar Excel de Patrimonio**.
 
 ### Cómo funciona
 
-1. Elige el archivo `.xlsx` oficial.
-2. La app muestra un **plan previo ANTES de tocar nada**: cuántos equipos son nuevos, cuántos se actualizarían, cuántos no cambian, qué categorías nuevas aparecerían y avisos importantes.
-3. Si el plan te convence, presiona **Aplicar**.
-4. Antes de escribir cualquier dato, la app crea un **respaldo automático** de tu base.
+1. Elige el archivo `.xlsx`.
+2. La app muestra un plan previo antes de escribir datos: equipos nuevos, equipos a actualizar, categorías nuevas y avisos.
+3. Si el plan es correcto, toca **Aplicar**.
+4. Antes de aplicar, la app crea un respaldo automático.
 
-### Reglas que debes conocer
+### Reglas importantes
 
 | Regla | Detalle |
 |---|---|
-| 🔒 Nada se sobreescribe a ciegas | Equipos existentes conservan su nombre, categoría y ubicación |
-| 🚫 Lo importado NO es prestable | Todo equipo/categoría nuevo entra como **"solo inventario"** — el Excel organiza, pero **la escuela decide qué se presta** |
-| ✅ Activar préstamo después | Ve a **Categorías**, toca "Prestable" en la categoría (o equipo por equipo) y listo |
-| ↩️ Se puede deshacer | Configuración → Respaldos → **Restaurar** el respaldo automático que se creó al aplicar |
+| No se pisa a ciegas | Los equipos existentes conservan datos capturados por la escuela cuando corresponde. |
+| Lo importado no se presta automáticamente | Los equipos y categorías nuevas entran como **Solo inventario**. |
+| La escuela decide qué se presta | Después de importar, activa **Prestable** en categorías o equipos concretos. |
+| Puedes volver atrás | Restaura el respaldo creado antes de aplicar si el resultado no era el esperado. |
 
-> ⚠️ **¿Importaste y nadie puede pedir nada?** No es un error: es intencional. Activa "Prestable" en las categorías que quieras prestar.
-
-📚 Detalles técnicos del formato y la importación: [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) · [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md)
+Detalles: [`app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md`](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) y [`app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md`](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md).
 
 ---
 
 ## 📋 Toma de inventario físico
 
-Sirve para **cuadrar lo que hay físicamente en los estantes contra lo que dice la app**, usando un lector de códigos de barras. Está en **Admin** ▸ pestaña **Toma de inventario**.
+Sirve para comparar lo que hay físicamente en los estantes contra lo que la app tiene registrado. Está en **Admin → Toma de inventario**.
 
 ### La pistola dispara sola
 
-No todas las pistolas vienen configuradas para mandar `Enter` al final del disparo. Sin ese `Enter`, el código se queda parado en el campo esperando a que alguien lo teclee — justo lo que un recorrido con pistola quiere evitar.
-
-La app resuelve eso **por velocidad**: la pistola escribe el código entero en milisegundos, una persona no. Si detecta la ráfaga, dispara sola. Si estás tecleando a mano, sigue esperando tu `Enter`.
-
-> ✅ **Traducción:** funciona con la pistola que tengas, salga como salga configurada de fábrica. No hay nada que ajustar en el hardware.
+La app detecta el lector por la velocidad del tecleo. Si el lector no manda `Enter`, la app igual puede reconocer el disparo. Si una persona escribe a mano, puede confirmar con `Enter`.
 
 ### Paso a paso
 
-1. Elige el **área** a contar (usa las ubicaciones recientes o escribe una nueva).
-2. Si es la primera vez o estás entrenando a alguien, activa **"Modo prueba · no guarda nada"** (ver abajo).
-3. **"Iniciar campaña nueva"** → reinicia todo el área a *pendiente* (pide doble confirmación).
-4. **Escanea** equipo por equipo. Cada disparo da feedback inmediato con sonido y tarjeta:
-   - 🟢 **Nuevo aquí** — estaba pendiente, ya está contado
-   - 🔵 **Movido** — existe pero su ubicación registrada era otra
-   - 🟡 **Repetido** — ya lo escaneaste en esta campaña
-5. Cada escaneo marca automáticamente el equipo como **revisado** en esa ubicación.
-6. ¿Te equivocaste? Botón **deshacer último escaneo**.
-7. La columna **"Deberían estar aquí"** lista lo que falta contar. Cada fila tiene dos botones:
-   - **"Sí está"** — lo encontraste pero sin escanearlo (etiqueta rota, ilegible)
-   - **"No localizada"** — lo buscaste y **no aparece**. Esto es distinto de dejarlo pendiente (ver el reporte, abajo)
-8. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
+1. Elige el área o ubicación a contar.
+2. Si estás capacitando a alguien, activa **Modo prueba · no guarda nada**.
+3. Inicia una campaña nueva para esa área.
+4. Escanea equipo por equipo.
+5. La app da retroalimentación inmediata. Los textos visibles incluyen **Repetido**, **Se movió: ...** o el nombre del equipo localizado.
+6. Revisa la sección **Lo que hay en {ubicación}** para ver pendientes.
+7. Si falta equipo, usa el cierre de pendientes: **Este no apareció** o **Estos N no aparecieron**.
+8. Exporta el reporte cuando termines el área.
 
-### 🧪 Modo prueba (para entrenar sin miedo)
+### Modo prueba
 
-El botón **"Modo prueba · no guarda nada"** en la pantalla de inicio corre **el recorrido completo**: la pistola, los tonos, el destello, las tarjetas de color, la detección de repetidos, el botón de deshacer. Todo se ve y suena igual.
+El modo prueba recorre la experiencia completa —lector, sonidos, tarjetas, repetidos y deshacer— sin escribir en la base. Mientras está activo, las acciones que escribirían datos quedan bloqueadas.
 
-La diferencia es que **ninguna escritura llega a la base de datos**. Mientras está activo, aparece un distintivo `Prueba · no se guarda` en la barra superior, y los botones que sí escriben (ligar una etiqueta, dar de alta, marcar no localizada) quedan bloqueados con un aviso.
+### Alta al vuelo
 
-> 💡 Es la forma de enseñarle el recorrido a un becario nuevo sin arriesgar el conteo real. Apágalo antes de la campaña de verdad.
-
-### 🆕 Alta al vuelo: un código que nadie reclama
-
-Escaneas una etiqueta y la app no reconoce el código. Antes eso te obligaba a anotarlo en un papel y capturarlo después. Ahora tienes tres salidas ahí mismo:
+Si escaneas una etiqueta que la app no reconoce, puedes resolverlo ahí mismo:
 
 | Opción | Cuándo usarla |
 |---|---|
-| **"Es este"** (buscar y ligar) | El equipo YA está en la app pero sin etiqueta asignada. Lo buscas por nombre, marca o serie y lo ligas. ⚠️ **Queda ligado para siempre.** |
-| **"Agregarlo al inventario"** | Es un equipo nuevo que nunca se capturó. Pides solo lo mínimo: **qué es** y **categoría**. La etiqueta y la ubicación ya van puestas. |
-| **"Editarlo completo"** | Igual que el anterior, pero abre **la ficha completa de doce campos** de la pestaña Inventario, con lo que ya escribiste adentro. |
+| Buscar y ligar | El equipo ya existe, pero no tenía esa etiqueta asignada. |
+| Agregar al inventario | Es un equipo nuevo y se captura con datos mínimos. |
+| Editar completo | Tienes el equipo en la mano y puedes capturar marca, modelo, serie y más campos. |
 
-> 💡 **Usa "Editarlo completo" cuando el aparato esté en la mano.** La marca, el modelo y el número de serie se leen del chasis AHORA. Si no se capturan en ese momento, no los captura nadie.
+Todo lo agregado desde toma física entra como **Solo inventario** hasta que alguien lo habilite como prestable.
 
-> 🔒 Todo lo que se da de alta así entra como **solo inventario**. Para prestarlo hay que habilitarlo después desde Inventario o Categorías. La toma física nunca activa préstamos por su cuenta.
+### Reportes de la toma física
 
-### 📄 El reporte que va a Patrimonio
+La app genera dos salidas distintas:
 
-Son **dos botones y dos archivos distintos**, con los mismos datos y destinos diferentes. El botón dice para quién es cada uno, porque el único error caro acá es entregarle a Patrimonio el que la app usa para sí misma:
-
-| Botón | Archivo | Para qué |
+| Botón | Archivo | Uso |
 |---|---|---|
-| **Descargar Excel para Patrimonio** | `reporte-inventario-<fecha>.xlsx` | **El que se entrega.** Abre directo en Excel, sin pasos de importación |
-| **Descargar CSV para otra computadora** | `reporte-inventario-<fecha>.csv` | Solo para juntar el trabajo de dos computadoras: es el que se sube en *Traer la toma física de otra computadora* |
+| **Descargar Excel para Patrimonio** | `reporte-inventario-<fecha>.xlsx` | Archivo listo para entregar. |
+| **Descargar CSV para otra computadora** | `reporte-inventario-<fecha>.csv` | Archivo para fusionar una toma hecha en otra computadora. |
 
-Los dos se guardan en `%AppData%\com.p15.prestamos\reportes`, una carpeta **hermana** de `backups` (no está adentro). El CSV va con `;` y BOM UTF-8 a propósito, así Excel en español lo abre en columnas y con los acentos bien.
+Los reportes se guardan en `%AppData%\com.p15.prestamos\reportes`, carpeta hermana de `backups`.
 
-Columnas: `Id · Descripción · Marca · Modelo · Num Serie · Resguardante · Ubicación · Localizado · Revisado · Revisó`
-
-**La columna `Localizado` tiene TRES estados, no dos:**
+La columna `Localizado` usa tres estados:
 
 | Valor | Significa |
 |---|---|
-| `S` | Apareció. Alguien lo escaneó o lo marcó "Sí está" |
-| `N` | Se buscó y **no estaba**. Alguien pulsó "No localizada" |
-| *(vacío)* | **Nadie llegó todavía a esa área.** No es una pérdida: es trabajo pendiente |
+| `S` | Apareció: se escaneó o se marcó como presente. |
+| `N` | Se buscó y no estaba. |
+| *(vacío)* | Nadie terminó esa revisión; es trabajo pendiente. |
 
-> ⚠️ **Por qué importa:** antes, todo lo no revisado salía como `N`. O sea, el reporte le afirmaba a Patrimonio pérdidas que nadie había comprobado. Un área que ni siquiera se empezó a contar reportaba todo su equipo como extraviado.
+### Toma física en dos computadoras
 
-### 🔁 Toma física en dos computadoras
+Para montar una segunda computadora, se restaura una copia reciente de la base. Para regresar los resultados, no se restaura la base completa: se exporta el **CSV** y en la principal se usa **Admin → Toma de inventario → Traer la toma física de otra computadora**.
 
-La computadora principal **sigue prestando** mientras una segunda camina el edificio con la pistola. Al final los dos trabajos se juntan sin que ninguno pierda nada.
+La fusión escribe datos de toma física como revisión, responsable, no localizado y ubicación. No fusiona préstamos ni altas nuevas hechas en la segunda computadora.
 
-**El punto clave:** el respaldo `.db` NO sirve para devolver el trabajo. Restaurar **reemplaza toda la base**, así que mandar de vuelta la base de la segunda computadora borraría todos los préstamos que la principal registró mientras tanto. Lo que vuelve es el **CSV**, y ese **fusiona**.
-
-| | Qué es | Qué hace al entrar | Cuándo |
-|---|---|---|---|
-| **Respaldo `.db`** | La base completa | **Reemplaza todo** | Una sola vez, al montar la segunda computadora |
-| **Reporte `.csv`** | El resultado del recorrido | **Fusiona** | Cada vez que la segunda termina |
-
-**Cómo se usa:**
-
-1. **Al montar la segunda computadora:** instala la app y restaura el respaldo más nuevo desde Drive. Queda con el inventario completo.
-2. **Durante la campaña:** la segunda recorre, la principal presta. **Ninguna de las dos restaura nada.**
-3. **Al terminar:** la segunda exporta el reporte, Drive lo sincroniza, y en la principal entras a **Admin ▸ Inventario ▸ "Traer la toma física de otra computadora"** y eliges el CSV. Ves la vista previa antes de que se escriba nada.
-
-**Qué escribe la fusión:** solo `revisado`, `quién revisó`, `no localizado` y `ubicación`. Los préstamos no comparten ninguna de esas columnas — por eso las dos computadoras pueden trabajar al mismo tiempo sin pisarse.
-
-> ✅ **Gana el dato más nuevo equipo por equipo**, no archivo por archivo. Traer el mismo reporte dos veces no cambia nada, y un reporte viejo no puede pisar un recorrido más reciente.
-
-> ⚠️ Los equipos que la segunda computadora dio de **alta al vuelo** no se fusionan solos: salen listados aparte para darlos de alta a mano. El reporte no trae la categoría, y elegirla automáticamente sería adivinar.
-
-📚 Detalle completo: [docs/RELEVO_TOMA_FISICA.md](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md)
-
-### Tips
-
-- Haz una campaña **por área**; no intentes contar todo en una sola pasada.
-- La campaña reinicia pendientes al iniciarla: hazla en un momento tranquilo y termina el área completa.
-- Antes de mandar el reporte a Patrimonio, revisa que no queden celdas vacías en `Localizado` de un área que sí terminaste.
-
-📚 Detalle técnico del formato de etiquetas: [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md)
+Detalle completo: [`app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md`](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md).
 
 ---
 
 ## 📁 Dónde están guardadas las cosas
 
-Esta app **no usa la nube para funcionar**: todo vive en la computadora donde la instalaste y trabaja sin internet. Lo único que sí puede salir a la nube son los respaldos, si conectas la carpeta de respaldos a Google Drive (ver [Respaldo y recuperación](#-respaldo-y-recuperación-importante)).
+La base local vive en la carpeta de datos de la app en Windows:
 
-### Base de datos (¡lo más importante!)
-
-**Ruta en Windows:**
-
-```
-C:\Users\<TUSUARIO>\AppData\Roaming\com.p15.prestamos\
-├── prestamos.db          ← TU BASE DE DATOS (todos los préstamos, profesores, equipos)
-├── prestamos.db-wal      ← Cache de escritura (no borrar)
-├── prestamos.db-shm      ← Memoria compartida (no borrar)
-└── backups\              ← Todos los respaldos (automáticos, manuales y pre-restauración)
-    ├── prestamos-auto-2026-08-28_08-00-13.db
-    ├── prestamos-backup-2026-08-28_14-32-09.db
-    └── prestamos-pre-restore-2026-08-28_14-35-40.db
+```text
+C:\Users\<TU_USUARIO>\AppData\Roaming\com.p15.prestamos\
+├── prestamos.db          ← base principal
+├── prestamos.db-wal      ← archivo auxiliar de SQLite; no lo borres
+├── prestamos.db-shm      ← archivo auxiliar de SQLite; no lo borres
+├── backups\              ← respaldos automáticos, manuales y pre-restauración
+└── reportes\             ← reportes exportados de toma física
 ```
 
-> 💡 `<TUSUARIO>` es el nombre de usuario de Windows (por ejemplo `leoel`, `administrador`, etc.).
+Atajo: **Win + R →** escribe `%AppData%\com.p15.prestamos` **→ Enter**.
 
-> ⚠️ **Si borras esa carpeta, pierdes TODO el historial de préstamos.** Respáldala (ver siguiente sección).
+> ⚠️ Si borras esa carpeta, pierdes el historial local. Mantén respaldos vigentes.
 
-**Cómo llegar ahí rápido** (atajo de teclado): Win + R → escribe `%AppData%\com.p15.prestamos` → Enter.
-
-### Datos que contiene la base
+### Datos principales que contiene la base
 
 | Tabla | Qué guarda |
 |---|---|
-| `profesores` | Lista de profesores + código UDG + si es admin + PIN si corresponde |
-| `categorias` | Categorías de equipo (Laptops, Adaptadores HDMI, …) |
-| `inventario` | Cada equipo: nombre, identificador, estado, si es prestable, si es granel, stock |
-| `prestamos` | Historial de préstamos a profesores (fecha salida, retorno, observaciones) |
-| `prestamos_rapidos_alumnos` | Préstamos a alumnos con auditoría de quién autorizó |
-| `app_settings` | Configuraciones (qué se muestra en kiosko, etc.) |
+| `profesores` | Docentes, códigos, administradores y PIN cuando corresponde. |
+| `categorias` | Tipos de equipo y si se pueden prestar. |
+| `inventario` | Equipos, estado, ubicación, identificadores, stock y reglas de préstamo. |
+| `prestamos` | Préstamos del kiosko de docentes. |
+| `prestamos_rapidos_alumnos` | Préstamos rápidos y trazabilidad de autorización. |
+| `eventos` | Salidas a evento. |
+| `fotos_regreso` | Evidencia local asociada al regreso cuando aplica. |
+| `celular_dispositivos` | Dispositivos autorizados para el acceso experimental desde celular. |
+| `app_settings` | Configuraciones de la app. |
 
-> 🛠 Nota técnica: el archivo `database.sql` que verás en el repo es una **referencia histórica desactualizada**. El esquema real vive en el código, en `src/hooks/useInventory.ts`, y la app lo actualiza sola cuando se instala una nueva versión (migraciones automáticas).
+> 🛠 Nota técnica: `app-prestamos-p15/database.sql` es referencia histórica. El esquema real se crea y migra desde `app-prestamos-p15/src/hooks/useInventory.ts`.
 
 ---
 
 ## 💾 Respaldo y recuperación (¡IMPORTANTE!)
 
-**Lo que tienes que saber en 10 segundos:** la app se respalda sola cada 12 horas mientras esté abierta, guarda los respaldos en una carpeta de la computadora, y si conectas esa carpeta a Google Drive con la cuenta de correo de la escuela, cada respaldo se sube solo. No hay que acordarse de nada.
+**Lo esencial:** la app guarda respaldos en disco, permite crear respaldos manuales y crea un respaldo de seguridad antes de restaurar otro archivo. Si la escuela conecta la carpeta `backups` a Google Drive para Escritorio, esos archivos pueden quedar copiados en la nube por Drive.
 
-### Los tres tipos de respaldo
+### Tipos de respaldo
 
-Todos viven en la misma carpeta: `%AppData%\com.p15.prestamos\backups\`. Los distingues por el nombre del archivo.
+Todos viven en `%AppData%\com.p15.prestamos\backups\`.
 
-| Tipo | Nombre del archivo | Quién lo crea | ¿Se borra solo? |
+| Tipo | Nombre típico | Quién lo crea | Se borra solo |
 |---|---|---|---|
-| 🔄 **Automático** | `prestamos-auto-2026-08-28_08-00-13.db` | La app sola, cada 12 horas | **Sí.** Se conservan los 20 más recientes; los más viejos se borran |
-| 💾 **Manual** | `prestamos-backup-2026-08-28_14-32-09.db` | Tú, con el botón **"Crear respaldo"** | **No.** Se quedan para siempre hasta que los borres a mano |
-| 🛟 **Pre-restauración** | `prestamos-pre-restore-2026-08-28_14-35-40.db` | La app sola, justo **antes** de restaurar otro respaldo encima | **No.** Es tu red de seguridad si restauraste el archivo equivocado |
+| Automático | `prestamos-auto-2026-08-28_08-00-13.db` | La app, según la frecuencia configurada | Sí, conserva los 20 más recientes. |
+| Manual | `prestamos-backup-2026-08-28_14-32-09.db` | Tú, con **Crear respaldo** | No. |
+| Pre-restauración | `prestamos-pre-restore-2026-08-28_14-35-40.db` | La app, justo antes de restaurar | No. |
 
-La fecha y hora del nombre son las de la computadora, en formato `AÑO-MES-DÍA_HORA-MINUTO-SEGUNDO`. Como se escribe así, al ordenar la carpeta por nombre quedan ordenados del más viejo al más nuevo.
+### Respaldo automático
 
-> 🛟 **El pre-restauración es el que salva.** Si alguien restaura un respaldo viejo por equivocación y borra el trabajo del día, ese archivo tiene la base tal como estaba un segundo antes. Restáuralo y vuelves atrás.
+- Viene activado.
+- La frecuencia puede configurarse en **Admin → Configuración → Respaldos**.
+- La app revisa periódicamente si ya toca respaldar mientras está abierta.
+- Si la app está cerrada o la computadora apagada, no se genera respaldo en segundo plano.
+- La importación del Excel de Patrimonio crea respaldo antes de aplicar cambios.
 
-### Respaldo automático (viene activado)
+### Respaldos en Google Drive
 
-- **Cada 12 horas** de forma predeterminada. Se puede cambiar en **Admin** → Configuración → sección Respaldos, a: cada 6 horas, cada 12 horas, una vez al día o una vez por semana.
-- Mientras la app está abierta, revisa **cada 15 minutos** si ya toca respaldar. Si toca, lo hace en silencio, sin interrumpir a nadie.
-- Se conservan los **20 respaldos automáticos más recientes**. Los manuales y los de pre-restauración nunca se borran solos.
-- Se puede apagar desde esa misma pantalla, pero **no se recomienda**.
+La app no sube archivos por sí sola. Lo que se puede hacer es conectar carpetas locales a **Google Drive para Escritorio** con la cuenta institucional.
 
-> ⚠️ **La app tiene que estar abierta.** No hay ningún servicio corriendo por detrás en Windows: si la computadora está apagada o la app cerrada, no se genera respaldo. Si solo abren la app un rato al día, tendrán un respaldo al día, no dos.
+Configura estas dos carpetas por separado:
 
-> 💡 Además de la calendarizada, cualquier importación del Excel de **Patrimonio** crea un respaldo automático justo antes de aplicar cambios.
+```text
+%AppData%\com.p15.prestamos\backups
+%AppData%\com.p15.prestamos\reportes
+```
 
-### Respaldos en Google Drive (con el correo de la escuela)
+> 🚨 No sincronices la carpeta padre `%AppData%\com.p15.prestamos`. Ahí vive la base abierta (`prestamos.db`, `-wal`, `-shm`) y sincronizarla mientras se escribe puede corromper datos.
 
-La app guarda los respaldos en el disco de la computadora. Para que además queden en la nube y se puedan recuperar desde cualquier lado, se conecta esa carpeta a **Google Drive para Escritorio** con la cuenta de correo institucional.
+### Crear un respaldo manual
 
-**Cómo se configura (una sola vez, por computadora):**
-
-1. Instala **Google Drive para Escritorio** ([google.com/drive/download](https://www.google.com/drive/download/)).
-2. Inicia sesión con la **cuenta de correo de la escuela**, no con una cuenta personal.
-3. Abre Drive para Escritorio → ⚙️ **Preferencias** → **Mi computadora** → **Agregar carpeta**.
-4. Elige la carpeta de respaldos: pega `%AppData%\com.p15.prestamos\backups` en la barra de dirección del explorador (Win + R también funciona) y selecciónala.
-5. Marca la opción de **sincronizar con Google Drive** y guarda.
-6. **Repite el paso 3 con la carpeta `reportes`**: `%AppData%\com.p15.prestamos\reportes`. Es una carpeta **hermana** de `backups`, no está adentro, así que hay que agregarla por separado. Ahí caen los reportes de la toma física, y sin este paso no llegan a la otra computadora (ver [Toma física en dos computadoras](#-toma-física-en-dos-computadoras)).
-
-> 🚨 **Agrega las dos carpetas por separado. NUNCA agregues la carpeta padre `%AppData%\com.p15.prestamos`.** Ahí vive la base de datos viva (`prestamos.db` y sus archivos `-wal` / `-shm`). Drive sube archivos enteros sin saber si la app está a la mitad de una escritura, y eso **corrompe la base**.
-
-**Qué pasa a partir de ahí:**
-
-- Cada vez que la app crea un respaldo (automático, manual o pre-restauración), Drive lo sube **en cuestión de segundos**, sin que nadie haga nada.
-- **Dónde encontrarlos:** entra a [drive.google.com](https://drive.google.com) con el correo de la escuela → sección **Computadoras** en el menú de la izquierda → el nombre de la computadora → carpeta `backups`. Ahí están todos, con su fecha en el nombre.
-- Para restaurar uno: descárgalo de Drive y úsalo con **"Importar respaldo"** (ver abajo).
-
-> ⚠️ **Drive es un espejo, no un archivo histórico.** Cuando la app borra un respaldo automático viejo (porque ya hay más de 20), Drive también lo borra de la nube. Si un respaldo te importa de verdad, crea uno **manual** o muévelo a otra carpeta de Drive: esos no se borran nunca.
-
-> ⚠️ **Sin internet no hay subida.** Drive espera y sube todo cuando vuelve la conexión. El respaldo en el disco de la computadora sí se crea igual.
-
-### Crear un respaldo a mano
-
-1. Entra al **Admin** → pestaña **Configuración** → sección Respaldos.
-2. Botón **"Crear respaldo"**.
-3. Se guarda en `%AppData%\com.p15.prestamos\backups\` con el nombre `prestamos-backup-<fecha>.db`. Con **"Abrir carpeta"** llegas ahí directo y puedes copiarlo a una USB.
-
-Hazlo antes de cualquier cosa grande: importar el Excel de Patrimonio, actualizar la app, o cerrar el ciclo escolar.
-
-### Copiar el archivo a mano (sin la app)
-
-1. Cierra la app.
-2. Ve a `%AppData%\com.p15.prestamos\` (Win + R → pega la ruta → Enter).
-3. Copia `prestamos.db` a un lugar seguro (USB, otra computadora, Google Drive).
+1. Entra a **Admin → Configuración → Respaldos**.
+2. Toca **Crear respaldo**.
+3. Usa **Abrir carpeta** para copiar el archivo a USB, Drive u otra ubicación segura.
 
 ### Restaurar
 
-1. Entra al **Admin** → Configuración → sección Respaldos.
-2. En la tabla de respaldos, cada fila tiene su botón **"Restaurar"** (un clic y listo). También puedes usar **"Importar respaldo"** para traer un archivo `.db` externo: de una USB, o descargado de Google Drive.
-3. La app revisa el archivo, crea el respaldo de **pre-restauración** por si acaso, sobreescribe la base actual y limpia los archivos auxiliares WAL/SHM.
-4. Reinicia la app.
+1. Entra a **Admin → Configuración → Respaldos**.
+2. Elige **Restaurar** en un respaldo existente o **Importar respaldo** para seleccionar un `.db` externo.
+3. La app valida que el archivo parezca una base SQLite, crea un respaldo de pre-restauración, reemplaza la base actual y limpia archivos auxiliares.
+4. Cierra y vuelve a abrir la app.
 
-> ⚠️ **Restaurar reemplaza TODA la base, no la mezcla.** Lo que hayas capturado después de la fecha de ese respaldo se pierde. Por eso existe el pre-restauración: si te equivocaste de archivo, restaura el `prestamos-pre-restore-...` más reciente y vuelves al estado anterior.
+> ⚠️ Restaurar reemplaza toda la base. No mezcla datos. Si restauras un respaldo viejo, pierdes lo capturado después de esa fecha salvo que recuperes el respaldo de pre-restauración.
 
-> 💡 Detalle técnico bueno: el respaldo tiene validación de "magic header" (los primeros bytes dicen `SQLite format 3`), así que si eliges un archivo que no es de base de datos, se rechaza limpiamente sin romper nada.
+### Scripts Python opcionales
 
-### Trabajar en dos computadoras (relevo por USB)
+El repo conserva utilidades para respaldo manual desde terminal:
 
-Si la laptop principal está siempre ocupada, puedes hacer la toma física (o cualquier captura) en otra PC y luego traerte el trabajo. La app no fusiona dos bases: **restaurar reemplaza la base completa**. Por eso el método es de relevo, como pasarse una estafeta.
+| Script | Uso |
+|---|---|
+| `app-prestamos-p15/scripts/backup_sqlite.py` | Crea respaldo con checksum. |
+| `app-prestamos-p15/scripts/restore_sqlite.py` | Restaura con copia previa e integrity check. |
 
-> ⚠️ **Regla no negociable: solo una computadora activa a la vez.** Si las dos capturan el mismo día, la última en restaurar borra el trabajo de la otra y no hay forma de recuperarlo salvo el respaldo previo.
-
-**Ida (laptop → PC prestada):**
-
-1. Instala la app en la otra PC (mismo instalador, ver [Instalación](#-instalación-para-usuarios-finales-no-programadores)).
-2. En la laptop: **Admin** → Configuración → **"Crear respaldo"** → **"Abrir carpeta"**.
-3. Copia el archivo `.db` recién creado a la USB.
-4. En la otra PC: **Admin** → Configuración → **"Importar respaldo"** y elige ese `.db`.
-5. Reinicia la app. Ya tienes todo el inventario ahí; trabaja normal.
-
-**Vuelta (PC prestada → laptop):**
-
-6. En la otra PC: **"Crear respaldo"** → **"Abrir carpeta"** → copia el `.db` a la USB.
-7. En la laptop: **"Importar respaldo"** con ese archivo. Reinicia.
-
-Desde ese momento la laptop vuelve a ser la computadora activa, y la otra PC queda desactualizada: no captures nada más ahí hasta el siguiente relevo.
-
-> 💡 Si las dos computadoras tienen Drive con el correo de la escuela, puedes saltarte la USB: el respaldo aparece solo en Drive y lo descargas en la otra PC. La regla de "una sola computadora activa" sigue siendo igual de obligatoria.
-
-### Respaldo automatizado con Python (opcional)
-
-El repo trae scripts en `scripts/`:
-
-- `backup_sqlite.py` → respaldo con checksum SHA-256 y timestamp
-- `restore_sqlite.py` → restauración con copia de seguridad previa + integrity check
-
-Más info en `docs/sqlite-backup-restore-guide.md`.
+Guía: [`app-prestamos-p15/docs/sqlite-backup-restore-guide.md`](app-prestamos-p15/docs/sqlite-backup-restore-guide.md).
 
 ---
 
 ## 🧰 Mantenimiento
 
-### Tareas periódicas sugeridas
+### Tareas sugeridas
 
-| Cada… | Tarea |
+| Frecuencia | Tarea |
 |---|---|
-| **Diario** | Nada: el **respaldo automático viene activado** y corre cada 12 horas mientras la app esté abierta. Solo verifica de vez en cuando que la app se abra a diario. |
-| **Semanal** | Revisar préstamos activos muy antiguos (¿un equipo prestado hace 3 semanas?). |
-| **Mensual** | Exportar un reporte del mes para tu archivo (Reportes → filtrar por mes → Imprimir PDF). |
-| **Mensual** | Correr una campaña de [toma de inventario](#-toma-de-inventario-físico) por área para cuadrar lo físico vs la app. |
-| **Antes de importar Excel** | Verifica que tengas respaldo reciente (la importación crea uno automático, pero revisa la fecha). |
-| **Trimestral** | Copiar la carpeta `%AppData%\com.p15.prestamos\` a un USB y guardarlo fuera de la oficina. |
-| **Anual** | Archivar el historial del año y limpiar préstamos muy antiguos. |
+| Diario | Abrir la app durante la jornada si se depende del respaldo automático. |
+| Semanal | Revisar préstamos activos antiguos en **Admin → Reportes**. |
+| Mensual | Exportar reportes del mes y revisar una zona de inventario físico. |
+| Antes de importar Patrimonio | Confirmar que existe respaldo reciente. |
+| Antes de actualizar | Crear respaldo manual. |
+| Trimestral | Copiar respaldos importantes a una ubicación externa. |
 
-### Actualizar la app a una nueva versión
+### Actualizar la app
 
-**La app se actualiza sola. No tienes que bajar nada de GitHub.**
+La app busca nuevas versiones al abrir y cada **6 horas** mientras sigue abierta. También puedes revisar en **Admin → Configuración → Actualizaciones**.
 
-Busca versión nueva al abrir y cada 6 horas mientras está abierta. Cuando encuentra una, aparece un aviso arriba de la pantalla:
+1. Si aparece una versión nueva, lee las notas.
+2. Crea respaldo manual antes de actualizar.
+3. Toca **Actualizar ahora…** solo cuando puedas cerrar la app.
+4. Windows instala en modo pasivo y puede cerrar la app.
+5. Abre la app de nuevo y revisa que los datos estén correctos.
 
-1. El aviso dice **"Versión X disponible. No se descarga nada hasta que confirmes."** Puedes abrir **Notas de la versión** para ver qué trae.
-2. **Crea un respaldo** antes de actualizar (Configuración → Respaldos), y guarda lo que tengas a medias.
-3. Toca **Actualizar ahora…**. La app te pide confirmación una vez más, muestra la descarga en KB y avisa que **Windows va a cerrar la aplicación** para instalar.
-   - Si prefieres seguir trabajando, toca **Más tarde**: el aviso se va por esta sesión y no descarga nada.
-4. Cuando termina, abre la app de nuevo. Aparece **Novedades de esta versión** con lo que cambió; toca **Entendido**.
+Buscar actualizaciones no descarga ni instala nada por sí solo. Sin internet, la app sigue operando; el panel muestra el error y puedes intentar después.
 
-La base de datos se conserva intacta y las migraciones corren solas.
-
-> 🔒 La app **solo instala actualizaciones firmadas** por el repositorio oficial. Un archivo que venga de otro lado no se instala, ni por error ni a propósito.
-
-**Buscar una actualización a mano**: Admin → Configuración → **Actualizaciones**. Ahí se ve la **versión instalada** y el botón **Buscar actualizaciones**. Buscar no descarga ni instala nada por su cuenta.
-
-**Si no hay internet** o el servidor no responde, el panel lo dice y no pasa nada más: la app sigue funcionando normal, es 100 % offline. Reintenta cuando tengas conexión.
-
-<details>
-<summary>Instalar a mano (solo si el actualizador no funciona)</summary>
-
-1. **CIERRA la app**.
-2. **Crea un respaldo** por seguridad.
-3. Baja el `.exe`/`.msi` de [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases) e instálalo **encima** (no necesitas desinstalar).
-4. Abre la app.
-
-</details>
-
-> ⚠️ Si algo sale raro después de actualizar, sigue los pasos de [Respaldo y recuperación](#-respaldo-y-recuperación-importante) para volver atrás.
+Detalles técnicos del actualizador: [`app-prestamos-p15/docs/UPDATES.md`](app-prestamos-p15/docs/UPDATES.md).
 
 ### Si la app no abre
 
-| Problema | Causa probable | Solución |
+| Problema | Causa probable | Qué hacer |
 |---|---|---|
-| Pantalla azul "Windows SmartScreen" | Sin certificado de firma | Más información → Ejecutar de todas formas |
-| La app abre en blanco | Falta WebView2 | Instalar <https://developer.microsoft.com/microsoft-edge/webview2/> |
-| Se cierra sola al inicio | Falla SQLite / DB corrupta | Restaurar respaldo desde Configuración o copiar `prestamos.db` de un backup |
-| Olvidé el PIN del admin | PIN personalizado perdido | Entra con el código `223992647` y el PIN de fábrica, después define uno nuevo. Este fallback permanece activo por diseño en la versión actual. |
-| Se borró la carpeta de datos | Se pierde el historial | Si tienes respaldo en USB u otra computadora, restáuralo. Si no, se pierde. **Respalda siempre.** |
+| SmartScreen muestra advertencia | Instalador sin certificado comercial de editor | Verifica que venga del Release oficial o del responsable técnico antes de continuar. |
+| Ventana en blanco | Falta WebView2 o falló el arranque | Instala WebView2 y vuelve a abrir. |
+| Error de base | Base dañada o archivo incorrecto | Restaura un respaldo desde Configuración o con apoyo técnico. |
+| Olvidaste el PIN | PIN personalizado perdido | Usa el acceso inicial de recuperación y define uno nuevo. |
+| Se borró la carpeta de datos | Se perdió la base local | Restaura desde un respaldo externo; sin respaldo no hay recuperación completa. |
 
-### Mantener el proyecto limpio
+### Mantener el repo limpio
 
-- La carpeta `dist/` y `src-tauri/target/` se **regeneran solas** al compilar. No se suben a GitHub (gracias al `.gitignore`). Si pesan mucho, puedes borrarlas.
-- Los archivos que terminan en `-LeoLaptop.*` son ajustes locales de una computadora específica — **no los edites ni los subas**.
-
-Más detalle en `docs/REPO_CLEANUP.md`.
+- `app-prestamos-p15/dist/` y `app-prestamos-p15/src-tauri/target/` se regeneran al compilar.
+- No subas `node_modules/`, bases reales, secretos ni archivos locales de una computadora específica.
+- Guía: [`app-prestamos-p15/docs/REPO_CLEANUP.md`](app-prestamos-p15/docs/REPO_CLEANUP.md).
 
 ---
 
 ## 🌐 GitHub para principiantes
 
-GitHub es como un **Google Drive para código**: guarda versiones, lleva historial de cambios, y permite que varias personas trabajen juntas.
+GitHub es como una carpeta compartida con historial: guarda cambios, permite reportar problemas y ayuda a revisar modificaciones antes de integrarlas.
 
 ### Conceptos básicos
 
-| Palabra | Qué quiere decir |
+| Palabra | Significa |
 |---|---|
-| **Repositorio (repo)** | La carpeta del proyecto en GitHub. |
-| **Clone (clonar)** | Bajar una copia del repo a tu computadora. |
-| **Commit (comprometer)** | Guardar un cambio con un mensaje explicando qué hiciste. |
-| **Push (empujar)** | Subir tus commits a GitHub. |
-| **Pull (jalar)** | Bajar los cambios que otros subieron. |
-| **Branch (rama)** | Una versión paralela del proyecto. Para cosas grandes, trabajas en una branch y luego la unes (`main` es la principal). |
-| **PR (Pull Request)** | "Pedir que revisen mis cambios antes de unirlos a main". |
-| **`.gitignore`** | Archivo que lista qué carpetas no se suben (ej: `node_modules`, `target`, contraseñas). |
+| Repositorio | Carpeta principal del proyecto en GitHub. |
+| Issue | Reporte de problema, duda o mejora. |
+| Commit | Cambio guardado con un mensaje. |
+| Branch | Rama de trabajo separada de `main`. |
+| Pull Request | Solicitud para revisar e integrar cambios. |
+| Release | Versión publicada con instaladores. |
 
-### 1) Clonar el proyecto (bajarlo a tu compu)
+### Clonar el proyecto
 
 ```powershell
 git clone https://github.com/Leoglez10/app-prestamos-p15.git
 cd app-prestamos-p15/app-prestamos-p15
 ```
 
-Reemplaza `USUARIO` por el usuario/organización de GitHub. Si usas SSH:
+El segundo `app-prestamos-p15` es correcto: el código de la app vive dentro de una subcarpeta con ese nombre.
+
+### Hacer un cambio con rama
 
 ```powershell
-git clone git@github.com:Leoglez10/app-prestamos-p15.git
-```
-
-> 💡 Necesitas tener **Git** instalado. Descárgalo de <https://git-scm.com/downloads>.
-
-### 2) Hacer un cambio y subirlo
-
-```powershell
-# 1. Ver qué cambió
+git checkout -b docs/mi-cambio
 git status
-
-# 2. Subir TODO lo modificado al "área de staging"
-git add .
-
-# 3. Guardar el cambio con un mensaje claro
-git commit -m "feat: agregué categoría Proyectores"
-
-# 4. Enviarlo a GitHub
-git push
+git add README.md
+git commit -m "docs: mejora instrucciones de respaldo"
+git push -u origin docs/mi-cambio
 ```
 
-### 3) Bajar cambios que otras personas hicieron
+Después abre un Pull Request en GitHub.
 
-```powershell
-git pull
-```
+> ⚠️ No subas bases reales (`prestamos.db`), contraseñas, tokens, `node_modules/`, `dist/` ni `src-tauri/target/`.
 
-### 4) Trabajos importantes: abrir un Pull Request
+---
 
-1. Crea una rama nueva:
-   ```powershell
-   git checkout -b feat/nueva-funcion
-   ```
-2. Haz tus cambios, commitea, y sube la rama:
-   ```powershell
-   git push -u origin feat/nueva-funcion
-   ```
-3. Entra a GitHub → botón verde **"Compare & pull request"** → escribe qué hiciste → **Create pull request**.
-4. Alguien revisa y aprueba → se une a `main`.
+## 🧭 Reportar problemas y proponer mejoras
 
-### 5) Buenas prácticas para este repo
+### Desde la app
 
-- Mensajes de commit claros en español o inglés convenido, empezando con `feat:`, `fix:`, `docs:`, `chore:`:
-  - `feat: alta de proyectores`
-  - `fix: problema al devolver equipos a granel`
-  - `docs: actualizo README`
-- **Nunca subas** archivos con contraseñas reales, ni `prestamos.db` (la base real), ni `node_modules/`, ni `target/`.
-- El `.gitignore` ya los excluye, pero es bueno checarlo.
-- Antes de mergear a `main`, prueba que compile: `npm run tauri build`.
+Ruta: **Admin → Configuración → Reportar un problema → Escribir un reporte…**.
 
-### 6) CI automático
+La app pide:
 
-El repo tiene el workflow activo `.github/workflows/build-windows.yml`. Cuando publicas un tag con formato `v*` (por ejemplo, `v0.5.2`), **compila la app en un Windows virtual de GitHub** y publica el instalador como **Release público** en la pestaña *Releases*. También se puede ejecutar manualmente con `workflow_dispatch`. Si la compilación falla, GitHub lo marca en rojo. Los pasos completos están en [Versionado y publicación](#-versionado-y-publicación).
+1. Tipo: problema o sugerencia.
+2. Título.
+3. Descripción.
+
+Al enviar, agrega la versión instalada y el sistema operativo. No manda préstamos ni datos personales de la base. El reporte llega como Issue de GitHub.
+
+### Desde GitHub
+
+Usa <https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose>.
+
+| Formulario | Para qué sirve |
+|---|---|
+| **Reportar un problema** | Algo no funcionó, falló o dio un resultado inesperado. |
+| **Sugerir una mejora** | La app podría ahorrar un paso o cubrir una necesidad nueva. |
+
+Los formularios incluyen campos guiados: área de la app, qué intentabas, qué ocurrió, qué esperabas, frecuencia, sistema y versión.
+
+### Etiquetas de triage
+
+| Familia | Uso |
+|---|---|
+| `área:` | Parte afectada: kiosko, inventario, respaldos, actualizaciones, reportes, etc. |
+| `prioridad:` | Urgencia para el plantel: alta, media o baja. |
+| `estado:` | Situación actual, por ejemplo `estado: necesita información` o `estado: en curso`. |
+| `origen: app` | El reporte llegó desde el botón interno de la app. |
+
+Para respuestas listas del mantenedor, revisa [`app-prestamos-p15/docs/PLANTILLAS_RESPUESTA.md`](app-prestamos-p15/docs/PLANTILLAS_RESPUESTA.md).
 
 ---
 
 ## 👨‍💻 Para programadores: configurar y compilar
 
-### Stack
+### Stack verificado
 
-- **Frontend**: React 19 + TypeScript + Vite 7 + react-router-dom 7
-- **Shell escritorio**: Tauri v2 (Rust, edition 2021)
-- **Persistencia**: SQLite local vía `@tauri-apps/plugin-sql` 2.4.0
-- **Runtime necesarios**: Node 20+ (la CI compila con Node 20), Rust stable, Bun (opcional, hay `bun.lock`), Windows para generar el instalador
+| Capa | Tecnología |
+|---|---|
+| Escritorio | Tauri v2 |
+| Frontend | React 19 + TypeScript + Vite 7 |
+| Rutas | `react-router-dom` 7 |
+| Persistencia | SQLite local vía `@tauri-apps/plugin-sql` |
+| Rust | Edition 2021 |
+| Actualización | `@tauri-apps/plugin-updater` + `tauri-plugin-updater` |
+| Proceso | `@tauri-apps/plugin-process` + `tauri-plugin-process` |
 
-### Requisitos previos
+### Requisitos de desarrollo
 
-1. **Node.js** 20 o superior → <https://nodejs.org/>
-2. **Rust** (rustup) → <https://rustup.rs/>
-3. **Bun** (opcional, pero hay `bun.lock`) → <https://bun.sh/>
-4. **Git** → <https://git-scm.com/>
-5. En Windows: **Microsoft C++ Build Tools** (Visual Studio Installer → "Desktop development with C++")
-6. En Windows: **WebView2 Runtime**
+- Node.js compatible con el soporte de TypeScript que usa `node --test`; la CI usa **Node 24**.
+- Rust stable.
+- Git.
+- En Windows: Microsoft C++ Build Tools y WebView2 Runtime.
+- Bun si vas a usar `npm run tauri:build`, porque ese script ejecuta `bun run dmg`.
 
-### Setup del repo
+### Setup local
 
 ```powershell
 git clone https://github.com/Leoglez10/app-prestamos-p15.git
 cd app-prestamos-p15/app-prestamos-p15
-
-# Instala dependencias JavaScript
 npm install
-# o si usas Bun:
-# bun install
-
-# Modo desarrollo (abre ventana Tauri + hot reload del frontend)
 npm run tauri dev
-
-# Solo frontend (limitado, sin base de datos — útil para maquetar)
-npm run dev      # → http://localhost:1770
-
-# Build de producción del frontend
-npm run build
-
-# Genera el instalador (.exe y .msi en Windows)
-npm run tauri build
 ```
 
-> ⚠️ En `npm run dev` (solo Vite) la app **funciona de forma limitada** porque no tiene Tauri y, por tanto, no puede abrir SQLite. Para desarrollo real usa siempre `npm run tauri dev`.
+`npm run dev` levanta solo Vite en <http://localhost:1770/>. Para operar con SQLite y comandos nativos, usa `npm run tauri dev`.
 
-### Dónde sale el instalador
+### Scripts disponibles en `package.json`
 
-```
-src-tauri/target/release/bundle/
-├── msi/App Prestamos P15_0.11.1_x64_en-US.msi
-└── nsi/App Prestamos P15_0.11.1_x64-setup.exe
-```
+| Script | Comando real | Qué hace |
+|---|---|---|
+| `dev` | `npm run dev` | Vite dev server en puerto 1770. |
+| `build` | `npm run build` | `tsc && vite build`. |
+| `preview` | `npm run preview` | Previsualiza `dist/`. |
+| `tauri` | `npm run tauri -- <args>` | Pasarela al CLI de Tauri. |
+| `lint` | `npm run lint` | `eslint src`. |
+| `pretest` | `npm run pretest` | `eslint src`; también corre automáticamente antes de `npm test`. |
+| `test` | `npm test` | Ejecuta todos los tests `app-prestamos-p15/src/utils/*.test.ts`. |
+| `test:backup` | `npm run test:backup` | Tests de calendario de respaldos. |
+| `test:patrimonio` | `npm run test:patrimonio` | Tests de códigos patrimoniales. |
+| `test:identificadores` | `npm run test:identificadores` | Tests de normalización de identificadores. |
+| `test:ficha` | `npm run test:ficha` | Tests de armado de ficha de equipo. |
+| `test:importacion` | `npm run test:importacion` | Tests de importación de Patrimonio. |
+| `test:toma` | `npm run test:toma` | Tests de toma física. |
+| `test:pistola` | `npm run test:pistola` | Tests de detección del lector de códigos. |
+| `docs:pdf` | `npm run docs:pdf` | Genera el PDF del manual con `scripts/build-manual-pdf.py`. |
+| `tauri:build` | `npm run tauri:build` | `tauri build --bundles app && bun run dmg`. |
+| `dmg` | `npm run dmg` | Ejecuta `scripts/make-dmg.sh`. |
 
-### Scripts disponibles
+Tests en disco al momento de esta revisión: **15 archivos** en `app-prestamos-p15/src/utils/` y **147 declaraciones `test(...)`**.
 
-| Script | Qué hace |
-|---|---|
-| `npm run dev` | Vite dev server (puerto 1770). Sin Tauri. |
-| `npm run build` | `tsc` + `vite build` → genera `dist/` |
-| `npm run preview` | Sirve `dist/` para previsualizar |
-| `npm run tauri dev` | Desarrollo completo con Tauri + SQLite |
-| `npm run tauri build` | Genera instalador Windows |
-| `npm test` | Ejecuta las 7 suites de pruebas de utilidades |
-| `npm run test:<área>` | Ejecuta una suite concreta: `backup`, `patrimonio`, `identificadores`, `ficha`, `importacion`, `toma` o `pistola` |
+### Build local y build firmado
 
-### Chequeo de tipos y pruebas
+Build normal del frontend:
 
 ```powershell
-npx tsc --noEmit
-npm test
+npm run build
 ```
 
-> ✅ El proyecto tiene pruebas automatizadas para utilidades críticas, pero todavía **no tiene linter ni pruebas end-to-end de la interfaz**. Los cambios visuales y los flujos completos de Tauri también deben validarse manualmente. Ver `docs/ENGINEERING_HANDBOOK.md`.
+Build Tauri desde el script genérico:
 
-### Configuración de Vite
+```powershell
+npm run tauri -- build --target x86_64-pc-windows-msvc
+```
 
-- Dev port: **1770** (estricto, falla si ocupado)
-- HMR: **1771**
-- Ignora watch de `src-tauri/**`
-- Ver `vite.config.ts`.
+Para generar artefactos de actualizador firmados, define de forma segura estas variables en la sesión de CI o terminal de build, sin escribir sus valores en archivos del repo:
 
-### Configuración de Tauri
+| Variable | Uso |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY` | Clave privada de firma del actualizador. |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Contraseña de esa clave. |
 
-- Ventana 1280×840 (mín 1024×680), redimensionable
-- CSP: `null`
-- Identificador: `com.p15.prestamos`
-- Ver `src-tauri/tauri.conf.json`
+Los detalles y advertencias están en [`app-prestamos-p15/docs/UPDATES.md`](app-prestamos-p15/docs/UPDATES.md).
+
+### Configuración relevante
+
+| Archivo | Dato verificado |
+|---|---|
+| `app-prestamos-p15/vite.config.ts` | Puerto 1770, `strictPort: true`, HMR 1771 cuando `TAURI_DEV_HOST` está definido, ignora `src-tauri/**`. |
+| `app-prestamos-p15/src-tauri/tauri.conf.json` | Identificador `com.p15.prestamos`, ventana 1280×840, mínimo 1024×680, `createUpdaterArtifacts: true`. |
+| `app-prestamos-p15/src-tauri/capabilities/default.json` | Permisos `core`, `opener`, `updater`, `process` y `sql`. |
+
+### Reportes desde la app: Cloudflare Worker
+
+El botón interno de reporte no guarda un token de GitHub en la app. La app manda el reporte a un Cloudflare Worker y el Worker abre el Issue en `Leoglez10/app-prestamos-p15`.
+
+| Pieza | Ruta |
+|---|---|
+| Cliente nativo | `app-prestamos-p15/src-tauri/src/feedback.rs` |
+| Worker | `app-prestamos-p15/worker/src/index.js` |
+| Configuración Worker | `app-prestamos-p15/worker/wrangler.toml` |
+| Guía Worker | `app-prestamos-p15/worker/README.md` |
+
+Despliegue del Worker:
+
+```bash
+cd app-prestamos-p15/worker
+npx wrangler login
+npx wrangler secret put GITHUB_TOKEN
+npx wrangler deploy
+```
+
+El rate limit configurado es `RATE_LIMITER`: **5 solicitudes por 60 segundos** por clave de Cloudflare. El token debe ser fine-grained y con permiso mínimo de Issues para el repositorio.
 
 ---
 
 ## 🗺 Estructura del proyecto: dónde está cada cosa
 
-```
-app-prestamos-p15/                ← Carpeta del repo
-├── 📁 .github/workflows/
-│   └── build-windows.yml         ← CI activo: compila y publica al crear tags v*
-├── 📁 .github/ISSUE_TEMPLATE/
-│   ├── bug.yml                   ← Formulario "Reportar un problema" (para usuarios)
-│   ├── feature.yml               ← Formulario "Sugerir una mejora"
-│   └── config.yml                ← Desactiva issues en blanco + enlaces de ayuda
-├── 📄 README.md                  ← ESTE ARCHIVO
-├── 📄 CHANGELOG.md               ← Qué cambió en cada versión publicada
-├── 📄 CONTRIBUTING.md            ← Cómo reportar issues y contribuir código
-├── 📄 LICENSE                    ← Uso interno educativo
-├── 📄 README_INSTALACION.md      ← Guía corta de instalación y actualización
-└── app-prestamos-p15/            ← Carpeta real del proyecto (necesaria así para el CI)
-    │
-    ├── 📄 package.json            ← Dependencias JS y scripts
-    ├── 📄 vite.config.ts         ← Configuración Vite
-    ├── 📄 tsconfig.json          ← Reglas TypeScript
-    ├── 📄 index.html             ← Entrada HTML (carga React)
-    │
-    ├── 🖼 img/
-    │   ├── logo-p15.png          ← Logo de la P15 (usar en reportes y README)
-    │   └── logo-p15.jpg
-    │
-    ├── 📁 public/                ← Assets estáticos públicos (SVGs de Tauri/Vite)
-    │
-    ├── 📁 src/                   ← CÓDIGO FRONTEND (React + TS)
-    │   ├── main.tsx              ← Punto de arranque (envuelve App con AuthProvider)
-    │   ├── App.tsx               ← Router. 4 rutas: /, /admin, /kiosko, /prestamo-rapido
-    │   ├── App.css               ← Estilos globales
-    │   ├── auth/                 ← Lógica de autenticación
-    │   │   ├── AuthContext.tsx   ← Provider de sesión (revalida contra DB)
-    │   │   ├── LoginForm.tsx     ← Form code-only para Préstamo Rápido
-    │   │   ├── loginStorage.ts   ← Guarda sesión en localStorage (TTL 8h)
-    │   │   ├── SessionBadge.tsx  ← Badge "Sesión: nombre (código)"
-    │   │   └── types.ts
-    │   ├── hooks/
-    │   │   ├── useInventory.ts   ← ⭐ EL CORAZÓN DE LA APP (~2 070 líneas)
-    │   │   │                        Define el esquema, migraciones, reglas de negocio,
-    │   │   │                        y todos los accesos a SQLite.
-    │   │   ├── useAutoBackup.ts  ← Respaldo automático: revisa cada 15 min si toca
-    │   │   ├── usePistola.ts     ← Dispara el escaneo en un campo de texto
-    │   │   └── useEscaneoGlobal.ts ← Escucha la pistola sin campo enfocado (Inventario)
-    │   ├── pages/
-    │   │   ├── Home.tsx          ← Pantalla con 3 tarjetas (Profesor/Admin/Préstamo Rápido)
-    │   │   ├── Kiosk.tsx         ← Flujo del profesor
-    │   │   ├── Admin.tsx         ← Panel admin (~2 890 líneas; deuda técnica conocida)
-    │   │   └── PrestamoRapido.tsx← Préstamo a alumnos con autenticación simple
-    │   ├── components/
-    │   │   ├── TomaFisicaPanel.tsx        ← Campañas de conteo físico (pestaña de Admin)
-    │   │   ├── ImportarPatrimonioPanel.tsx← Importación del Excel de Patrimonio
-    │   │   ├── EquipoFormDialog.tsx       ← Ficha completa de alta/edición de equipo
-    │   │   ├── EquipoDetalleModal.tsx     ← Ficha de solo lectura (la que abre el escaneo)
-    │   │   ├── RedCelularPanel.tsx        ← Experimento: acceso LAN desde celular
-    │   │   └── Icon.tsx                   ← Iconos SVG inline
-    │   └── utils/                ← Lógica pura, con pruebas (7 suites)
-    │       ├── pistola.ts        ← Distingue la ráfaga del lector de una persona tecleando
-    │       ├── tomaFisica.ts     ← Progreso, clasificación del disparo y reporte CSV
-    │       ├── backupSchedule.ts ← Cuándo toca el próximo respaldo automático
-    │       ├── importacionPatrimonio.ts ← Plan previo de la importación del Excel
-    │       ├── codigoPatrimonial.ts     ← Etiqueta de Patrimonio de la UdeG (Code 39)
-    │       ├── identificadores.ts       ← Normalización de códigos y series
-    │       ├── equipoFicha.ts    ← Armado de la ficha del equipo
-    │       ├── confirm.ts        ← Confirmaciones de acciones destructivas
-    │       ├── print.ts          ← Genera HTML e imprime PDF vía iframe + window.print()
-    │       └── datetime.ts       ← Parseo/formateo de fechas SQLite (es-MX)
-    │
-    ├── 🦀 src-tauri/              ← CÓDIGO RUST (shell del escritorio)
-    │   ├── Cargo.toml            ← Dependencias Rust
-    │   ├── tauri.conf.json       ← Configuración de la ventana, bundle, identificador
-    │   ├── src/
-    │   │   └── lib.rs            ← 9 comandos nativos:
-    │   │                            🔹 get_database_url    → ruta de la BD
-    │   │                            🔹 create_backup        → crea backups en disco
-    │   │                            🔹 guardar_reporte_inventario → guarda reportes exportados
-    │   │                            🔹 open_backups_dir     → abre la carpeta de respaldos
-    │   │                            🔹 list_backups         → enumera respaldos
-    │   │                            🔹 restore_backup_from_bytes → restaura validando magic header
-    │   │                            🔹 restore_backup_from_path → restaura desde una ruta local
-    │   │                            🔹 celular_registrar_dispositivo → registra acceso móvil experimental
-    │   │                            🔹 local_ip             → obtiene la IP para acceso LAN
-    │   ├── capabilities/
-    │   │   └── default.json      ← Permisos: core, opener, sql (execute, load, select)
-    │   └── icons/                ← Iconos de Windows (.ico, .icns, PNGs)
-    │
-    ├── 📊 database.sql           ← Paper trail histórico (NO es la fuente de verdad)
-    │
-    ├── 📁 docs/                   ← DOCUMENTACIÓN TÉCNICA
-    │   ├── ENGINEERING_HANDBOOK.md   ← Guía maestra de ingeniería y mantenimiento
-    │   ├── INVENTARIO_PATRIMONIO.md  ← Formato y reglas del Excel de Patrimonio
-    │   ├── PLAN_IMPORTACION_PATRIMONIO.md ← Diseño de la importación
-    │   ├── QR_CELULAR.md             ← Experimento de acceso por celular
-    │   ├── ROADMAP.md                ← Rumbo del proyecto
-    │   ├── REPO_CLEANUP.md           ← Qué borrar/archivar
-    │   ├── sqlite-backup-restore-guide.md
-    │   ├── postgres-restore-guide.md ← ETL legacy Postgres→SQLite
-    │   ├── legacy_profile.json       ← Perfil del schema Postgres histórico
-    │   └── archive/                  ← Documentos históricos (COMPLETADO, TODO, etc.)
-    │
-    ├── 📁 scripts/               ← UTILITARIOS
-    │   ├── publish-release.sh    ← Bump de versión + tag + push (dispara la CI)
-    │   ├── stamp-release-docs.sh ← Sella la versión en README, CHANGELOG y manual
-    │   ├── test-publish-release.sh
-    │   ├── backup_sqlite.py
-    │   ├── restore_sqlite.py
-    │   ├── migrate_postgres_to_sqlite.py
-    │   ├── migrate_legacy_p15_to_sqlite.py
-    │   └── legacy_table_mapping.sample.json
-    │
-    ├── 📁 openspec/               ← SDD (Spec-Driven Development)
-    │   ├── config.yaml            ← Reglas del proceso SDD
-    │   ├── specs/                 ← Especificaciones vivas
-    │   └── changes/archive/       ← Cambios ya cerrados (admin-auth, login-solo-codigo)
-    │
-    ├── 📁 .github/workflows/
-    │   └── tauri-build.yml        ← Workflow histórico anidado; GitHub no lo ejecuta desde aquí
-    │
-    ├── 📁 .agents/skills/         ← Skills personales de AI (no se suben al hacer cambios)
-    └── 📄 README.md               ← ESTE ARCHIVO
+```text
+README.md                                  ← este archivo, en la raíz del repo
+CHANGELOG.md                              ← historial de versiones
+CONTRIBUTING.md                           ← guía para reportes y PRs
+.github/workflows/build-windows.yml       ← CI/release activo
+.github/ISSUE_TEMPLATE/                   ← formularios de Issues
+app-prestamos-p15/                        ← carpeta real de la app
+├── package.json                          ← scripts y dependencias JS
+├── vite.config.ts                        ← Vite
+├── src/                                  ← interfaz React
+├── src-tauri/                            ← shell Tauri/Rust, comandos nativos y capabilities
+├── docs/                                 ← manuales y guías técnicas
+├── scripts/                              ← release, PDF, respaldo y migraciones
+└── worker/                               ← Cloudflare Worker para reportes desde la app
 ```
 
-> 💡 Regla de oro para principiantes:
-> - **Pantallas y botones** → están en `src/pages/`
-> - **Lógica de datos y reglas** → está en `src/hooks/useInventory.ts`
-> - **Cómo se abre el programa en el escritorio** → está en `src-tauri/`
-> - **Documentación para desarrolladores** → está en `docs/`
+Regla rápida:
 
----
-
-## ❓ Dudas frecuentes
-
-**¿Necesito internet para usarla?**
-No. Todo es local: la base de datos está dentro de la computadora.
-
-**¿Puedo usarla en Mac o Linux?**
-El instalador actual solo se genera para Windows. En Mac/Linux puedes compilar el código fuente si eres programador, pero no hay build oficial.
-
-**¿Dónde veo el historial de préstamos?**
-En el panel del Admin → pestaña Reportes. Filtras por fecha o profesor y das "Imprimir" para tener un PDF.
-
-**¿Cómo doy de alta un profesor nuevo?**
-Admin → Profesores → "Nuevo" → nombre y código UDG. Si también será admin, marca el checkbox y define un PIN.
-
-**¿Cómo marco un equipo como perdido?**
-Admin → Inventario → menú de la fila (⋮) → **"Marcar perdido"**. También puedes editar el equipo y cambiar su estado a `extraviado`. A partir de ahí no aparecerá para préstamo.
-
-**¿Por qué mi equipo no aparece en el kiosko?**
-Tres causas comunes: 1) su categoría (o el equipo mismo) está en modo *Solo inventario* — actívalo como **Prestable** en Categorías; 2) está prestado, extraviado o en mantenimiento; 3) el kiosko tiene oculto el catálogo (revisa Configuración).
-
-**¿Importé el Excel y ahora no puedo prestar nada, es un error?**
-No: es a propósito. Todo lo importado entra como *solo inventario* para que el Excel nunca decida solo. Ve a Admin → Categorías → marca **Prestable** en lo que quieras prestar.
-
-**¿Qué significa "vencido"?**
-En Préstamo Rápido, todo préstamo activo con más de **24 horas** sin devolverse se marca vencido en el historial. El kiosko de profesores no maneja vencimientos automáticos: las devoluciones se registran manualmente.
-
-**Un profesor se lleva laptop pero se olvida el HDMI, ¿puedo forzar la devolución?**
-Sí. Admin → Inventario → menú de la fila del equipo (⋮) → **"Forzar devolución"**. Útil cuando el equipo volvió físicamente pero nadie lo registró en el kiosko.
-
-**Mi pistola no manda `Enter` al final del código, ¿sirve igual?**
-Sí. La app detecta el disparo por la **velocidad** del tecleo, no por el `Enter`. Funciona con la pistola que tengas, salga como salga configurada de fábrica ([detalle](#la-pistola-dispara-sola)).
-
-**¿Puedo practicar la toma de inventario sin arruinar el conteo?**
-Sí. Activa **"Modo prueba · no guarda nada"** antes de iniciar la campaña: corre todo el recorrido (sonidos, tarjetas, deshacer) sin escribir nada en la base ([detalle](#-modo-prueba-para-entrenar-sin-miedo)).
-
-**Escaneé una etiqueta y la app no la reconoce, ¿qué hago?**
-Ahí mismo, sin salir de la toma física: la ligas a un equipo existente que no tenía etiqueta, o la das de alta como equipo nuevo. Si tienes el aparato en la mano, usa **"Editarlo completo"** y captura marca, modelo y serie en ese momento ([detalle](#-alta-al-vuelo-un-código-que-nadie-reclama)).
-
-**En el reporte de Patrimonio, ¿por qué hay celdas vacías en "Localizado"?**
-Porque son tres estados: `S` apareció, `N` se buscó y no estaba, y **vacío** es que nadie llegó todavía a esa área. Una celda vacía NO es una pérdida, es trabajo pendiente ([detalle](#-el-reporte-que-va-a-patrimonio)).
-
-**¿Cómo sé qué me falta por contar en una toma de inventario?**
-La columna **"Deberían estar aquí"** lista los equipos pendientes del área actual. Cuando se vacía, terminaste ([guía completa](#-toma-de-inventario-físico)).
-
-**¿Puedo trabajar en otra computadora si la laptop está ocupada?**
-Sí, pasándote la base con un USB y con **una sola computadora activa a la vez**: la app no fusiona dos bases, restaurar reemplaza todo ([pasos del relevo](#trabajar-en-dos-computadoras-relevo-por-usb)).
-
-**¿Mi base de datos se borró, qué hago?**
-Si tienes respaldo (en `backups/` o en un USB), lo restauras desde Configuración. Si no, **se perdió**. Por eso **RESPALDA SIEMPRE**.
-
-**¿Puedo tener varias computadoras con la app?**
-Sí, pero **cada una tiene su base de datos independiente**. No se sincronizan entre sí, ni siquiera
-con Drive: Drive sincroniza *archivos de respaldo*, no la base viva. Para mover datos de una a otra
-usa "Crear respaldo" y "Restaurar respaldo", con **una sola computadora activa a la vez**
-([pasos del relevo](#trabajar-en-dos-computadoras-relevo-por-usb)).
-
-**¿La app manda datos a algún servidor externo?**
-La app en sí, no: no tiene telemetría, no manda nada a ningún servidor y funciona sin internet.
-Lo único que puede salir de la computadora son los **respaldos**, y solo si tú conectas la carpeta
-`backups\` a Google Drive con el correo de la escuela — eso lo hace Drive, no la app
-([cómo se configura](#respaldos-en-google-drive-con-el-correo-de-la-escuela)).
-
-**¿Es seguro el PIN por defecto?**
-No. **Cámbialo en cuanto entres**, pero ten presente que la versión actual conserva el código `223992647` más el PIN de fábrica como acceso de recuperación incluso después del cambio. Eliminar ese fallback requiere modificar `loginAdmin`; no basta con editar el PIN desde la interfaz.
-
----
-
-## 🤝 Cómo contribuir
-
-### No programas: reporta (es lo más útil)
-
-**La forma más fácil: desde la app.** Admin → **Configuración** → panel **Reportar un problema** → botón **Escribir un reporte…**. Te pide tres cosas:
-
-1. **¿Qué querés contarnos?** — *Un problema* o *Una sugerencia*.
-2. **Título** — en una línea, qué pasó.
-3. **Descripción** — qué estabas haciendo, qué esperabas que pasara y qué pasó en su lugar.
-
-Envías y listo: sale *"Gracias, el reporte se envió."* **No necesitas cuenta de GitHub ni saber programar.** El reporte llega igual al mantenedor.
-
-> 💡 Cuenta **qué equipo y qué pantalla** eran, y a qué hora pasó. Con eso se arregla mucho más rápido que con "no funciona".
-
-**Desde GitHub** (si ya tienes cuenta, o si la app no abre): abre un Issue con formulario guiado:
-
-👉 **[github.com/Leoglez10/app-prestamos-p15/issues/new/choose](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose)**
-
-Hay dos formularios, y llenarlos es como responder un cuestionario:
-
-| Formulario | Cuándo usarlo |
+| Si quieres cambiar... | Busca en... |
 |---|---|
-| 🐛 **Reportar un problema** | La app hizo algo raro, se trabó, o no hizo lo que esperabas |
-| 💡 **Sugerir una mejora** | Te gustaría que la app hiciera algo que todavía no hace |
+| Pantallas y flujos | `app-prestamos-p15/src/pages/` y `app-prestamos-p15/src/components/` |
+| Reglas de datos y migraciones | `app-prestamos-p15/src/hooks/useInventory.ts` |
+| Utilidades probadas | `app-prestamos-p15/src/utils/` |
+| Comandos nativos y rutas de datos | `app-prestamos-p15/src-tauri/src/` |
+| Permisos Tauri | `app-prestamos-p15/src-tauri/capabilities/default.json` |
+| Manuales | `app-prestamos-p15/docs/` |
+| Release y PDF | `app-prestamos-p15/scripts/` |
 
-> 💡 Los Issues son el **soporte técnico** de la aplicación: cualquiera con cuenta de GitHub puede abrir uno, sin que le den acceso al repo. El mantenedor lo revisa y la corrección sale en una versión futura.
-
-### Sí programas: Pull Request
-
-El flujo completo (fork → clonar → rama → cambiar → commit → push → PR) está detallado en **[CONTRIBUTING.md](CONTRIBUTING.md)**. En corto:
-
-1. Clona el repo.
-2. Crea una branch: `git checkout -b feat/mi-cambio`.
-3. Haz commits claros: `feat: agregué exportación a Excel`.
-4. Verifica que compile: `npm run tauri build` (o al menos `npx tsc --noEmit`).
-5. Abre un Pull Request explicando qué hiciste y por qué.
-6. Espera revisión. Si hay comentarios, ajusta y vuelve a push.
-
-> 📚 Antes de tocar cosas grandes, lee `docs/ENGINEERING_HANDBOOK.md`. Hay deudas técnicas documentadas (archivos `-LeoLaptop.*`, monolito en `Admin.tsx`, mezcla en `useInventory.ts`).
+Inventario técnico más profundo: [`app-prestamos-p15/docs/ARQUITECTURA.md`](app-prestamos-p15/docs/ARQUITECTURA.md).
 
 ---
 
 ## 🏷 Versionado y publicación
 
-Usamos versionado semántico `MAYOR.MENOR.PARCHE`. La versión actual es **0.11.1**.
+La versión actual es **0.11.1**. Debe coincidir en estos cuatro archivos:
 
-- **PARCHE** (0.5.**0** → 0.5.1): bugfixes, sin cambios de comportamiento.
-- **MENOR** (0.**4**.0 → 0.5.0): nuevas funciones, sin romper lo viejo.
-- **MAYOR** (**0**.5.0 → 1.0.0): cambios que pueden romper compatibilidad (requieren migración).
+- `app-prestamos-p15/src-tauri/tauri.conf.json`
+- `app-prestamos-p15/package.json`
+- `app-prestamos-p15/src-tauri/Cargo.toml`
+- `app-prestamos-p15/src-tauri/Cargo.lock`
 
-> ✅ La versión debe coincidir en `package.json`, `src-tauri/tauri.conf.json` y `src-tauri/Cargo.toml`. El script de release las sincroniza solo.
+### Workflow activo
 
-📋 Qué cambió en cada versión: **[CHANGELOG.md](CHANGELOG.md)**
+El workflow activo es `.github/workflows/build-windows.yml`. Tiene tres jobs:
 
-### Publicar una versión nueva
+1. `prepare-release`
+2. `build-tauri`
+3. `build-manual`
 
-Todo el release es automático: **tú creas el tag, la CI compila e instala el instalador en Releases.**
+Se dispara por:
 
-```bash
-cd app-prestamos-p15
+- push a `main`;
+- push de tags `v*`;
+- ejecución manual `workflow_dispatch`, con input booleano opcional `dry_run`.
 
-# 1. Valida antes de publicar
-npx tsc --noEmit && npm test
+Usa concurrency `release-${{ github.repository }}` con `cancel-in-progress: false`, para evitar carreras entre releases.
 
-# 2. Bump + commit + tag + push (todo en uno)
-bash scripts/publish-release.sh 0.5.2
+### Gate de release en `main`
+
+Un push a `main` publica versión solo si el rango desde el último tag contiene al menos un commit no merge cuyo subject coincida con:
+
+```text
+^(feat|fix)(\([^)]+\))?!?: .+
 ```
 
-El script (`scripts/publish-release.sh`):
+Consecuencias:
 
-1. Lee la versión actual de `src-tauri/tauri.conf.json`.
-2. Escribe la nueva y la **sincroniza** en `package.json`, `Cargo.toml` y `Cargo.lock`.
-3. Verifica que el árbol esté limpio y que `HEAD` ya esté en `origin/main`. Si no, aborta.
-4. **Sella la versión en los documentos** con `scripts/stamp-release-docs.sh`: la insignia y los ejemplos de este README, el nombre del instalador en el manual del personal y una entrada nueva en el `CHANGELOG.md` armada con los commits `feat:` y `fix:` desde el tag anterior. Si ya escribiste a mano la entrada de esa versión, la respeta.
-5. Commitea `release: vX.Y.Z` (con los documentos incluidos), crea el tag `vX.Y.Z` y lo empuja.
-6. Si algo falla, **revierte el bump y los documentos** para no dejar las versiones descuadradas.
+| Tipo de push | Resultado |
+|---|---|
+| Incluye `feat:` o `fix:` | Calcula el siguiente patch y prepara release. |
+| Solo `docs:`, `chore:`, `ci:`, `style:` o `test:` | No publica, no sube versión, no inicia runner Windows. |
+| HEAD es `release: vX.Y.Z` | Se salta para no duplicar el flujo manual. |
 
-> ⚠️ Necesitas `jq` instalado (`brew install jq` en Mac, `apt install jq` en Linux).
+Chequeo local sin publicar, desde la raíz del repo:
 
-Sin argumento (`bash scripts/publish-release.sh`) solo taguea la versión que ya está en `tauri.conf.json`, sin bump; igual sella los documentos y, si cambiaron, los sube en un commit `docs:` antes del tag.
+```bash
+bash app-prestamos-p15/scripts/release-gate.sh --range v0.11.0..HEAD
+```
 
-> 📝 Los números de versión de este README, del `CHANGELOG.md` y del manual **no se editan a mano**: los escribe el script en cada release. Lo que sí se escribe a mano es *qué cambió para el personal*, antes de publicar: eso va al manual y al README, y de ahí sale el PDF que la CI adjunta al Release.
+Imprime `should_release=`, `reason=`, `previous_tag=`, `release_tag=`, `functional_commits=`, `target_sha=` y `release_version=`. No escribe archivos ni publica nada.
 
-Para arreglar los documentos sin publicar una versión: `bash scripts/stamp-release-docs.sh <versión>` y commit como `docs:`.
+Autocomprobaciones:
 
-Después de tocar cualquiera de los dos scripts, corré su autocomprobación: `bash scripts/test-publish-release.sh`.
+```bash
+bash app-prestamos-p15/scripts/test-release-gate.sh
+bash app-prestamos-p15/scripts/test-publish-release.sh
+```
 
-### Qué hace la CI cuando ve el tag
+### Cuando sí publica
 
-El workflow **`.github/workflows/build-windows.yml`** se dispara con tags `v*` (o a mano con *Run workflow*):
+El flujo automático:
 
-1. Levanta un runner de Windows con Node 20, Rust stable y Bun.
-2. `npm ci` dentro de `app-prestamos-p15/`.
-3. `tauri-action` compila para `x86_64-pc-windows-msvc`.
-4. Publica un **Release público** con el `.exe`, el `.msi`, sus firmas, el `latest.json` del actualizador y el **PDF del manual del personal** adjuntos.
+1. Calcula el siguiente patch.
+2. Escribe versión en los cuatro archivos de versión.
+3. Sella `README.md`, `CHANGELOG.md` y `app-prestamos-p15/docs/MANUAL_PERSONAL.md` con `app-prestamos-p15/scripts/stamp-release-docs.sh`.
+4. Crea el commit `release: vX.Y.Z` y lo empuja a `main`.
+5. `tauri-action` crea el tag y el GitHub Release junto con el build, para mantener tag y release atómicos.
+6. Adjunta instaladores, firmas, `latest.json` y el PDF del manual del personal.
 
-Si la compilación falla, el badge de arriba se pone rojo y no se publica nada.
+> ⚠️ Requisito operativo: ese push automático a `main` usa `GITHUB_TOKEN`. Si hay branch protection, debe permitir el push del bot de GitHub Actions o el job falla y no publica.
 
-> 💡 En este repo también existe la skill de proyecto `/release`, que hace este mismo recorrido paso a paso con las validaciones incluidas.
+### Rutas manuales que siguen funcionando
+
+Desde `app-prestamos-p15/`:
+
+```bash
+bash scripts/publish-release.sh <version>
+```
+
+También se puede lanzar el workflow manualmente desde GitHub. Si `dry_run` está activo en `workflow_dispatch`, el gate solo decide y no compila ni publica.
+
+### Qué valida CI
+
+El workflow usa Node **24**, instala dependencias con `npm ci`, verifica que existan los secrets `TAURI_SIGNING_PRIVATE_KEY` y `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, ejecuta `npm test`, ejecuta `cargo test --locked --manifest-path src-tauri/Cargo.toml`, compila Windows x64 y genera el PDF del manual.
+
+---
+
+## ❓ Dudas frecuentes
+
+**¿Necesito internet para usar la app?**
+No para operar inventario, préstamos, reportes locales y respaldos en disco. Sí necesitas internet para buscar/descargar actualizaciones, enviar reportes desde la app o sincronizar carpetas mediante Google Drive.
+
+**¿Funciona en Mac o Linux?**
+El instalador publicado es para Windows. El código puede compilarse en otros sistemas si tienes el entorno técnico, pero no hay build oficial para personal de la escuela.
+
+**¿Dónde veo el historial de préstamos?**
+En **Admin → Reportes**. Filtra por fecha, estado o categoría y usa impresión/PDF si necesitas entregar o archivar.
+
+**¿Cómo doy de alta a un profesor?**
+Entra a **Admin → Profesores**, crea un registro con nombre y código UDG. Si también será administrador, marca la opción de admin y define PIN.
+
+**¿Por qué un equipo no aparece para préstamo?**
+Puede estar como **Solo inventario**, prestado, extraviado, en mantenimiento o filtrado por configuración del kiosko. Revisa categoría, equipo y estado.
+
+**¿Importé el Excel y ahora no puedo prestar esos equipos?**
+Es intencional. Todo lo nuevo entra como **Solo inventario** hasta que la escuela decida qué se presta.
+
+**¿Qué significa “Más de 1 día” en Préstamo Rápido?**
+Es un filtro para préstamos activos con más de 24 horas. Ayuda a detectar pendientes antiguos.
+
+**¿Puedo practicar la toma física sin cambiar datos?**
+Sí. Activa **Modo prueba · no guarda nada** antes de practicar.
+
+**¿Qué hago si una etiqueta no existe en la app?**
+Desde la toma física puedes ligarla a un equipo existente, agregar el equipo con datos mínimos o abrir la ficha completa.
+
+**¿Qué significa una celda vacía en `Localizado`?**
+Que esa revisión sigue pendiente. `S` significa localizado y `N` significa buscado y no localizado.
+
+**¿Puedo trabajar en dos computadoras?**
+Sí, pero no como sincronización en vivo. Para base completa, una computadora reemplaza a la otra con respaldo/restauración. Para toma física, usa el CSV de fusión desde **Toma de inventario**.
+
+**¿La app manda datos a servidores externos?**
+No manda la base de préstamos. Sí hace llamadas de red para actualizaciones y para reportes de problemas si decides enviarlos desde la app. Si conectas carpetas con Google Drive, Drive copia esos archivos según su propia configuración.
+
+**¿Es seguro el PIN inicial?**
+No es una credencial final. Cámbialo al empezar y conserva la app en el entorno interno de la escuela.
+
+---
+
+## 🤝 Cómo contribuir
+
+Si no programas, lo más útil es reportar bien: usa **Admin → Configuración → Reportar un problema** o el formulario de Issues.
+
+Si programas:
+
+1. Haz fork o crea una rama.
+2. Entra a `app-prestamos-p15/` dentro del repo.
+3. Instala dependencias con `npm install`.
+4. Corre la app con `npm run tauri dev`.
+5. Haz commits claros.
+6. Ejecuta `npm run lint` y `npm test` antes del PR.
+7. Abre el Pull Request y explica qué cambió y por qué.
+
+Guía completa: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+> Importante: que un cambio se apruebe no significa que se publique inmediatamente. La publicación depende del gate de release y de que exista un commit `feat:` o `fix:` cuando se integre a `main`, o de que el mantenedor use el flujo manual.
 
 ---
 
 ## 📚 Documentación relacionada
 
-| Doc | Para qué sirve |
+| Documento | Para qué sirve |
 |---|---|
-| [docs/MANUAL_PERSONAL.md](app-prestamos-p15/docs/MANUAL_PERSONAL.md) | **Manual operativo completo** para el personal; cada Release adjunta la misma versión en PDF |
-| [docs/ENGINEERING_HANDBOOK.md](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
-| [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) | Formato y reglas del Excel de Patrimonio |
-| [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md) | Diseño técnico de la importación |
-| [docs/RELEVO_TOMA_FISICA.md](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md) | Toma física en dos computadoras: qué fusiona y qué no |
-| [docs/QR_CELULAR.md](app-prestamos-p15/docs/QR_CELULAR.md) | Experimento: acceso desde celular por LAN |
-| [docs/REPO_CLEANUP.md](app-prestamos-p15/docs/REPO_CLEANUP.md) | Qué carpetas borrar/archivar |
-| [docs/sqlite-backup-restore-guide.md](app-prestamos-p15/docs/sqlite-backup-restore-guide.md) | Backup/restore con scripts Python |
-| [docs/postgres-restore-guide.md](app-prestamos-p15/docs/postgres-restore-guide.md) | Migrar desde un Postgres legacy |
-| [docs/SERVIDOR.md](app-prestamos-p15/docs/SERVIDOR.md) | Notas sobre alojar los datos en un servidor (exploración) |
-| [docs/ROADMAP.md](app-prestamos-p15/docs/ROADMAP.md) | Rumbo del proyecto y pendientes |
-| [CHANGELOG.md](CHANGELOG.md) | Qué cambió en cada versión publicada |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Cómo reportar problemas y contribuir código |
-| [README_INSTALACION.md](README_INSTALACION.md) | Instalación y actualización manual |
+| [`app-prestamos-p15/docs/MANUAL_PERSONAL.md`](app-prestamos-p15/docs/MANUAL_PERSONAL.md) | Manual operativo completo para el personal. |
+| [`app-prestamos-p15/docs/UPDATES.md`](app-prestamos-p15/docs/UPDATES.md) | Actualizador firmado, Windows x64, secrets y prueba obligatoria. |
+| [`app-prestamos-p15/docs/PLANTILLAS_RESPUESTA.md`](app-prestamos-p15/docs/PLANTILLAS_RESPUESTA.md) | Respuestas listas para triage de Issues. |
+| [`app-prestamos-p15/docs/ARQUITECTURA.md`](app-prestamos-p15/docs/ARQUITECTURA.md) | Mapa técnico profundo movido fuera del README. |
+| [`app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md`](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) | Guía de mantenimiento del código. |
+| [`app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md`](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) | Formato y reglas del Excel de Patrimonio. |
+| [`app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md`](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md) | Diseño técnico de la importación. |
+| [`app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md`](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md) | Toma física en dos computadoras y fusión por CSV. |
+| [`app-prestamos-p15/docs/QR_CELULAR.md`](app-prestamos-p15/docs/QR_CELULAR.md) | Acceso experimental desde celular por red local. |
+| [`app-prestamos-p15/docs/REPO_CLEANUP.md`](app-prestamos-p15/docs/REPO_CLEANUP.md) | Qué carpetas limpiar y qué no subir. |
+| [`app-prestamos-p15/docs/sqlite-backup-restore-guide.md`](app-prestamos-p15/docs/sqlite-backup-restore-guide.md) | Respaldo/restauración con scripts Python. |
+| [`app-prestamos-p15/docs/postgres-restore-guide.md`](app-prestamos-p15/docs/postgres-restore-guide.md) | Migración desde Postgres legacy. |
+| [`app-prestamos-p15/docs/SERVIDOR.md`](app-prestamos-p15/docs/SERVIDOR.md) | Notas exploratorias sobre alojar datos en servidor. |
+| [`app-prestamos-p15/docs/ROADMAP.md`](app-prestamos-p15/docs/ROADMAP.md) | Rumbo y pendientes del proyecto. |
+| [`CHANGELOG.md`](CHANGELOG.md) | Historial de versiones. |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Cómo reportar y contribuir. |
+| [`README_INSTALACION.md`](README_INSTALACION.md) | Guía corta de instalación manual. |
 
 ---
 
 ## ⚖️ Licencia y uso
 
-Proyecto de **uso interno educativo** para la Preparatoria 15 (UDG). Ver **[LICENSE](LICENSE)**.
+Proyecto de uso interno educativo para la Preparatoria 15 (UDG). Revisa [`LICENSE`](LICENSE).
 
-En corto: cualquier institución educativa puede usarlo, instalarlo, estudiarlo y adaptarlo sin costo, conservando el crédito al autor. **No** se puede vender ni distribuir como parte de un producto comercial. El software se entrega sin garantía: mantener los respaldos vigentes es responsabilidad de quien lo opera.
+En resumen: instituciones educativas pueden usarlo, instalarlo, estudiarlo y adaptarlo sin costo, conservando crédito al autor. No se puede vender ni distribuir como parte de un producto o servicio comercial. El software se entrega sin garantía; mantener respaldos vigentes es responsabilidad de la institución que lo opera.
 
 ---
 
@@ -1110,22 +896,20 @@ En corto: cualquier institución educativa puede usarlo, instalarlo, estudiarlo 
 [![GitHub](https://img.shields.io/badge/GitHub-%40Leoglez10-181717?logo=github)](https://github.com/Leoglez10)
 [![Issues](https://img.shields.io/badge/Reportar_bug_o_idea-2ea44f?logo=github)](https://github.com/Leoglez10/app-prestamos-p15/issues)
 
-🏫 **Institución**: Preparatoria 15 — Universidad de Guadalajara (UDG)
+**Institución:** Preparatoria 15 — Universidad de Guadalajara (UDG)
 
-🎯 **Propósito**: Control y trazabilidad de préstamos de equipo audiovisual
+**Propósito:** Control y trazabilidad de préstamos de equipo audiovisual
 
-🛠 **Stack**: Tauri v2 · React 19 · TypeScript · Vite 7 · Rust · SQLite
+**Stack:** Tauri v2 · React 19 · TypeScript · Vite 7 · Rust · SQLite
 
 </div>
-
-> 📬 ¿Encontraste un bug o tienes una mejora? Abre un [Issue con formulario](https://github.com/Leoglez10/app-prestamos-p15/issues/new/choose) (cualquiera puede) o manda un Pull Request — guía en [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
 <div align="center">
 
-**¿Dudas?** [Dudas frecuentes](#-dudas-frecuentes) · [Respaldo y recuperación](#-respaldo-y-recuperación-importante) · [Handbook de ingeniería](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md)
+**¿Dudas?** [Dudas frecuentes](#-dudas-frecuentes) · [Respaldo y recuperación](#-respaldo-y-recuperación-importante) · [Manual del personal](app-prestamos-p15/docs/MANUAL_PERSONAL.md)
 
-Hecho con 💙 para la comunidad de la **Preparatoria 15** — *respalda siempre* 💾
+Hecho para la comunidad de la **Preparatoria 15**.
 
 </div>

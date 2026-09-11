@@ -1,11 +1,24 @@
 blank_issues_enabled: false
 
 contact_links:
-  - name: "\U0001F4D6 Dudas de uso (antes de abrir un issue)"
+  - name: "📖 Dudas de uso (revisa esto antes de reportar)"
     url: https://github.com/Leoglez10/app-prestamos-p15#-dudas-frecuentes
     about: >
       Muchos problemas comunes ya tienen respuesta en el README: kiosko sin equipos,
-      importación de Excel, pistola de códigos, respaldos. Checa las Dudas frecuentes primero.
-  - name: "\U0001F4DA Manual completo para el personal"
+      importación de Excel, pistola de códigos, respaldos. Empieza por aquí.
+
+  - name: "📚 Manual completo para el personal"
     url: https://github.com/Leoglez10/app-prestamos-p15/blob/main/app-prestamos-p15/docs/MANUAL_PERSONAL.md
-    about: Guía operativa paso a paso de toda la aplicación.
+    about: Guía operativa paso a paso de toda la aplicación, pensada para el personal de la escuela.
+
+  - name: "⬇️ Descargar la última versión"
+    url: https://github.com/Leoglez10/app-prestamos-p15/releases/latest
+    about: >
+      El instalador más reciente para Windows. Normalmente no lo necesitas: la app se
+      actualiza sola cuando hay una versión nueva.
+
+  - name: "🧭 Cómo reportar bien (guía corta)"
+    url: https://github.com/Leoglez10/app-prestamos-p15/blob/main/CONTRIBUTING.md
+    about: >
+      Qué incluir en un reporte para que se pueda resolver rápido, y cómo proponer cambios
+      en el código.

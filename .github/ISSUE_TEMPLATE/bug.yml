@@ -1,13 +1,38 @@
-name: "\U0001F41B Reportar un problema"
-description: Algo no funcionó como debería o la app hizo algo raro.
-title: "[Bug]: "
+name: "🐞 Reportar un problema"
+description: Algo no funcionó como debería, o la app hizo algo raro.
+title: "[Problema]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Gracias por reportar. No necesitas saber de computadoras: llena lo que puedas
-        y adjunta una captura si tienes. Mientras más contexto des, más rápido se puede arreglar.
+        **No hace falta saber de computadoras.** Llena lo que puedas y listo.
+
+        💡 **Si puedes abrir la app, usa el botón de adentro:** ve a
+        **Admin → Configuración → Escribir un reporte…**. Ese camino manda solo la versión
+        y el sistema operativo, y llega al mismo lugar con menos pasos.
+
+        Usa este formulario si prefieres escribirlo desde el navegador, o si la app no abre.
+
+        📸 Si puedes, adjunta una captura de pantalla. Es lo que más ayuda.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "¿En qué parte de la app pasó?"
+      description: Si no estás seguro, elige la última opción.
+      options:
+        - Kiosko (préstamo de equipos a profesores)
+        - Admin (panel de administración)
+        - Inventario o equipos
+        - Préstamo rápido (alumnos)
+        - Respaldos o restauración
+        - Importar Excel de Patrimonio
+        - Reportes o PDF
+        - Actualizaciones de la app
+        - No estoy seguro
+    validations:
+      required: true
 
   - type: textarea
     id: que-intentaba
@@ -22,7 +47,7 @@ body:
     id: que-ocurrio
     attributes:
       label: "¿Qué ocurrió?"
-      description: Cuenta lo que pasó, con tus palabras. Si apareció un mensaje de error, cópialo aquí.
+      description: Cuéntalo con tus palabras. Si apareció un mensaje de error, cópialo tal cual.
       placeholder: "Lo que pasó fue..."
     validations:
       required: true
@@ -30,9 +55,21 @@ body:
   - type: textarea
     id: que-debia-ocurrir
     attributes:
-      label: "¿Qué debería haber ocurrido?"
-      description: "Cómo esperabas que se comportara la app."
+      label: "¿Qué esperabas que ocurriera?"
+      description: Opcional, pero ayuda a entender la diferencia.
       placeholder: "Yo esperaba que..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: frecuencia
+    attributes:
+      label: "¿Vuelve a pasar?"
+      options:
+        - Pasa siempre, cada vez que lo intento
+        - Pasa a veces
+        - Pasó una sola vez
+        - No lo he vuelto a intentar
     validations:
       required: true
 
@@ -44,7 +81,6 @@ body:
         - Windows 10
         - Windows 11
         - Otra / no sé
-      default: 2
     validations:
       required: true
 
@@ -52,13 +88,15 @@ body:
     id: version
     attributes:
       label: "Versión de la app (opcional)"
-      description: "Si la sabes, escríbela (por ejemplo 0.7.0). La encuentras en el instalador o en la carpeta de la app."
-      placeholder: "0.7.0"
+      description: "Por ejemplo 0.11.1. La ves en Admin → Configuración → Actualizaciones, o en el nombre del instalador."
+      placeholder: "0.11.1"
+    validations:
+      required: false
 
   - type: textarea
     id: captura
     attributes:
-      label: "¿Puedes adjuntar una captura? (opcional pero ayuda mucho)"
-      description: Arrastra la imagen a este cuadro o usa el enlace "Adjuntar archivos" de abajo.
+      label: "Captura de pantalla (opcional, pero ayuda mucho)"
+      description: Arrastra la imagen a este cuadro, o usa el enlace "Adjuntar archivos" que está debajo.
     validations:
       required: false

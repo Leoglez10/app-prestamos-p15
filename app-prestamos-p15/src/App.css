@@ -85,6 +85,12 @@ body {
   color: var(--text-secondary);
 }
 
+.reportar-problema-enlaces {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
 .update-notes {
   max-height: 12rem;
   overflow: auto;

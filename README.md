@@ -7,7 +7,7 @@
 ### Control de inventario y préstamos de equipo audiovisual para la Preparatoria 15 (UDG)
 
 [![CI — Build Windows Installer](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml)
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.11.1-blue)](CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.11.2-blue)](CHANGELOG.md)
 ![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-blue)
 [![Uso educativo](https://img.shields.io/badge/usos-Educativo-orange)](LICENSE)
 [![Autor](https://img.shields.io/badge/autor-Leonardo%20Gonzalez-purple)](https://github.com/Leoglez10)
@@ -707,7 +707,7 @@ Inventario técnico más profundo: [`app-prestamos-p15/docs/ARQUITECTURA.md`](ap
 
 ## 🏷 Versionado y publicación
 
-La versión actual es **0.11.1**. Debe coincidir en estos cuatro archivos:
+La versión actual es **0.11.2**. Debe coincidir en estos cuatro archivos:
 
 - `app-prestamos-p15/src-tauri/tauri.conf.json`
 - `app-prestamos-p15/package.json`

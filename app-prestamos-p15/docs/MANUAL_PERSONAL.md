@@ -1295,7 +1295,7 @@ No hace falta cuenta de GitHub ni saber programar. Admin → **Configuración** 
 panel **Reportar un problema** → botón **Escribir un reporte…**. Te pide tres
 cosas:
 
-1. **¿Qué querés contarnos?** — *Un problema* o *Una sugerencia*.
+1. **¿Qué quieres contarnos?** — *Un problema* o *Una sugerencia*.
 2. **Título** — en una línea, qué pasó.
 3. **Descripción** — qué estabas haciendo, qué esperabas que pasara y qué pasó en
    su lugar.

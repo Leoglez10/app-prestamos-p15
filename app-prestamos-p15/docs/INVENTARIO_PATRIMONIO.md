@@ -176,7 +176,7 @@ driver, sin SDK, sin permisos de Tauri.
 Y el buscador del kiosko (`src/pages/Kiosk.tsx`) **ya** filtra por nombre,
 categoría e identificador, y ya agrega el primer resultado al presionar `Enter`.
 Sumando `id_patrimonial` a ese predicado, la pistola funciona **sin una sola
-pantalla nueva**: apuntás, dispara, el equipo entra al carrito.
+pantalla nueva**: apuntas, dispara, el equipo entra al carrito.
 
 ---
 

@@ -67,7 +67,7 @@ en COGs distintos.
 
 Consecuencia: **ninguna de las dos columnas sirve como `categorias`.**
 
-- `categorias = COG` (20) → árbol que miente; buscás laptops en dos lados.
+- `categorias = COG` (20) → árbol que miente; buscas laptops en dos lados.
 - `categorias = Clasificador` (190) → 190 chips en el kiosco. Inusable.
 
 **Decisión: `categorias` se sigue curando a mano.** El clasificador entra como
@@ -351,7 +351,7 @@ El bucle de §3.1:
   y qué no apareció.
 - **Acción masiva**: una barra sobre la tabla de inventario que actúa sobre lo
   que ya está filtrado. Buscás `COMPUTADORA PORTATIL`, la tabla deja 199, y las
-  marcás prestables de un golpe.
+  marcas prestables de un golpe.
 
   > No lleva su propia lista ni sus propios filtros. La tabla ya sabe buscar por
   > nombre, marca, modelo, ID de Patrimonio y ubicación, y filtrar por categoría

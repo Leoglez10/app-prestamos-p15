@@ -10,14 +10,14 @@ De cero a funcionando, incluyendo qué hay que cambiar en **esta** aplicación.
 ## Índice
 
 1. [Qué vas a tener al final (y qué no)](#1-qué-vas-a-tener-al-final-y-qué-no)
-2. [Antes de empezar: ¿de verdad necesitás un servidor?](#2-antes-de-empezar-de-verdad-necesitás-un-servidor)
+2. [Antes de empezar: ¿de verdad necesitas un servidor?](#2-antes-de-empezar-de-verdad-necesitas-un-servidor)
 3. [La arquitectura explicada](#3-la-arquitectura-explicada)
 4. [⛔ Bloqueadores: tres cosas que hay que resolver ANTES](#4--bloqueadores-tres-cosas-que-hay-que-resolver-antes)
 5. [Decisiones de tecnología (ya tomadas, con el porqué)](#5-decisiones-de-tecnología-ya-tomadas-con-el-porqué)
 6. [Qué sobrevive y qué se pierde en la migración](#6-qué-sobrevive-y-qué-se-pierde-en-la-migración)
 7. [Dónde vive el código (y por qué son tres lugares)](#7-dónde-vive-el-código-y-por-qué-son-tres-lugares)
 8. [¿Una IA dentro del servidor que genere los comandos?](#8-una-ia-dentro-del-servidor-que-genere-los-comandos)
-9. [Fase -1 — Practicá primero en tu Mac](#fase--1--practicá-primero-en-tu-mac)
+9. [Fase -1 — Practica primero en tu Mac](#fase--1--practica-primero-en-tu-mac)
 10. [Fase 0 — Permisos y hardware](#fase-0--permisos-y-hardware)
 11. [Fase 1 — Montar el servidor](#fase-1--montar-el-servidor)
 12. [Fase 2 — La API](#fase-2--la-api)
@@ -57,7 +57,7 @@ De cero a funcionando, incluyendo qué hay que cambiar en **esta** aplicación.
 
 ---
 
-## 2. Antes de empezar: ¿de verdad necesitás un servidor?
+## 2. Antes de empezar: ¿de verdad necesitas un servidor?
 
 Pregunta honesta, porque es el proyecto más caro de la lista.
 
@@ -68,8 +68,8 @@ El servidor se justifica **solo** si al menos una de estas es cierta:
 - Hay **más de una persona** operando al mismo tiempo.
 
 Si en la práctica todo pasa en una sola máquina de la coordinación, el servidor
-no te compra nada y sí te agrega un punto de falla. En ese caso: quedate con la
-app como está, y resolvé la velocidad con la pistola de barras y la paleta de
+no te compra nada y sí te agrega un punto de falla. En ese caso: quédate con la
+app como está, y resuelve la velocidad con la pistola de barras y la paleta de
 comandos, que cuestan una fracción.
 
 ### Hay dos proyectos acá, y conviene no mezclarlos
@@ -81,26 +81,26 @@ comandos, que cuestan una fracción.
 
 Son **decisiones separadas y no hay que tomarlas juntas**. La recomendación:
 
-> **Construilo como laboratorio, no como producción.** Montalo, hacé la API,
-> probala, rompela, arreglala. Y no muevas a la prepa hasta que lleve meses
+> **Constrúyelo como laboratorio, no como producción.** Móntalo, haz la API,
+> pruébala, rómpela, arréglala. Y no muevas a la prepa hasta que lleve meses
 > funcionando sin que nadie dependa de él.
 
 Esto además elimina la presión: un laboratorio que se cae es un martes cualquiera.
 Un servidor de producción que se cae es una fila de profesores esperando.
 
 Y hay una consecuencia práctica importante: **no hace falta hardware ni permisos
-para empezar.** Ver [Fase -1](#fase--1--practicá-primero-en-tu-mac).
+para empezar.** Ver [Fase -1](#fase--1--practica-primero-en-tu-mac).
 
 ### Alternativa intermedia, por si el servidor se complica
 
 Una base de datos gestionada en la nube (**Turso** o **Supabase**) elimina todo el
-trabajo de administración de sistemas: no instalás Linux, no configurás `systemd`,
-no te preocupás por apagones. A cambio, dependés de internet y de un proveedor
+trabajo de administración de sistemas: no instalas Linux, no configuras `systemd`,
+no te preocupas por apagones. A cambio, dependes de internet y de un proveedor
 externo, y los datos de la escuela salen de la escuela — eso hay que consultarlo
 con la dirección.
 
 Turso en particular es SQLite gestionado, así que el resto de esta guía aplica casi
-igual: cambia la Fase 1 (no montás servidor) y el resto queda.
+igual: cambia la Fase 1 (no montas servidor) y el resto queda.
 
 **Nota de contexto:** en esta escuela ya existió un sistema con PostgreSQL
 ("Registro de equipos", ver `docs/postgres-restore-guide.md`) y se migró a esta app
@@ -208,12 +208,12 @@ igual aunque el servidor nunca se construya: hashear los PIN mejora la app actua
 ### Bloqueador 2 — Los campos del inventario sin definir
 
 Ver el [punto 4 del ROADMAP](./ROADMAP.md). Migrar un esquema en un servidor con
-datos en producción duele mucho más que cambiarlo en un archivo local. Cerrá la
+datos en producción duele mucho más que cambiarlo en un archivo local. Cierra la
 lista de campos **antes** de mover nada.
 
 ### Bloqueador 3 — El permiso de TI
 
-No es técnico, y es el que más proyectos mata. Ver Fase 0. Averigualo **primero**:
+No es técnico, y es el que más proyectos mata. Ver Fase 0. Averígualo **primero**:
 si el área de redes no te da una IP fija ni te deja conectar un equipo, todo lo
 demás sobra.
 
@@ -230,7 +230,7 @@ la limitación real de SQLite es que admite **un solo escritor a la vez**. Con u
 que es un único proceso, y una escuela con menos de 10 personas operando, esa
 limitación no se alcanza nunca. SQLite maneja sin problemas ese volumen.
 
-Lo que ganás:
+Lo que ganas:
 
 - **Las consultas SQL que ya escribiste se reutilizan casi textuales.** Las 37
   funciones de `useInventory.ts` se mudan al servidor con cambios mínimos. Con
@@ -252,7 +252,7 @@ copian al servidor y se les cambia una línea (de dónde sale la conexión). El 
 
 Alternativa considerada: Rust con Axum. El proyecto ya tiene Rust por Tauri y sería
 más eficiente. Se descarta porque implicaría **reescribir esas 37 funciones desde
-cero** en un lenguaje que todavía no dominás, y no compra nada a esta escala.
+cero** en un lenguaje que todavía no dominas, y no compra nada a esta escala.
 
 Framework sugerido: **Fastify** o **Hono**. Ambos son mínimos y directos.
 
@@ -305,7 +305,7 @@ operación **desde hoy**. Eso solo ya los justificó.
 
 ### Conclusión práctica
 
-**Seguí construyendo funciones. Las funciones no son el riesgo.** Lo único que hay
+**Sigue construyendo funciones. Las funciones no son el riesgo.** Lo único que hay
 que evitar es escribir código nuevo que asuma para siempre que la base es local —
 y eso se resuelve manteniendo todo el acceso a datos dentro de `useInventory.ts`,
 como está hoy.
@@ -321,7 +321,7 @@ distintos:
 
 | Lugar | Rol |
 | --- | --- |
-| **Tu Mac** | Donde lo escribís y lo probás |
+| **Tu Mac** | Donde lo escribes y lo pruebas |
 | **GitHub** | La fuente de verdad. El repositorio |
 | **El servidor** | Donde *corre*. Una copia desplegada |
 
@@ -339,7 +339,7 @@ npm ci && npm run build
 sudo systemctl restart prestamos-api
 ```
 
-El servidor **no es donde guardás el código**. Es donde lo ejecutás. Si el servidor
+El servidor **no es donde guardas el código**. Es donde lo ejecutas. Si el servidor
 se muere, el código sigue intacto en GitHub y en tu Mac; se levanta otro y se hace
 `git clone`. Esa es justamente la idea.
 
@@ -371,17 +371,17 @@ sí corren en ese hardware son malos, y un modelo malo generando comandos de sis
 es peor que no tener nada.
 
 **El de fondo, que importa más:** el día que ese servidor se caiga, lo vas a tener que
-arreglar vos. A las 7 de la mañana, con profesores esperando para llevarse equipo. Si
+arreglar tú. A las 7 de la mañana, con profesores esperando para llevarse equipo. Si
 los comandos que lo configuraron los generó algo que no entendiste, no vas a saber
 dónde mirar.
 
-Si no sabés qué hace `systemctl enable`, ¿cómo vas a diagnosticar por qué el servicio
+Si no sabes qué hace `systemctl enable`, ¿cómo vas a diagnosticar por qué el servicio
 no arrancó? Los conceptos van primero.
 
 ### Usar IA desde tu computadora para escribir el código
 
-Eso sí, y es el uso correcto. La IA escribe, **vos entendés y desplegás**. Vos
-dirigís, la herramienta ejecuta.
+Eso sí, y es el uso correcto. La IA escribe, **tú entiendes y despliegas**. Tú
+diriges, la herramienta ejecuta.
 
 La diferencia no es dónde corre el modelo. Es **quién entiende lo que está pasando**.
 
@@ -397,27 +397,27 @@ df -h                                    # ¿se llenó el disco?
 ```
 
 Cuatro. Se aprenden en una tarde y te vuelven autosuficiente. Eso vale
-infinitamente más que una IA local generando comandos que no podés auditar.
+infinitamente más que una IA local generando comandos que no puedes auditar.
 
 ---
 
-## Fase -1 — Practicá primero en tu Mac
+## Fase -1 — Practica primero en tu Mac
 
 > ⏱ Tiempo: una tarde. **Costo: cero. Riesgo: cero. Permisos necesarios: ninguno.**
 
 Este es el mejor consejo de todo el documento, y va antes que comprar nada.
 
-Podés montar el servidor **completo** en una máquina virtual dentro de tu Mac. Ubuntu,
+Puedes montar el servidor **completo** en una máquina virtual dentro de tu Mac. Ubuntu,
 SSH, `systemd`, firewall, la API entera, los respaldos con `cron` — **todo idéntico**
 a como sería en la máquina real. Lo que aprendas ahí se traslada tal cual.
 
 ### Por qué esto primero
 
-- No dependés de que TI te dé permisos.
-- No gastás en hardware antes de saber si el proyecto te convence.
-- Podés **romperlo a propósito** para aprender a arreglarlo, que es la única forma
+- No dependes de que TI te dé permisos.
+- No gastas en hardware antes de saber si el proyecto te convence.
+- Puedes **romperlo a propósito** para aprender a arreglarlo, que es la única forma
   real de aprender esto.
-- Si algo sale mal, borrás la VM y empezás de nuevo en dos minutos.
+- Si algo sale mal, borras la VM y empiezas de nuevo en dos minutos.
 
 Cuando la VM te salga con los ojos cerrados, pasarlo a una máquina física es
 prácticamente copiar y pegar.
@@ -427,10 +427,10 @@ prácticamente copiar y pegar.
 | Herramienta | ¿Sirve? | Por qué |
 | --- | --- | --- |
 | **Multipass** | ✅ **Recomendada** | Hecha por Canonical justo para levantar Ubuntu. Usa la virtualización nativa de Apple. Un comando y estás adentro |
-| **UTM** | ✅ Buena | Interfaz gráfica, más visual. Útil si preferís ver la instalación paso a paso, como sería en el equipo real |
+| **UTM** | ✅ Buena | Interfaz gráfica, más visual. Útil si prefieres ver la instalación paso a paso, como sería en el equipo real |
 | **OrbStack** | ⚠️ Sirve, con cuidado | Rapidísima, pero está pensada para contenedores. Ver la advertencia de abajo |
 | **VirtualBox (Oracle)** | ❌ **No** | En Apple Silicon solo hay una versión preliminar, inestable, y no corre sistemas x86. En una Mac Intel sí funcionaba; en M1 en adelante, no la uses |
-| **Docker** (ya instalado) | ❌ Para este fin, no | Ver abajo. Es una herramienta excelente, pero no es lo que necesitás **para aprender esto** |
+| **Docker** (ya instalado) | ❌ Para este fin, no | Ver abajo. Es una herramienta excelente, pero no es lo que necesitas **para aprender esto** |
 
 ### Por qué una VM y no un contenedor de Docker
 
@@ -439,13 +439,13 @@ Es la confusión más común, y acá importa de verdad.
 Un contenedor **no es una computadora**: es un proceso aislado. No arranca, no tiene
 `systemd`, no tiene SSH, no se apaga ni se prende. Y justamente eso —arrancar
 servicios solos, revivir procesos caídos, entrar por SSH, sobrevivir a un
-reinicio— **es todo lo que venís a aprender**.
+reinicio— **es todo lo que vienes a aprender**.
 
 Aprender administración de servidores dentro de un contenedor es como aprender a
 manejar en un simulador que no tiene volante. Docker es una gran herramienta; para
 este objetivo puntual, no es la indicada.
 
-**Usá una VM.**
+**Usa una VM.**
 
 ### Cómo montarla
 
@@ -462,24 +462,24 @@ multipass shell servidor-p15
 multipass list
 ```
 
-Ya estás dentro de un Ubuntu real, corriendo de verdad. Desde ahí seguí la
+Ya estás dentro de un Ubuntu real, corriendo de verdad. Desde ahí sigue la
 [Fase 1](#fase-1--montar-el-servidor) tal cual está escrita, salteando solo la
 instalación del sistema operativo (Multipass ya te la dio hecha).
 
-Comandos útiles mientras practicás:
+Comandos útiles mientras practicas:
 
 ```bash
 multipass stop servidor-p15      # apagarla
-multipass start servidor-p15     # prenderla (probá que la API levante sola)
+multipass start servidor-p15     # prenderla (prueba que la API levante sola)
 multipass delete servidor-p15 && multipass purge   # borrarla y empezar de cero
 ```
 
-Ese último comando es tu red de seguridad: **si rompés algo sin arreglo, borrás y
-volvés a empezar en dos minutos.** Por eso se practica acá y no en el equipo real.
+Ese último comando es tu red de seguridad: **si rompes algo sin arreglo, borras y
+vuelves a empezar en dos minutos.** Por eso se practica acá y no en el equipo real.
 
 ### Ejercicios para practicar antes de tocar hardware real
 
-Hacé estos en la VM hasta que salgan sin dudar:
+Haz estos en la VM hasta que salgan sin dudar:
 
 - [ ] Entrar por SSH desde la terminal del Mac
 - [ ] Instalar Node y correr un "hola mundo" que responda en un puerto
@@ -487,17 +487,17 @@ Hacé estos en la VM hasta que salgan sin dudar:
 - [ ] **Matar el proceso a propósito** y comprobar que `Restart=always` lo revive
 - [ ] Configurar el firewall, dejarte afuera a propósito, y recuperarte
 - [ ] Programar un `cron` que escriba un archivo cada minuto
-- [ ] Leer los logs con `journalctl` y encontrar un error que vos mismo provocaste
+- [ ] Leer los logs con `journalctl` y encontrar un error que tú mismo provocaste
 - [ ] Reiniciar la VM y verificar que todo levanta solo
 
-El quinto punto parece raro, pero es el más útil: **entender cómo te dejás afuera de
+El quinto punto parece raro, pero es el más útil: **entender cómo te dejas afuera de
 un servidor es lo que te salva de hacerlo en el real.**
 
 ---
 
 ## Fase 0 — Permisos y hardware
 
-> ⏱ Tiempo: días o semanas, y casi nada depende de vos. **Empezá por acá.**
+> ⏱ Tiempo: días o semanas, y casi nada depende de ti. **Empieza por aquí.**
 
 ### 0.1 Hablar con el área de redes / TI de la prepa
 
@@ -523,14 +523,14 @@ servidor.** Las computadoras y los celulares que se conectan pueden seguir con I
 automática y cambiante — no importa. Lo único que no puede moverse es la dirección a
 la que todos apuntan.
 
-| Forma | Qué necesitás | Cuándo usarla |
+| Forma | Qué necesitas | Cuándo usarla |
 | --- | --- | --- |
-| **A) Reserva DHCP en el router** | Acceso de administrador al router | **La correcta.** Le decís al router "a esta máquina, siempre esta IP" y te olvidás |
-| **B) IP estática en la máquina** | Nada del router. Se configura en el servidor (`netplan`, ver [Fase 1](#16-ip-fija)) | Cuando no tenés acceso al router |
+| **A) Reserva DHCP en el router** | Acceso de administrador al router | **La correcta.** Le dices al router "a esta máquina, siempre esta IP" y te olvidas |
+| **B) IP estática en la máquina** | Nada del router. Se configura en el servidor (`netplan`, ver [Fase 1](#16-ip-fija)) | Cuando no tienes acceso al router |
 
 #### ⚠️ El problema de la opción B, y cómo evitarlo
 
-Si configurás una IP estática que cae **dentro del rango que el router reparte
+Si configuras una IP estática que cae **dentro del rango que el router reparte
 automáticamente**, tarde o temprano el router le va a dar esa misma dirección a otro
 dispositivo. Dos máquinas con la misma IP.
 
@@ -538,38 +538,38 @@ Y esto no falla con un error claro. Falla con la app andando bien tres días y
 comportándose raro el cuarto. Es de las cosas más molestas de diagnosticar que
 existen.
 
-**Cómo evitarlo:** entrá al router, buscá el rango de DHCP (suele ser algo como
-`192.168.1.100` a `192.168.1.200`) y elegí una dirección **fuera de ese rango**, por
+**Cómo evitarlo:** entra al router, busca el rango de DHCP (suele ser algo como
+`192.168.1.100` a `192.168.1.200`) y elige una dirección **fuera de ese rango**, por
 ejemplo `192.168.1.50`.
 
-#### Si administrás la red de la escuela
+#### Si administras la red de la escuela
 
-Usá la **opción A**. Es la correcta, te evita el problema del rango por completo y ya
-tenés el acceso.
+Usa la **opción A**. Es la correcta, te evita el problema del rango por completo y ya
+tienes el acceso.
 
 Dos recomendaciones prácticas, no morales:
 
-- **Dejá registro.** Anotá en la documentación de red qué equipo es, qué IP tiene y
+- **Deja registro.** Anota en la documentación de red qué equipo es, qué IP tiene y
   para qué sirve. Un papel pegado al equipo también cuenta. El que venga después va a
   encontrar una máquina desconocida con IP fija y no va a saber qué es — y ese
-  "después" te puede tocar a vos mismo en dos años.
-- **Que alguien más lo sepa.** Si sos la única persona que sabe que ese servidor
+  "después" te puede tocar a ti mismo en dos años.
+- **Que alguien más lo sepa.** Si eres la única persona que sabe que ese servidor
   existe y cómo entrar, la escuela tiene un problema el día que no estés.
 
 ### 0.2 El equipo
 
-No necesitás nada potente. El inventario de una prepa es un puñado de miles de
+No necesitas nada potente. El inventario de una prepa es un puñado de miles de
 registros; eso corre en cualquier cosa.
 
 | Opción | Nota |
 | --- | --- |
-| Una PC de escritorio vieja | Gratis si ya existe. Verificá que el disco no esté por morir |
+| Una PC de escritorio vieja | Gratis si ya existe. Verifica que el disco no esté por morir |
 | Mini PC (Intel N100 o similar) | Barata, silenciosa, bajo consumo. La mejor opción si hay presupuesto |
-| Raspberry Pi 4/5 | Funciona, pero la tarjeta SD se corrompe con los cortes de luz. Si va Pi, **usá SSD por USB, no microSD** |
+| Raspberry Pi 4/5 | Funciona, pero la tarjeta SD se corrompe con los cortes de luz. Si va Pi, **usa SSD por USB, no microSD** |
 
 Requisitos reales: 4 GB de RAM y 60 GB de disco sobran.
 
-**Comprá también un UPS (no-break).** No es opcional. Un corte de luz en el momento
+**Compra también un UPS (no-break).** No es opcional. Un corte de luz en el momento
 de una escritura puede corromper la base. Un UPS de los baratos alcanza para que el
 equipo se apague ordenadamente.
 
@@ -585,12 +585,12 @@ equipo se apague ordenadamente.
 escritorio gráfico: solo texto. Se siente raro al principio, pero es lo correcto —
 menos cosas instaladas, menos cosas que fallan.
 
-1. Descargá la imagen ISO desde ubuntu.com.
-2. Grabala a una USB con [balenaEtcher](https://etcher.balena.io/).
-3. Arrancá el equipo desde la USB y seguí el instalador.
-4. Durante la instalación, **marcá la casilla "Install OpenSSH server"**. Eso te
+1. Descarga la imagen ISO desde ubuntu.com.
+2. Grábala a una USB con [balenaEtcher](https://etcher.balena.io/).
+3. Arranca el equipo desde la USB y sigue el instalador.
+4. Durante la instalación, **marca la casilla "Install OpenSSH server"**. Eso te
    permite manejarlo después desde tu laptop sin ir físicamente al equipo.
-5. Anotá el usuario y la contraseña que creaste.
+5. Anota el usuario y la contraseña que creaste.
 
 ### 1.2 Entrar por SSH
 
@@ -600,8 +600,8 @@ SSH es entrar a la terminal de otra computadora por la red. Desde tu Mac:
 ssh tu-usuario@192.168.1.50
 ```
 
-La primera vez pregunta si confiás en el equipo: escribí `yes`. Después pide la
-contraseña. Si entra, ya no necesitás teclado ni monitor en el servidor.
+La primera vez pregunta si confías en el equipo: escribe `yes`. Después pide la
+contraseña. Si entra, ya no necesitas teclado ni monitor en el servidor.
 
 ### 1.3 Actualizar y crear el usuario de la aplicación
 
@@ -631,18 +631,18 @@ sudo ufw default allow outgoing
 sudo ufw allow ssh          # para poder seguir entrando
 sudo ufw allow 3000/tcp     # el puerto de la API
 sudo ufw enable
-sudo ufw status             # verificá antes de cerrar la sesión
+sudo ufw status             # verifica antes de cerrar la sesión
 ```
 
-> ⚠️ Cuidado: si activás el firewall sin permitir SSH primero, te quedás afuera del
-> servidor y hay que ir físicamente con teclado y monitor. Verificá con
+> ⚠️ Cuidado: si activas el firewall sin permitir SSH primero, te quedas afuera del
+> servidor y hay que ir físicamente con teclado y monitor. Verifica con
 > `sudo ufw status` **antes** de cerrar la terminal.
 
 ### 1.6 IP fija
 <a id="16-ip-fija"></a>
 
 Si TI te asignó una IP por DHCP reservado, no hay nada que hacer del lado del
-servidor. Si te dijeron "configurala vos", se hace en `/etc/netplan/`:
+servidor. Si te dijeron "configúrala tú", se hace en `/etc/netplan/`:
 
 ```bash
 sudo nano /etc/netplan/00-installer-config.yaml
@@ -652,12 +652,12 @@ sudo nano /etc/netplan/00-installer-config.yaml
 network:
   version: 2
   ethernets:
-    enp1s0:                      # verificá el nombre real con: ip a
+    enp1s0:                      # verifica el nombre real con: ip a
       dhcp4: no
       addresses: [192.168.1.50/24]
       routes:
         - to: default
-          via: 192.168.1.1       # la IP del router, preguntale a TI
+          via: 192.168.1.1       # la IP del router, pregúntale a TI
       nameservers:
         addresses: [8.8.8.8, 1.1.1.1]
 ```
@@ -832,9 +832,9 @@ Esos cuatro comandos son el 90% de lo que vas a necesitar saber de administraci�
 
 La ventaja de seguir con SQLite: **el archivo se copia y ya**.
 
-1. En la máquina actual, entrá a Admin → Respaldos → "Crear respaldo".
-2. Abrí la carpeta con el botón "Abrir carpeta" y copiá el `.db` más reciente.
-3. Pasalo al servidor:
+1. En la máquina actual, entra a Admin → Respaldos → "Crear respaldo".
+2. Abre la carpeta con el botón "Abrir carpeta" y copia el `.db` más reciente.
+3. Pásalo al servidor:
 
 ```bash
 scp prestamos-backup-2026-08-20_14-30-05.db tu-usuario@192.168.1.50:/tmp/
@@ -847,16 +847,16 @@ sudo mv /tmp/prestamos-backup-*.db /home/prestamos/prestamos-api/prestamos.db
 sudo chown prestamos:prestamos /home/prestamos/prestamos-api/prestamos.db
 ```
 
-5. Aplicá las migraciones nuevas: hashear los PIN existentes, agregar columnas de
+5. Aplica las migraciones nuevas: hashear los PIN existentes, agregar columnas de
    token si hicieran falta.
-6. Verificá que los conteos coincidan con los de la app original:
+6. Verifica que los conteos coincidan con los de la app original:
 
 ```bash
 sudo -u prestamos sqlite3 /home/prestamos/prestamos-api/prestamos.db \
   "SELECT COUNT(*) FROM inventario; SELECT COUNT(*) FROM prestamos;"
 ```
 
-> ⚠️ Antes de migrar, dejá la máquina original **intacta** por lo menos un mes. Es tu
+> ⚠️ Antes de migrar, deja la máquina original **intacta** por lo menos un mes. Es tu
 > plan de retorno si algo sale mal.
 
 ---
@@ -954,7 +954,7 @@ PDF que ya existen (`src/utils/print.ts`). Con una librería de QR se dibujan en
 hoja de etiquetas y se imprimen todas de una.
 
 > 💡 Detalle práctico que ahorra trabajo doble: **el QR y el código de barras pueden
-> ser la misma etiqueta.** Si vas a imprimir y pegar etiquetas en cada objeto, hacelo
+> ser la misma etiqueta.** Si vas a imprimir y pegar etiquetas en cada objeto, hazlo
 > **una sola vez** con las dos cosas: código de barras para la pistola en la
 > computadora, QR para el celular. Pegar etiquetas en todo el inventario es el trabajo
 > físico más pesado de todo el proyecto — no lo hagas dos veces.
@@ -1024,9 +1024,9 @@ Lo mínimo aceptable: **una copia fuera del servidor, todos los días.**
 
 Un respaldo que nunca se restauró no es un respaldo, es una esperanza.
 
-Una vez al semestre: tomá un respaldo, levantalo en otra máquina, verificá que la app
-funciona y que los datos están completos. Si nunca hacés esto, vas a descubrir que los
-respaldos estaban vacíos justo el día que los necesitás.
+Una vez al semestre: toma un respaldo, levántalo en otra máquina, verifica que la app
+funciona y que los datos están completos. Si nunca haces esto, vas a descubrir que los
+respaldos estaban vacíos justo el día que los necesitas.
 
 ---
 
@@ -1034,7 +1034,7 @@ respaldos estaban vacíos justo el día que los necesitás.
 
 - **UPS (no-break).** Ya mencionado, y es lo primero.
 - **Encendido automático tras corte de luz.** Se activa en la BIOS del equipo:
-  buscá "Restore on AC Power Loss" o "After Power Failure" y ponelo en "Power On".
+  busca "Restore on AC Power Loss" o "After Power Failure" y ponlo en "Power On".
   Sin esto, cada apagón obliga a que alguien vaya físicamente a prender el servidor.
 - **`systemctl enable`** ya hecho en la Fase 2: la API arranca sola al encender.
 - **Verificación mensual:** entrar por SSH y correr
@@ -1056,7 +1056,7 @@ ping 192.168.1.50                        # desde otra máquina: ¿responde la re
 ```
 
 Si `ping` no responde: es problema de red o el equipo está apagado. Si responde pero
-la app no carga: es la API. Si la API está corriendo pero da errores: mirá los logs.
+la app no carga: es la API. Si la API está corriendo pero da errores: mira los logs.
 
 ### Mientras tanto: el plan B en papel
 
@@ -1068,7 +1068,7 @@ Suena primitivo. Es exactamente lo que hacen los sistemas serios.
 
 ### El plan de retorno
 
-Durante el primer mes, **mantené la app vieja instalada y funcionando** en la máquina
+Durante el primer mes, **mantén la app vieja instalada y funcionando** en la máquina
 de la coordinación. Si la migración sale mal, se vuelve atrás en minutos en vez de
 horas.
 
@@ -1076,7 +1076,7 @@ horas.
 
 ## Checklist completo
 
-### Fase -1 — Laboratorio en tu Mac (empezá acá)
+### Fase -1 — Laboratorio en tu Mac (empieza aquí)
 - [ ] Multipass instalado y VM Ubuntu corriendo
 - [ ] Entrar por SSH desde la terminal del Mac
 - [ ] Un "hola mundo" en Node respondiendo en un puerto
@@ -1084,7 +1084,7 @@ horas.
 - [ ] Proceso matado a propósito y revivido por `Restart=always`
 - [ ] Firewall configurado, dejarte afuera a propósito y recuperarte
 - [ ] Un `cron` escribiendo un archivo cada minuto
-- [ ] Un error provocado por vos, encontrado en `journalctl`
+- [ ] Un error provocado por ti, encontrado en `journalctl`
 
 ### Antes de empezar
 - [ ] Definidos los campos nuevos del inventario ([ROADMAP punto 4](./ROADMAP.md))
@@ -1150,12 +1150,12 @@ horas.
 
 ## Estimación honesta de tiempo
 
-Suponiendo que trabajás en esto de a ratos, no a tiempo completo:
+Suponiendo que trabajas en esto de a ratos, no a tiempo completo:
 
 | Fase | Tiempo | Riesgo de que se estire |
 | --- | --- | --- |
 | -1 — Laboratorio en tu Mac | una tarde | 🟢 Nulo: no depende de nadie |
-| 0 — Permisos y hardware | días a semanas | 🔴 Alto: no depende de vos |
+| 0 — Permisos y hardware | días a semanas | 🔴 Alto: no depende de ti |
 | Bloqueadores (auth, campos) | 1 semana | 🟡 Medio |
 | 1 — Montar el servidor | medio día | 🟢 Bajo |
 | 2 — La API | 1 a 2 semanas | 🔴 Alto: es lo más grande |
@@ -1175,16 +1175,16 @@ toman el doble de lo que se cree.
 
 No hagas todo de una. El orden que menos duele:
 
-1. **Practicá en una VM en tu Mac** ([Fase -1](#fase--1--practicá-primero-en-tu-mac)).
+1. **Practica en una VM en tu Mac** ([Fase -1](#fase--1--practica-primero-en-tu-mac)).
    Una tarde, cero riesgo, cero permisos, cero gasto. No compres hardware antes de
    esto.
-2. Resolvé los bloqueadores (auth con hash) **en la app actual**. Sirve igual aunque
+2. Resuelve los bloqueadores (auth con hash) **en la app actual**. Sirve igual aunque
    el servidor nunca exista.
-3. Montá el servidor y la API, pero seguí usando la app local. La API queda ahí,
+3. Monta el servidor y la API, pero sigue usando la app local. La API queda ahí,
    probándose sin presión.
-4. Migrá **una sola pantalla** a la API — el catálogo de equipos, que es de solo
-   lectura y no rompe nada. Probala una semana en uso real.
-5. Recién entonces migrá el resto.
+4. Migra **una sola pantalla** a la API — el catálogo de equipos, que es de solo
+   lectura y no rompe nada. Pruébala una semana en uso real.
+5. Recién entonces migra el resto.
 
 Un proyecto de dos meses que se entrega en un solo golpe al final es un proyecto que
 falla en producción. Uno que entrega pedazos usables cada semana es uno que llega.
@@ -1196,18 +1196,18 @@ falla en producción. Uno que entrega pedazos usables cada semana es uno que lle
 | Término | Qué es, en cristiano |
 | --- | --- |
 | **SSH** | Entrar a la terminal de otra computadora por la red. Como estar sentado frente a ella, pero desde tu laptop |
-| **Terminal / shell** | La pantalla negra donde escribís comandos. En un servidor no hay otra cosa |
-| **`sudo`** | "Hacé esto como administrador". Si un comando falla por permisos, suele faltarle `sudo` adelante |
+| **Terminal / shell** | La pantalla negra donde escribes comandos. En un servidor no hay otra cosa |
+| **`sudo`** | "Haz esto como administrador". Si un comando falla por permisos, suele faltarle `sudo` adelante |
 | **Puerto** | Un número que identifica un programa dentro de una máquina. La API vive en el 3000; SSH en el 22 |
 | **IP fija** | La dirección del servidor en la red. "Fija" significa que no cambia sola. Sin eso, la app no lo encuentra |
 | **Firewall (`ufw`)** | Portero de la red: decide qué puertos aceptan conexiones. Todo cerrado por defecto |
 | **`systemd`** | El que arranca programas al prender la máquina y los revive si se caen |
 | **Servicio (service)** | Un programa administrado por `systemd`. La API va a ser uno |
-| **Cron** | Programador de tareas repetitivas. "Corré este script cada hora" |
+| **Cron** | Programador de tareas repetitivas. "Corre este script cada hora" |
 | **Logs** | El diario de lo que hizo el programa. Primer lugar donde mirar cuando algo falla (`journalctl`) |
 | **API** | Un programa que responde peticiones por la red. El intermediario entre la app y la base de datos |
 | **Endpoint / ruta** | Una dirección concreta de la API. `GET /equipos` devuelve los equipos |
-| **Token (JWT)** | Un pase firmado por el servidor que dice quién sos. Se manda en cada petición |
+| **Token (JWT)** | Un pase firmado por el servidor que dice quién eres. Se manda en cada petición |
 | **Hash** | Transformación irreversible de una contraseña. Se guarda el hash, nunca la contraseña |
 | **Middleware** | Código que corre antes de cada petición. Acá: el guardia que revisa el token |
 | **Transacción** | Varias operaciones que ocurren todas o ninguna. Evita dejar la base a medio camino |

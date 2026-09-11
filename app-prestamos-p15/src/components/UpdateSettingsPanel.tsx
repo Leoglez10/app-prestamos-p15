@@ -27,18 +27,18 @@ export function UpdateSettingsPanel() {
           : state.status === "current"
             ? "No hay una versión más reciente disponible."
             : state.error === "check"
-              ? "No se pudo consultar el servidor. Revisá la conexión y reintentá cuando tengas acceso a Internet."
+              ? "No se pudo consultar el servidor. Revisa la conexión y vuelve a intentar cuando tengas acceso a Internet."
               : installed
-                ? "La actualización está instalada. Cerrá y abrí la aplicación; no hace falta volver a instalar."
+                ? "La actualización está instalada. Cierra y abre la aplicación; no hace falta volver a instalar."
                 : state.version
-                  ? `Versión ${state.version} disponible. ${state.status === "deferred" ? "La pospusiste por esta sesión; buscá manualmente para volver a verla." : "Revisá el aviso de actualización al inicio de la pantalla."}`
+                  ? `Versión ${state.version} disponible. ${state.status === "deferred" ? "La pospusiste por esta sesión; busca manualmente para volver a verla." : "Revisa el aviso de actualización al inicio de la pantalla."}`
                   : "Buscamos al abrir la aplicación y cada 6 horas mientras permanece abierta.";
   return (
     <section className="panel update-settings" aria-labelledby="update-settings-heading">
       <h2 id="update-settings-heading">Actualizaciones</h2>
       {appVersion ? <p className="update-version">Versión instalada: <strong>{appVersion}</strong></p> : null}
       <p role="status">{message}</p>
-      <p>La búsqueda no descarga ni instala nada. Windows cerrará la aplicación solo después de tu confirmación y la descarga; guardá tu trabajo antes de actualizar.</p>
+      <p>La búsqueda no descarga ni instala nada. Windows cerrará la aplicación solo después de tu confirmación y la descarga; guarda tu trabajo antes de actualizar.</p>
       <div className="update-actions">
         <button type="button" disabled={unavailable || installed || isUpdateBusy(state)} onClick={() => void controller.check(true)}>
           {state.status === "checking" ? "Buscando…" : "Buscar actualizaciones"}

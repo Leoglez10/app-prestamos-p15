@@ -11,7 +11,7 @@ function confirmExit(): Promise<boolean> {
     const message = document.createElement("p");
     message.className = "app-confirm-message";
     message.id = "update-exit-warning";
-    message.textContent = "La aplicación se cerrará. Guardá los cambios y terminá los préstamos o formularios abiertos antes de continuar. ¿Querés continuar ahora?";
+    message.textContent = "La aplicación se cerrará. Guarda los cambios y termina los préstamos o formularios abiertos antes de continuar. ¿Deseas continuar ahora?";
     dialog.setAttribute("aria-describedby", message.id);
     const actions = document.createElement("div");
     actions.className = "app-confirm-actions";
@@ -44,17 +44,17 @@ export function UpdateNotice() {
   const restartOnly = state.status === "installed" || state.error === "restart" || state.status === "restarting";
   const progress = state.status === "downloading" || state.status === "installing";
   const message = state.error === "check"
-    ? "No se pudo buscar la actualización. Revisá la conexión y volvé a intentar."
+    ? "No se pudo buscar la actualización. Revisa la conexión y vuelve a intentar."
     : state.error === "install"
-      ? "No se pudo descargar, verificar o instalar la actualización. Podés volver a intentar; si se repite, contactá al administrador."
+      ? "No se pudo descargar, verificar o instalar la actualización. Puedes volver a intentar; si se repite, contacta al administrador."
       : state.error === "restart"
-        ? "La actualización ya se instaló, pero no se pudo reiniciar. Cerrá y abrí la aplicación o reintentá el reinicio."
+        ? "La actualización ya se instaló, pero no se pudo reiniciar. Cierra y abre la aplicación o vuelve a intentar el reinicio."
         : state.status === "downloading"
           ? "Descargando actualización… La aplicación se cerrará al terminar. No inicies nuevas operaciones."
           : state.status === "installing"
             ? "Verificando e instalando… Windows cerrará la aplicación para ejecutar el instalador."
             : restartOnly
-              ? "Actualización instalada. Cerrá y abrí la aplicación para usar la nueva versión."
+              ? "Actualización instalada. Cierra y abre la aplicación para usar la nueva versión."
               : state.status === "confirming"
                 ? "Esperando tu confirmación. Todavía no se inició una nueva operación."
                 : `Versión ${state.version ?? "nueva"} disponible. No se descarga nada hasta que confirmes.`;

@@ -14,7 +14,7 @@ const FEEDBACK_URL: &str = "https://prestamos-p15-feedback.leoeligr10.workers.de
 /// Same bounds as the Worker, so bad input fails here instead of after a round trip.
 fn validar(tipo: &str, titulo: &str, descripcion: &str) -> Result<(), String> {
     if tipo != "bug" && tipo != "sugerencia" {
-        return Err("Elegí si es un problema o una sugerencia.".into());
+        return Err("Elige si es un problema o una sugerencia.".into());
     }
     if titulo.is_empty() || titulo.chars().count() > 120 {
         return Err("El título no puede quedar vacío ni pasar de 120 caracteres.".into());
@@ -51,13 +51,13 @@ pub async fn reportar_problema(
         .json(&cuerpo)
         .send()
         .await
-        .map_err(|_| "No se pudo conectar. Revisá la conexión a Internet y volvé a intentar.".to_string())?;
+        .map_err(|_| "No se pudo conectar. Revisa la conexión a Internet y vuelve a intentar.".to_string())?;
 
     if respuesta.status().as_u16() == 429 {
-        return Err("Enviaste varios reportes seguidos. Esperá un minuto y volvé a intentar.".into());
+        return Err("Enviaste varios reportes seguidos. Espera un minuto y vuelve a intentar.".into());
     }
     if !respuesta.status().is_success() {
-        return Err("El servidor no aceptó el reporte. Volvé a intentar en un rato.".into());
+        return Err("El servidor no aceptó el reporte. Vuelve a intentar en un rato.".into());
     }
     Ok(())
 }

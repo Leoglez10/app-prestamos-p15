@@ -24,7 +24,7 @@ export default {
 
     const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
     const { success } = await env.RATE_LIMITER.limit({ key: ip });
-    if (!success) return json(429, { error: "Demasiados reportes seguidos. Esperá un minuto." });
+    if (!success) return json(429, { error: "Demasiados reportes seguidos. Espera un minuto." });
 
     let payload;
     try {

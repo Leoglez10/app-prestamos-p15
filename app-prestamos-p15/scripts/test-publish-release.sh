@@ -99,7 +99,50 @@ grep -q '^## \[0.1.0\]' "$CHANGELOG" || fail "rollback did not restore CHANGELOG
 grep -q 'P15.0.1.0_x64-setup.exe' "$MANUAL" || fail "rollback did not restore the manual"
 git -C "$TMP" reset -q
 
-echo "OK: publish-release.sh version write + rollback"
+# --- rollback despues del commit: tres desenlaces distintos ----------------------
+# El bug que esto cubre: el rollback restauraba desde HEAD, y despues del commit HEAD
+# ya era el commit de release. Un fallo al pushear el tag decia "versiones revertidas"
+# sin revertir nada, y empujaba a elegir una version mayor cuando solo faltaba el push.
+PRISTINE="$(git -C "$TMP" rev-parse HEAD)"
+
+# (a) Commit local sin pushear: se deshace entero y el arbol vuelve atras.
+write_version 9.9.9
+git -C "$TMP" add -A
+git -C "$TMP" commit -qm "release: v9.9.9"
+PRE_SHA="$PRISTINE"; TAG_NAME="v9.9.9"
+COMMIT_DONE=1; COMMIT_PUSHED=0; TAG_CREATED=0
+out="$(rollback_versions 2>&1 || true)"
+[ "$(git -C "$TMP" rev-parse HEAD)" = "$PRISTINE" ] || fail "(a) el commit de release local no se deshizo"
+[ "$(jq -r .version "$CONF")" = "0.1.0" ] || fail "(a) quedo la version bumpeada tras deshacer el commit"
+case "$out" in *"Se deshizo el commit"*) ;; *) fail "(a) no informa que deshizo el commit: $out" ;; esac
+
+# (b) Commit ya pusheado: NO se revierte (el estado es correcto) y falta solo el tag.
+write_version 9.9.9
+git -C "$TMP" add -A
+git -C "$TMP" commit -qm "release: v9.9.9"
+PRE_SHA="$PRISTINE"; TAG_NAME="v9.9.9"
+COMMIT_DONE=1; COMMIT_PUSHED=1; TAG_CREATED=0
+out="$(rollback_versions 2>&1 || true)"
+[ "$(git -C "$TMP" rev-parse HEAD)" != "$PRISTINE" ] || fail "(b) revirtio un commit que ya estaba pusheado"
+[ "$(jq -r .version "$CONF")" = "9.9.9" ] || fail "(b) rompio los archivos de un commit ya pusheado"
+case "$out" in *"git tag v9.9.9 && git push origin v9.9.9"*) ;; *) fail "(b) no indica como crear el tag: $out" ;; esac
+
+# (c) Tag creado pero sin pushear: NO se revierte y avisa que no hay que subir version.
+git -C "$TMP" tag v9.9.9
+TAG_CREATED=1
+out="$(rollback_versions 2>&1 || true)"
+case "$out" in *"git push origin v9.9.9"*) ;; *) fail "(c) no indica como pushear el tag: $out" ;; esac
+case "$out" in *"No vuelvas a correr el script"*) ;; *) fail "(c) falta la advertencia sobre elegir una version mayor: $out" ;; esac
+
+# Volver al estado limpio para el resto del test.
+git -C "$TMP" tag -d v9.9.9 >/dev/null
+git -C "$TMP" reset -q --hard "$PRISTINE"
+PRE_SHA=""; TAG_NAME=""
+COMMIT_DONE=0; COMMIT_PUSHED=0; TAG_CREATED=0
+
+[ "$(jq -r .version "$CONF")" = "0.1.0" ] || fail "el entorno quedo sucio despues de los casos de rollback"
+
+echo "OK: publish-release.sh version write + rollback (3 desenlaces tras el commit)"
 
 # --- stamp-release-docs.sh ------------------------------------------------------
 # Same layout as the real repo: README/CHANGELOG at the git root, app in a subdir.

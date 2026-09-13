@@ -1,0 +1,47 @@
+name: Aviso de issue por correo
+
+# The Worker opens issues with the maintainer's own token, so GitHub never
+# notifies the maintainer about them. This mails every new issue instead.
+on:
+  issues:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar correo
+        # Issue text is untrusted: it only reaches the script through env vars,
+        # never through ${{ }} interpolation inside `run`.
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NUMBER: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+          URL: ${{ github.event.issue.html_url }}
+          LABELS: ${{ join(github.event.issue.labels.*.name, ', ') }}
+        run: |
+          if [ -z "$GMAIL_USER" ] || [ -z "$GMAIL_APP_PASSWORD" ]; then
+            echo "::error::Faltan los secrets GMAIL_USER y GMAIL_APP_PASSWORD."
+            exit 1
+          fi
+          # RFC 2047 keeps accents intact and a crafted title from adding headers.
+          subject="=?UTF-8?B?$(printf 'Nuevo issue #%s: %s' "$NUMBER" "$TITLE" | tr -d '\r\n' | base64 -w0)?="
+          {
+            printf 'From: App Prestamos P15 <%s>\n' "$GMAIL_USER"
+            printf 'To: %s\n' "$GMAIL_USER"
+            printf 'Subject: %s\n' "$subject"
+            printf 'MIME-Version: 1.0\n'
+            printf 'Content-Type: text/plain; charset=UTF-8\n'
+            printf 'Content-Transfer-Encoding: base64\n\n'
+            printf 'Etiquetas: %s\n\n%s\n\n%s\n' "${LABELS:-ninguna}" "${BODY:-(sin descripcion)}" "$URL" | base64 -w76
+          } > mail.txt
+          curl --silent --show-error --fail --ssl-reqd --crlf \
+            --url 'smtp://smtp.gmail.com:587' \
+            --user "$GMAIL_USER:$GMAIL_APP_PASSWORD" \
+            --mail-from "$GMAIL_USER" \
+            --mail-rcpt "$GMAIL_USER" \
+            --upload-file mail.txt

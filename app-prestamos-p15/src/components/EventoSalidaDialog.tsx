@@ -74,9 +74,14 @@ export function EventoSalidaDialog({
   const [responsableTipo, setResponsableTipo] = useState<TipoPersonaEvento>("profesor");
   const [responsableNombre, setResponsableNombre] = useState("");
   const [responsableCodigo, setResponsableCodigo] = useState("");
+  const [responsableTelefono, setResponsableTelefono] = useState("");
+  const [responsableCorreo, setResponsableCorreo] = useState("");
   const [hayExpositor, setHayExpositor] = useState(false);
   const [expositorNombre, setExpositorNombre] = useState("");
   const [expositorContacto, setExpositorContacto] = useState("");
+  const [presentacionTipo, setPresentacionTipo] = useState("");
+  const [llevaUsb, setLlevaUsb] = useState(false);
+  const [expositorLiga, setExpositorLiga] = useState("");
   const [observaciones, setObservaciones] = useState("");
   const [seleccionados, setSeleccionados] = useState<number[]>([]);
   const [busquedaEquipo, setBusquedaEquipo] = useState("");
@@ -105,9 +110,14 @@ export function EventoSalidaDialog({
     setResponsableTipo("profesor");
     setResponsableNombre("");
     setResponsableCodigo("");
+    setResponsableTelefono("");
+    setResponsableCorreo("");
     setHayExpositor(false);
     setExpositorNombre("");
     setExpositorContacto("");
+    setPresentacionTipo("");
+    setLlevaUsb(false);
+    setExpositorLiga("");
     setObservaciones("");
     setSeleccionados([]);
     setBusquedaEquipo("");
@@ -167,9 +177,14 @@ export function EventoSalidaDialog({
     responsable_nombre: responsableNombre,
     responsable_codigo: responsableCodigo,
     responsable_tipo: responsableTipo,
+    responsable_telefono: responsableTelefono,
+    responsable_correo: responsableCorreo,
     // Apagar la casilla borra al expositor aunque quedara texto escrito.
     expositor_nombre: hayExpositor ? expositorNombre : null,
     expositor_contacto: hayExpositor ? expositorContacto : null,
+    presentacion_tipo: hayExpositor ? presentacionTipo : null,
+    lleva_usb: hayExpositor ? llevaUsb : null,
+    expositor_liga: hayExpositor ? expositorLiga : null,
     observaciones,
   });
 
@@ -362,6 +377,24 @@ export function EventoSalidaDialog({
                   <small className="evento-error">{errorDe("responsableCodigo")}</small>
                 )}
               </label>
+              <label className="evento-campo">
+                Teléfono <span className="evento-opcional">(opcional)</span>
+                <input
+                  type="tel"
+                  value={responsableTelefono}
+                  onChange={(e) => setResponsableTelefono(e.target.value)}
+                  autoComplete="off"
+                />
+              </label>
+              <label className="evento-campo">
+                Correo <span className="evento-opcional">(opcional)</span>
+                <input
+                  type="email"
+                  value={responsableCorreo}
+                  onChange={(e) => setResponsableCorreo(e.target.value)}
+                  autoComplete="off"
+                />
+              </label>
             </div>
             <datalist id="evento-personas">
               {sugerencias.map((persona) => (
@@ -386,6 +419,7 @@ export function EventoSalidaDialog({
               <span>Habrá expositor</span>
             </label>
             {hayExpositor && (
+              <>
               <div className="evento-grid">
                 <label className="evento-campo">
                   ¿Quién es?
@@ -411,7 +445,37 @@ export function EventoSalidaDialog({
                     placeholder="Teléfono o correo"
                   />
                 </label>
+                <label className="evento-campo">
+                  Tipo de archivo de la presentación
+                  <input
+                    type="text"
+                    list="evento-presentacion-tipos"
+                    value={presentacionTipo}
+                    onChange={(e) => setPresentacionTipo(e.target.value)}
+                    placeholder="Ej. PowerPoint"
+                    autoComplete="off"
+                  />
+                  <datalist id="evento-presentacion-tipos">
+                    {["PowerPoint", "PDF", "Canva", "Video"].map((tipo) => (
+                      <option key={tipo} value={tipo} />
+                    ))}
+                  </datalist>
+                </label>
+                <label className="evento-campo">
+                  Liga del expositor
+                  <input
+                    type="url"
+                    value={expositorLiga}
+                    onChange={(e) => setExpositorLiga(e.target.value)}
+                    placeholder="https://..."
+                  />
+                </label>
               </div>
+              <label className="evento-check">
+                <input type="checkbox" checked={llevaUsb} onChange={(e) => setLlevaUsb(e.target.checked)} />
+                <span>Trae USB</span>
+              </label>
+              </>
             )}
           </fieldset>
 

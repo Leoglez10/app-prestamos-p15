@@ -33,8 +33,13 @@ const eventoBase = (extra?: Partial<Evento>): Evento => ({
   responsable_nombre: "Laura Méndez",
   responsable_codigo: "2958101",
   responsable_tipo: "profesor",
+  responsable_telefono: null,
+  responsable_correo: null,
   expositor_nombre: null,
   expositor_contacto: null,
+  presentacion_tipo: null,
+  lleva_usb: null,
+  expositor_liga: null,
   observaciones: null,
   id_admin: 1,
   autorizante_codigo: "223992647",
@@ -162,6 +167,23 @@ test("el acta marca la casilla solo de lo devuelto", () => {
   assert.equal((acta.match(/&#9744;/g) ?? []).length, 1, "solo el pendiente lleva casilla vacía");
   assert.equal((acta.match(/&#10003;/g) ?? []).length, 1, "solo el devuelto lleva palomita");
   assert.match(acta, /1 sin devolver/);
+});
+
+test("el acta lleva el contacto del responsable y la presentación del expositor", () => {
+  const acta = buildActaEventoBody(
+    eventoBase({
+      responsable_telefono: "33 1234 5678",
+      responsable_correo: "laura@udg.mx",
+      expositor_nombre: "Dr. Ruiz",
+      presentacion_tipo: "PowerPoint",
+      lleva_usb: 1,
+      expositor_liga: "https://ejemplo.mx/charla?a=1&b=2",
+    }),
+    [item()],
+    { generadoEn: "2026-03-12 19:05" },
+  );
+  assert.match(acta, /Laura Méndez \(2958101\) · 33 1234 5678 · laura@udg\.mx/);
+  assert.match(acta, /Presentación: PowerPoint · Trae USB · https:\/\/ejemplo\.mx\/charla\?a=1&amp;b=2/);
 });
 
 test("el acta escapa lo que escribe el usuario", () => {

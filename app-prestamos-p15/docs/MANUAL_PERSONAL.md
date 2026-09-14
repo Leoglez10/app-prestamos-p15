@@ -319,14 +319,29 @@ ceremonia, un congreso, una feria- no registres un préstamo suelto por cada uno
    - **Rango de fechas** - se elige en un calendario, arrastrando del día de
      salida al día de regreso.
    - **Horas**.
-   - **Responsable** y **expositor**.
+   - **Responsable**: nombre y código. También puedes anotar su **Teléfono** y
+     su **Correo** (los dos son opcionales).
+   - **Expositor**: marca **"Habrá expositor"** y escribe quién es y su
+     contacto. Además puedes anotar:
+     - **Tipo de archivo de la presentación** - se escribe libremente; la app
+       sugiere PowerPoint, PDF, Canva o Video.
+     - **Liga del expositor** - por ejemplo, el enlace a su presentación.
+     - **Trae USB** - márcalo si el expositor llevará su memoria USB.
    - **Notas**.
 3. Agrega los equipos que salen.
 4. Guarda.
 
+> **Los datos del expositor necesitan su nombre.** Si llenas el contacto, el
+> tipo de presentación, la liga o marcas "Trae USB" pero dejas vacío el nombre,
+> la app no guarda y avisa: *"Escribe el nombre del expositor o borra sus
+> datos."* Escribe el nombre o borra esos datos para continuar.
+
 Cada equipo del evento queda como un préstamo normal, así que el inventario y
 los reportes los siguen viendo correctamente. En **Inventario** aparecen con un
 **chip violeta** que dice que salieron con un evento.
+
+El teléfono y correo del responsable, y los datos de la presentación del
+expositor, aparecen en el **detalle del evento** y en el **acta impresa**.
 
 ## Cerrar un evento
 

@@ -39,9 +39,15 @@ export type EventoInput = {
   responsable_nombre: string;
   responsable_codigo: string;
   responsable_tipo: TipoPersonaEvento;
+  responsable_telefono?: string | null;
+  responsable_correo?: string | null;
   /** `null` es "no hay expositor": no hace falta un booleano aparte. */
   expositor_nombre?: string | null;
   expositor_contacto?: string | null;
+  /** Texto libre: "PowerPoint", "PDF", "Canva"... */
+  presentacion_tipo?: string | null;
+  lleva_usb?: boolean | null;
+  expositor_liga?: string | null;
   observaciones?: string | null;
 };
 
@@ -57,8 +63,14 @@ export type Evento = {
   responsable_nombre: string;
   responsable_codigo: string;
   responsable_tipo: string;
+  responsable_telefono: string | null;
+  responsable_correo: string | null;
   expositor_nombre: string | null;
   expositor_contacto: string | null;
+  presentacion_tipo: string | null;
+  /** 0/1; `null` cuando no hay expositor. */
+  lleva_usb: number | null;
+  expositor_liga: string | null;
   observaciones: string | null;
   id_admin: number | null;
   autorizante_codigo: string | null;
@@ -194,8 +206,11 @@ export const validarEvento = (input: EventoInput, totalObjetos: number): ErrorCa
     errores.push({ field: "horaFin", message: "La hora de fin debe ser después de la de inicio." });
   }
 
-  if (!texto(input.expositor_nombre) && texto(input.expositor_contacto)) {
-    errores.push({ field: "expositorNombre", message: "Escribe el nombre del expositor o borra su contacto." });
+  // Sin nombre, los datos del expositor no se guardan: mejor avisar que perderlos.
+  const datosExpositor =
+    texto(input.expositor_contacto) || texto(input.presentacion_tipo) || texto(input.expositor_liga) || input.lleva_usb;
+  if (!texto(input.expositor_nombre) && datosExpositor) {
+    errores.push({ field: "expositorNombre", message: "Escribe el nombre del expositor o borra sus datos." });
   }
 
   if (totalObjetos < 1) {
@@ -243,10 +258,18 @@ export const buildActaEventoBody = (
     })
     .join("");
 
+  const presentacion = [
+    texto(evento.presentacion_tipo) ? `Presentación: ${evento.presentacion_tipo}` : "",
+    evento.lleva_usb ? "Trae USB" : "",
+    texto(evento.expositor_liga),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   const expositor = texto(evento.expositor_nombre)
     ? `<div class="notes"><strong>Expositor:</strong> ${html(evento.expositor_nombre)}${
         texto(evento.expositor_contacto) ? ` · ${html(evento.expositor_contacto)}` : ""
-      }</div>`
+      }${presentacion ? `<br />${html(presentacion)}` : ""}</div>`
     : "";
 
   const cierre = evento.cerrado_en
@@ -282,7 +305,16 @@ export const buildActaEventoBody = (
       ${dato("Lugar", evento.lugar)}
       ${dato("Fecha", rangoFechas(evento))}
       ${dato("Horario", rangoHoras(evento))}
-      ${dato("Responsable", `${evento.responsable_nombre} (${evento.responsable_codigo})`)}
+      ${dato(
+        "Responsable",
+        [
+          `${evento.responsable_nombre} (${evento.responsable_codigo})`,
+          texto(evento.responsable_telefono),
+          texto(evento.responsable_correo),
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      )}
       ${dato("Autorizó", evento.autorizante_nombre ?? "—")}
       ${dato("Registrado", formatSqliteDateTime(evento.creado_en))}
     </div>

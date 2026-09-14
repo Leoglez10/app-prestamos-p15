@@ -259,8 +259,13 @@ const schemaStatements = [
     responsable_nombre TEXT NOT NULL,
     responsable_codigo TEXT NOT NULL,
     responsable_tipo TEXT NOT NULL DEFAULT 'profesor',
+    responsable_telefono TEXT,
+    responsable_correo TEXT,
     expositor_nombre TEXT,
     expositor_contacto TEXT,
+    presentacion_tipo TEXT,
+    lleva_usb INTEGER,
+    expositor_liga TEXT,
     observaciones TEXT,
     id_admin INTEGER REFERENCES profesores(id) ON DELETE SET NULL,
     autorizante_codigo TEXT,
@@ -495,6 +500,19 @@ const prepareDatabase = async (db: Database): Promise<void> => {
     // en un ALTER TABLE. La integridad la sostiene el código, que solo escribe
     // `evento_id` con el id que acaba de insertar en `eventos`.
     await db.execute("ALTER TABLE prestamos_rapidos_alumnos ADD COLUMN evento_id INTEGER");
+  }
+
+  const eventosColumns = await getTableColumns(db, "eventos");
+  for (const [columna, tipo] of [
+    ["responsable_telefono", "TEXT"],
+    ["responsable_correo", "TEXT"],
+    ["presentacion_tipo", "TEXT"],
+    ["lleva_usb", "INTEGER"],
+    ["expositor_liga", "TEXT"],
+  ]) {
+    if (!eventosColumns.includes(columna)) {
+      await db.execute(`ALTER TABLE eventos ADD COLUMN ${columna} ${tipo}`);
+    }
   }
 
   const profesoresColumns = await getTableColumns(db, "profesores");
@@ -2112,9 +2130,11 @@ export const createEventoSalida = async (input: {
     `INSERT INTO eventos
        (nombre, lugar, fecha_inicio, fecha_fin, hora_inicio, hora_fin,
         responsable_nombre, responsable_codigo, responsable_tipo,
-        expositor_nombre, expositor_contacto, observaciones,
+        responsable_telefono, responsable_correo,
+        expositor_nombre, expositor_contacto,
+        presentacion_tipo, lleva_usb, expositor_liga, observaciones,
         id_admin, autorizante_codigo, autorizante_nombre, creado_en)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       limpiar(evento.nombre),
       evento.lugar.trim(),
@@ -2125,9 +2145,14 @@ export const createEventoSalida = async (input: {
       evento.responsable_nombre.trim(),
       evento.responsable_codigo.trim(),
       evento.responsable_tipo === "alumno" ? "alumno" : "profesor",
+      limpiar(evento.responsable_telefono),
+      limpiar(evento.responsable_correo),
       limpiar(evento.expositor_nombre),
       // El contacto sin nombre no llega hasta aquí: validarEvento lo rechaza.
       limpiar(evento.expositor_nombre) ? limpiar(evento.expositor_contacto) : null,
+      limpiar(evento.expositor_nombre) ? limpiar(evento.presentacion_tipo) : null,
+      limpiar(evento.expositor_nombre) ? (evento.lleva_usb ? 1 : 0) : null,
+      limpiar(evento.expositor_nombre) ? limpiar(evento.expositor_liga) : null,
       limpiar(evento.observaciones),
       input.admin.id,
       input.admin.codigo.trim(),
@@ -2175,7 +2200,9 @@ export const getEventos = async (): Promise<import("../utils/evento").Evento[]> 
   return db.select<import("../utils/evento").Evento[]>(
     `SELECT e.id, e.nombre, e.lugar, e.fecha_inicio, e.fecha_fin, e.hora_inicio, e.hora_fin,
             e.responsable_nombre, e.responsable_codigo, e.responsable_tipo,
-            e.expositor_nombre, e.expositor_contacto, e.observaciones,
+            e.responsable_telefono, e.responsable_correo,
+            e.expositor_nombre, e.expositor_contacto,
+            e.presentacion_tipo, e.lleva_usb, e.expositor_liga, e.observaciones,
             e.id_admin, e.autorizante_codigo, e.autorizante_nombre,
             e.creado_en, e.cerrado_en, e.cerrado_por, e.notas_cierre,
             (SELECT COUNT(*) FROM prestamos_rapidos_alumnos p WHERE p.evento_id = e.id) AS total_items,

@@ -221,6 +221,13 @@ La app viene con un administrador precargado (solo para empezar):
 
 > 📋 Esto sirve para **incidencias rápidas** donde un alumno necesita un equipo y no pasa por el kiosko del profesor.
 
+**Salida a evento.** Cuando varios equipos salen juntos a un mismo lugar y fechas, usa **"Crear salida a evento"** desde Préstamo Rápido. Además de lugar, fechas, horas y equipos, el formulario captura:
+
+- **Responsable**: nombre, código, y opcionalmente **Teléfono** y **Correo**.
+- **Expositor** (marca **"Habrá expositor"**): quién es, contacto, **Tipo de archivo de la presentación** (texto libre; sugiere PowerPoint, PDF, Canva o Video), **Liga del expositor** y la casilla **Trae USB**.
+
+Los datos del expositor solo se guardan si escribes su nombre; si no, la app avisa: *"Escribe el nombre del expositor o borra sus datos."* Todo esto aparece en el detalle del evento y en el acta impresa.
+
 ### Flujo 3: Administrar todo (Admin)
 
 1. En la pantalla de inicio, clic en **"Administrador"**.

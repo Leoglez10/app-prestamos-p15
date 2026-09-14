@@ -243,6 +243,11 @@ export function EventoDetalleModal({ evento, admin, onCerrar, onCambio }: Props)
             <div className="evento-dato-meta">
               {evento.responsable_codigo} · {evento.responsable_tipo === "alumno" ? "Alumno" : "Profesor"}
             </div>
+            {(evento.responsable_telefono || evento.responsable_correo) && (
+              <div className="evento-dato-meta">
+                {[evento.responsable_telefono, evento.responsable_correo].filter(Boolean).join(" · ")}
+              </div>
+            )}
           </Dato>
           <Dato label="Expositor">
             {evento.expositor_nombre ? (
@@ -251,6 +256,11 @@ export function EventoDetalleModal({ evento, admin, onCerrar, onCambio }: Props)
                 {evento.expositor_contacto && (
                   <div className="evento-dato-meta">{evento.expositor_contacto}</div>
                 )}
+                {evento.presentacion_tipo && (
+                  <div className="evento-dato-meta">Presentación: {evento.presentacion_tipo}</div>
+                )}
+                {evento.lleva_usb === 1 && <div className="evento-dato-meta">Trae USB</div>}
+                {evento.expositor_liga && <div className="evento-dato-meta">{evento.expositor_liga}</div>}
               </>
             ) : (
               <span className="evento-dato-meta">Sin expositor</span>

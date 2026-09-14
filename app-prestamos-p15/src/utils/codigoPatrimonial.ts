@@ -23,3 +23,36 @@ export const normalizarCodigoPatrimonial = (texto: string): string | null => {
   // ancho fijo dejaría fuera equipos que sí existen.
   return digitos.length > 0 ? digitos : null;
 };
+
+/**
+ * Normaliza un número de serie del fabricante tal como lo entrega la pistola.
+ *
+ * A diferencia del ID de Patrimonio NO se quedan solo los dígitos: la serie es
+ * alfanumérica (`MXL3322DP2`) y los guiones o letras son parte del dato. Solo se
+ * quitan los espacios, los delimitadores `*` de Code 39 y la diferencia de
+ * mayúsculas, que el lector y quien teclea no respetan igual.
+ */
+export const normalizarNumSerie = (texto: string): string | null => {
+  const limpio = (texto ?? "").trim().replace(/^\*+|\*+$/g, "").trim().toUpperCase();
+  return limpio.length > 0 ? limpio : null;
+};
+
+export type CodigoEscaneado = { tipo: "patrimonial" | "serie"; valor: string };
+
+/**
+ * Decide si lo que leyó la pistola es un ID de Patrimonio o un número de serie.
+ *
+ * La regla es deliberadamente simple: si trae alguna letra no puede ser un ID de
+ * Patrimonio (son solo dígitos), así que es una serie. Si son solo dígitos se
+ * asume Patrimonio, que es la etiqueta que se espera en el recorrido; las series
+ * puramente numéricas existen y por eso la toma física también las busca como
+ * serie cuando no aparecen como ID.
+ */
+export const clasificarCodigoEscaneado = (texto: string): CodigoEscaneado | null => {
+  const serie = normalizarNumSerie(texto);
+  if (!serie) return null;
+  if (/\p{L}/u.test(serie)) return { tipo: "serie", valor: serie };
+
+  const patrimonial = normalizarCodigoPatrimonial(serie);
+  return patrimonial ? { tipo: "patrimonial", valor: patrimonial } : null;
+};

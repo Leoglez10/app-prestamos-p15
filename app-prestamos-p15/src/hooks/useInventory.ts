@@ -2,7 +2,7 @@ import Database from "@tauri-apps/plugin-sql";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
-import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
+import { normalizarCodigoPatrimonial, normalizarNumSerie } from "../utils/codigoPatrimonial";
 import { ESTADOS_FIJOS, slugEstado, type Estado } from "../utils/estados";
 import { cambiosDeEquipo, COLUMNAS_FICHA_EQUIPO, esPrestableEfectivo, type FichaEquipo } from "../utils/equipoFicha";
 import {
@@ -2529,6 +2529,33 @@ export const buscarPorIdPatrimonial = async (codigo: string): Promise<Equipo | n
 };
 
 /**
+ * Resuelve un disparo contra el número de serie del fabricante.
+ *
+ * La serie NO es única (el Excel de Patrimonio trae repetidas), así que nunca se
+ * elige una en silencio: con más de una coincidencia `equipo` viene `null` y
+ * `coincidencias` dice cuántas hubo, para que la pantalla pida otra etiqueta.
+ */
+export const buscarPorNumSerie = async (
+  serie: string
+): Promise<{ equipo: Equipo | null; coincidencias: number }> => {
+  const normalizada = normalizarNumSerie(serie);
+  if (!normalizada) return { equipo: null, coincidencias: 0 };
+
+  const db = await getDb();
+  const filas = await db.select<Array<{ id: number }>>(
+    "SELECT id FROM inventario WHERE UPPER(TRIM(num_serie)) = ?",
+    [normalizada]
+  );
+  if (filas.length !== 1) return { equipo: null, coincidencias: filas.length };
+
+  const equipos = await getEquipos();
+  return {
+    equipo: equipos.find((equipo) => equipo.id === filas[0].id) ?? null,
+    coincidencias: 1,
+  };
+};
+
+/**
  * Marca un equipo como visto, y de paso le estampa donde estaba.
  *
  * La ubicacion se escribe aca y no en la importacion: es el dato que produce
@@ -2661,6 +2688,15 @@ export const vincularIdPatrimonial = async (equipoId: number, codigo: string): P
     throw new Error("El codigo escaneado no tiene ningun numero.");
   }
   await updateEquipo(equipoId, { id_patrimonial: normalizado });
+};
+
+/** Lo mismo que `vincularIdPatrimonial`, pero con el número de serie escaneado. */
+export const vincularNumSerie = async (equipoId: number, serie: string): Promise<void> => {
+  const normalizada = normalizarNumSerie(serie);
+  if (!normalizada) {
+    throw new Error("El numero de serie escaneado esta vacio.");
+  }
+  await updateEquipo(equipoId, { num_serie: normalizada });
 };
 
 /** Guarda el reporte para Patrimonio y devuelve la ruta donde quedo. */

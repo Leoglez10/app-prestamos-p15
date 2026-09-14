@@ -15,6 +15,7 @@
     "test:identificadores": "node --test src/utils/identificadores.test.ts",
     "test:ficha": "node --test src/utils/equipoFicha.test.ts",
     "test:importacion": "node --test src/utils/importacionPatrimonio.test.ts",
+    "test:profesores": "node --test src/utils/importacionProfesores.test.ts",
     "test": "node --test src/utils/*.test.ts",
     "test:toma": "node --test src/utils/tomaFisica.test.ts",
     "test:pistola": "node --test src/utils/pistola.test.ts",

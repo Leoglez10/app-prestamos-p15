@@ -62,6 +62,7 @@ import { useEntradaPistola } from "../hooks/usePistola";
 import { confirmDialog, alertDialog } from "../utils/confirm";
 import { UpdateSettingsPanel } from "../components/UpdateSettingsPanel";
 import { ReportarProblemaPanel } from "../components/ReportarProblemaPanel";
+import { ImportarProfesoresPanel } from "../components/ImportarProfesoresPanel";
 
 const BACKUP_KIND_LABELS: Record<string, string> = {
   auto: "Automático",
@@ -2211,6 +2212,7 @@ function ProfesoresPanel() {
   const [adminPin, setAdminPin] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [mostrarImportar, setMostrarImportar] = useState(false);
 
   const loadProfesores = async () => {
     try {
@@ -2287,7 +2289,23 @@ function ProfesoresPanel() {
 
   return (
     <section>
-      <h1 style={{ fontSize: "2.5rem", marginBottom: "1.2rem" }}>Directorio de Profesores</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap", marginBottom: "1.2rem" }}>
+        <h1 style={{ fontSize: "2.5rem", margin: 0 }}>Directorio de Profesores</h1>
+        <button
+          type="button"
+          className="ghost boton-archivo"
+          onClick={() => setMostrarImportar((abierto) => !abierto)}
+        >
+          <Icon name={mostrarImportar ? "x" : "upload"} size="1.05rem" />
+          {mostrarImportar ? "Cerrar importación" : "Importar desde Excel"}
+        </button>
+      </div>
+
+      {mostrarImportar && (
+        <div className="panel" style={{ marginBottom: "1rem" }}>
+          <ImportarProfesoresPanel onImportado={() => void loadProfesores()} />
+        </div>
+      )}
 
       <div className="panel" style={{ marginBottom: "1rem" }}>
         <h3 style={{ marginTop: 0 }}>{editingId ? "Editar Profesor" : "Agregar Profesor"}</h3>

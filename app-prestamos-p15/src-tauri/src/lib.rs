@@ -2,6 +2,7 @@ mod celular;
 mod certificado;
 mod feedback;
 mod patrimonio;
+mod profesores;
 mod transaccion;
 
 use chrono::Local;
@@ -493,6 +494,7 @@ pub fn run() {
             celular_registrar_dispositivo,
             feedback::reportar_problema,
             patrimonio::leer_excel_patrimonio,
+            profesores::leer_excel_profesores,
             transaccion::ejecutar_transaccion,
             guardar_reporte_inventario,
             guardar_reporte_inventario_excel

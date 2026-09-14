@@ -13,6 +13,13 @@ import {
 
 export type { PlanImportacion };
 import {
+  planificarImportacionProfesores,
+  type LecturaProfesores,
+  type PlanImportacionProfesores,
+} from "../utils/importacionProfesores";
+
+export type { PlanImportacionProfesores };
+import {
   construirReporteCsv,
   filasDelReporte,
   nombreDelReporte,
@@ -2391,6 +2398,76 @@ export const aplicarImportacionPatrimonio = async (
     if (mensaje.includes("UNIQUE constraint failed: inventario.id_patrimonial")) {
       throw new Error(
         "El Excel trae un ID de Patrimonio que ya esta registrado en otro equipo. No se importo nada."
+      );
+    }
+    throw error instanceof Error ? error : new Error(mensaje);
+  }
+
+  await db.select("PRAGMA wal_checkpoint(TRUNCATE)");
+
+  return {
+    altas: plan.altas.length,
+    actualizados: plan.cambios.length,
+    sinCambio: plan.sinCambio,
+    respaldo: respaldo.file_name,
+  };
+};
+
+// --- Importacion del Excel de profesores -------------------------------------
+//
+// Mismo reparto que Patrimonio: Rust lee el .xlsx (`src-tauri/src/profesores.rs`)
+// y la escritura se queda aca. Ver `src/utils/importacionProfesores.ts`.
+
+/**
+ * Paso 1: leer el archivo y comparar contra el directorio. NO escribe nada.
+ */
+export const leerExcelProfesores = async (bytes: Uint8Array): Promise<PlanImportacionProfesores> => {
+  requireTauriRuntime();
+
+  const lectura = await invoke<LecturaProfesores>("leer_excel_profesores", {
+    bytes: Array.from(bytes),
+  });
+
+  const profesores = await getProfesores();
+
+  return planificarImportacionProfesores(
+    lectura,
+    profesores.map((profesor) => ({ id: profesor.id, codigo: profesor.codigo, nombre: profesor.nombre }))
+  );
+};
+
+/**
+ * Paso 2: aplicar el plan.
+ *
+ * Respaldo primero, como en Patrimonio. Las altas entran sin permisos de
+ * administrador y los cambios solo tocan `nombre`: el Excel nunca da ni quita
+ * permisos, y nunca borra profesores.
+ */
+export const aplicarImportacionProfesores = async (
+  plan: PlanImportacionProfesores
+): Promise<ResultadoImportacion> => {
+  const db = await getDb();
+  const respaldo = await createBackup(false);
+
+  const sentencias: SentenciaSql[] = [
+    ...plan.altas.map((alta) => ({
+      sql: "INSERT INTO profesores (codigo, nombre, es_admin, admin_pin) VALUES (?, ?, 0, NULL)",
+      params: [alta.codigo, alta.nombre],
+    })),
+    ...plan.cambios.map((cambio) => ({
+      sql: "UPDATE profesores SET nombre = ? WHERE id = ?",
+      params: [cambio.nombre, cambio.id],
+    })),
+  ];
+
+  try {
+    // Todo o nada: un directorio importado a medias no dice quien quedo fuera.
+    await ejecutarEnTransaccion(sentencias);
+  } catch (error) {
+    const mensaje = error instanceof Error ? error.message : String(error);
+    if (mensaje.includes("UNIQUE constraint failed: profesores.codigo")) {
+      throw new Error(
+        "El Excel trae un código que ya está registrado en otro profesor. No se importó nada."
       );
     }
     throw error instanceof Error ? error : new Error(mensaje);

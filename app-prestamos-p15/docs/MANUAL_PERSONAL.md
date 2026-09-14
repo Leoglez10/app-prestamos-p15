@@ -115,6 +115,7 @@ extraviado o en mantenimiento.
 | **Salida a evento** | Varios equipos salen juntos a un lugar y unas fechas |
 | **Códigos de barras** | La pistola dispara sola, sin configurar nada |
 | **Importar Patrimonio** | El Excel oficial se carga con plan previo y respaldo automático |
+| **Importar profesores** | Todo el directorio desde un Excel de dos columnas, sin borrar a nadie |
 | **Toma de inventario físico** | Campañas por área, modo prueba y reporte en Excel para Patrimonio |
 | **Dos computadoras a la vez** | Una presta mientras otra cuenta; el trabajo se fusiona |
 | **Reportes en PDF** | Filtrados por fecha, estado o categoría |
@@ -385,6 +386,38 @@ información, sin saltar entre vistas.
 
 > Un profesor sin dar de alta **no puede usar el kiosko**. Es la causa número uno
 > de "mi código no funciona".
+
+## Dar de alta muchos profesores con un Excel
+
+Sirve para cargar o poner al día todo el directorio de un golpe, sin capturar
+profesor por profesor.
+
+1. Prepara el Excel con **dos columnas** y los encabezados en la **fila 1**:
+
+   | Código | Nombre completo |
+   |---|---|
+   | 2958101 | Edgar Iván Aguilar Durán |
+   | 2104455 | María López Hernández |
+
+   - Se lee solo la **primera hoja**. Las columnas pueden ir en cualquier orden
+     y las demás columnas se ignoran.
+   - Da formato de **Texto** a la columna Código antes de pegar los códigos: si
+     Excel la trata como número, borra los ceros de adelante.
+2. **Admin** → pestaña **Profesores** → **Importar desde Excel**.
+3. Elige el archivo. La app muestra un **plan previo ANTES de tocar nada**:
+   cuántos profesores son nuevos, a quiénes se les corregiría el nombre (antes →
+   después), cuántos no cambian y los avisos (filas sin código o sin nombre,
+   códigos repetidos).
+4. Si el plan te convence, presiona **Aplicar importación**. Antes de escribir,
+   la app crea un **respaldo automático**.
+
+| Regla | Detalle |
+|---|---|
+| **El código manda** | Un profesor que ya existe se reconoce por su código; solo se actualiza su nombre |
+| **Nadie se borra** | Quien no venga en el Excel se queda como está |
+| **Los permisos no se tocan** | El Excel no hace a nadie administrador ni le quita el PIN a nadie |
+| **Mayúsculas y acentos no cuentan como cambio** | "MARIA LOPEZ" no reemplaza a "María López". La **ñ** sí cuenta: "Peña" corrige a "Pena" |
+| **Se puede deshacer** | Configuración → Respaldos → restaurar el respaldo que se creó al aplicar |
 
 ## Categorías: prestable vs solo inventario
 

@@ -52,7 +52,7 @@ const SENTINELAS: [&str; 5] = ["S/N", "S/S", "S/M", "N/A", "NINGUNA"];
 
 /// Quita acentos y colapsa espacios, para comparar encabezados sin depender de
 /// como los escribio Patrimonio.
-fn normalizar_encabezado(texto: &str) -> String {
+pub(crate) fn normalizar_encabezado(texto: &str) -> String {
     texto
         .chars()
         .map(|c| match c {
@@ -93,7 +93,7 @@ fn revisar_mojibake(texto: &str) -> bool {
 }
 
 /// Texto util o `None`. Colapsa los sentinelas del archivo (`S/N`, `------`...).
-fn celda_limpia(valor: &Data) -> Option<String> {
+pub(crate) fn celda_limpia(valor: &Data) -> Option<String> {
     let bruto = match valor {
         Data::Empty => return None,
         Data::String(s) => s.clone(),

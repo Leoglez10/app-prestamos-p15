@@ -139,6 +139,7 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 - ✅ Lectura de **códigos de barras** en kiosko, inventario y toma física — **la pistola dispara sola**, sin depender de que la etiqueta mande `Enter`
 - ✅ **Escaneo global** en Inventario: apuntas a una etiqueta y se abre la ficha, sin hacer clic en ningún campo primero
 - ✅ Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
+- ✅ Importación del **directorio de profesores** desde un Excel (Código + Nombre completo), con plan previo y respaldo automático
 - ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
 - ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
 - ✅ **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
@@ -230,6 +231,7 @@ La app viene con un administrador precargado (solo para empezar):
    - **Toma de inventario** → campañas de conteo físico con lector de códigos ([ver sección completa](#-toma-de-inventario-físico))
    - **Categorías** → crear/editar categorías y decidir si son **Prestable** o *Solo inventario*
    - **Profesores** → dar de alta profesores que pueden usar el kiosko, marcar admins + PIN
+     - 📥 **Importar desde Excel**: carga todo el directorio de un golpe. El Excel lleva dos columnas, **Código** y **Nombre completo**, con los encabezados en la fila 1 (la pantalla muestra un ejemplo). Antes de aplicar ves quién es nuevo y a quién se le corrige el nombre; se hace un respaldo automático, **nadie se borra** y **no se tocan los permisos de administrador**. Da formato de Texto a la columna Código para no perder ceros de adelante.
    - **Reportes** → filtrar por fecha / estado / categoría e imprimir en PDF; observaciones de entrega/devolución
    - **Configuración** → **Actualizaciones** (versión instalada y buscar versión nueva), **Reportar un problema**, ajustes del kiosko, respaldos automáticos y manuales, restauración
 
@@ -913,7 +915,7 @@ El instalador actual solo se genera para Windows. En Mac/Linux puedes compilar e
 En el panel del Admin → pestaña Reportes. Filtras por fecha o profesor y das "Imprimir" para tener un PDF.
 
 **¿Cómo doy de alta un profesor nuevo?**
-Admin → Profesores → "Nuevo" → nombre y código UDG. Si también será admin, marca el checkbox y define un PIN.
+Admin → Profesores → "Nuevo" → nombre y código UDG. Si también será admin, marca el checkbox y define un PIN. Si son muchos, usa **"Importar desde Excel"** en esa misma pestaña.
 
 **¿Cómo marco un equipo como perdido?**
 Admin → Inventario → menú de la fila (⋮) → **"Marcar perdido"**. También puedes editar el equipo y cambiar su estado a `extraviado`. A partir de ahí no aparecerá para préstamo.

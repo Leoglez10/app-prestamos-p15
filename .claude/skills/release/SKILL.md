@@ -91,7 +91,7 @@ Sin argumento del usuario, decidir leyendo `git log <ultimo-tag>..HEAD`.
      && pdftotext "$dir"/*.pdf - | rg -i -c "<palabra clave de cada cambio>"
    ```
    (`pdftotext` viene de `brew install poppler`.) Cero coincidencias = el manual del Release no incluye el cambio: reportarlo como falla.
-11. **Issues cerrados.** Para cada `#N` ligado con `Closes`: `gh issue view N --json state`. GitHub lo cierra solo al llegar el commit a `main`. Si sigue abierto: `gh issue close N --comment "Incluido en v<X.Y.Z>."`. Si ya estaba cerrado, comentar igual la version: `gh issue comment N --body "Incluido en v<X.Y.Z>."`.
+11. **Issues cerrados.** Para cada `#N` ligado con `Closes`: `gh issue view N --json state`. GitHub lo cierra solo al llegar el commit a `main`. Si sigue abierto: `gh issue close N --comment "Incluido en v<X.Y.Z>."`. Si ya estaba cerrado, comentar igual la version: `gh issue comment N --body "Incluido en v<X.Y.Z>."`. En los dos casos, etiquetarlo: `gh issue edit N --add-label completado --remove-label "en proceso"`.
 
 ## Output Contract
 

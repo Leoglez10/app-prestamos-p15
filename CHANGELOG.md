@@ -8,6 +8,17 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.12.0] — 2026-09-13
+
+### Añadido
+
+- Importar el directorio de profesores desde un Excel: en Admin → Profesores →
+  Importar desde Excel. El archivo lleva dos columnas, Código y Nombre completo.
+  Antes de aplicar se ve quién es nuevo y a quién se le corrige el nombre; nadie
+  se borra y no se tocan los permisos de administrador.
+
+---
+
 ## [0.11.1] — 2026-09-10
 
 **La aplicación no cambia en esta versión.** Lo que se corrigió es la documentación

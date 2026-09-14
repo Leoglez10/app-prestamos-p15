@@ -2,14 +2,17 @@ name: Aviso de issue por correo
 
 # The Worker opens issues with the maintainer's own token, so GitHub never
 # notifies the maintainer about them. This mails every new issue instead.
+# The release skill labels an issue `completado` once its version is published;
+# that label mails a fixed address so it learns the work is out.
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
 
 permissions: {}
 
 jobs:
   email:
+    if: github.event.action == 'opened' || github.event.label.name == 'completado'
     runs-on: ubuntu-latest
     steps:
       - name: Enviar correo
@@ -18,6 +21,8 @@ jobs:
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ACTION: ${{ github.event.action }}
+          DONE_EMAIL: p15computo@gmail.com
           NUMBER: ${{ github.event.issue.number }}
           TITLE: ${{ github.event.issue.title }}
           BODY: ${{ github.event.issue.body }}
@@ -28,11 +33,18 @@ jobs:
             echo "::error::Faltan los secrets GMAIL_USER y GMAIL_APP_PASSWORD."
             exit 1
           fi
+          if [ "$ACTION" = "opened" ]; then
+            rcpt="$GMAIL_USER"
+            prefix='Nuevo issue'
+          else
+            rcpt="$DONE_EMAIL"
+            prefix='Issue completado'
+          fi
           # RFC 2047 keeps accents intact and a crafted title from adding headers.
-          subject="=?UTF-8?B?$(printf 'Nuevo issue #%s: %s' "$NUMBER" "$TITLE" | tr -d '\r\n' | base64 -w0)?="
+          subject="=?UTF-8?B?$(printf '%s #%s: %s' "$prefix" "$NUMBER" "$TITLE" | tr -d '\r\n' | base64 -w0)?="
           {
             printf 'From: App Prestamos P15 <%s>\n' "$GMAIL_USER"
-            printf 'To: %s\n' "$GMAIL_USER"
+            printf 'To: %s\n' "$rcpt"
             printf 'Subject: %s\n' "$subject"
             printf 'MIME-Version: 1.0\n'
             printf 'Content-Type: text/plain; charset=UTF-8\n'
@@ -43,5 +55,5 @@ jobs:
             --url 'smtp://smtp.gmail.com:587' \
             --user "$GMAIL_USER:$GMAIL_APP_PASSWORD" \
             --mail-from "$GMAIL_USER" \
-            --mail-rcpt "$GMAIL_USER" \
+            --mail-rcpt "$rcpt" \
             --upload-file mail.txt

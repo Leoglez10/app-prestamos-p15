@@ -74,7 +74,27 @@ jobs:
           $fallback = "Esta versión trae mejoras internas y correcciones menores."
           $features = @()
           $fixes = @()
-          if ($env:REF_TYPE -eq "tag") {
+          # A "## [X.Y.Z]" section in the CHANGELOG wins over the commit subjects.
+          # The subjects cannot tell a reverted commit from a live one, so the
+          # hand-written entry is the only way to keep false news out of the app.
+          $fromChangelog = ""
+          if ($env:REF_TYPE -eq "tag" -and (Test-Path CHANGELOG.md)) {
+            $heading = "## [" + $env:REF_NAME.TrimStart('v') + "]"
+            $inside = $false
+            $picked = @()
+            foreach ($line in Get-Content -Path CHANGELOG.md -Encoding utf8) {
+              if ($inside) {
+                if ($line -match '^## \[' -or $line -match '^---\s*$') { break }
+                $picked += ($line -replace '^###\s+A.adido\s*$', 'Novedades' -replace '^###\s+Corregido\s*$', 'Correcciones' -replace '^#+\s+', '' -replace '\*\*', '')
+              } elseif ($line.StartsWith($heading)) {
+                $inside = $true
+              }
+            }
+            $fromChangelog = ($picked -join "`n").Trim()
+          }
+          if ($fromChangelog) {
+            Write-Host "Using the CHANGELOG entry for $env:REF_NAME."
+          } elseif ($env:REF_TYPE -eq "tag") {
             $tag = $env:REF_NAME
             $previous = git describe --tags --abbrev=0 "$tag^" 2>$null
             if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($previous)) {
@@ -94,7 +114,7 @@ jobs:
           $sections = @()
           if ($features.Count -gt 0) { $sections += (@("Novedades") + $features) -join "`n" }
           if ($fixes.Count -gt 0) { $sections += (@("Correcciones") + $fixes) -join "`n" }
-          $body = if ($sections.Count -gt 0) { $sections -join "`n`n" } else { $fallback }
+          $body = if ($fromChangelog) { $fromChangelog } elseif ($sections.Count -gt 0) { $sections -join "`n`n" } else { $fallback }
           Write-Host $body
           "body<<RELEASE_BODY_EOF" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           $body | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8

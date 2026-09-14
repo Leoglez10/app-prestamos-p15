@@ -48,9 +48,9 @@ stamp_manual() {
   V="$VERSION" perl -pi -e 's{(P15[._ ])\d+\.\d+\.\d+(_x64)}{$1$ENV{V}$2}g;' "$MANUAL"
 }
 
-# Same grouping the CI uses for the release body (Conventional Commits feat/fix
-# between the previous tag and HEAD), so the release notes, the CHANGELOG and the
-# in-app "Notas de la versión" tell the same story.
+# Conventional Commits feat/fix between the previous tag and HEAD. The CI turns
+# this section into the release body and the in-app "Notas de la versión", so the
+# three tell the same story; a hand-written section replaces it (e.g. reverts).
 changelog_entry() {
   local previous range added=() fixed=()
   previous="$(git -C "$REPO" describe --tags --abbrev=0 2>/dev/null || true)"

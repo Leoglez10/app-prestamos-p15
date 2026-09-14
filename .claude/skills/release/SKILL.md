@@ -11,13 +11,16 @@ metadata:
 
 Un `git push` NO publica nada. Solo el tag `v*` dispara `.github/workflows/build-windows.yml`, que compila el instalador y crea el Release. Esta skill es el unico camino a un tag.
 
-## Las novedades salen de los commits
+## De donde salen las novedades
 
-El paso "Generate release notes" de la CI arma el cuerpo del Release con los **asuntos** (primera linea) de los commits `feat:` y `fix:` entre el tag anterior y el nuevo. Ese cuerpo viaja en `latest.json` y es lo que el personal lee en "Novedades de esta version" al actualizar la app (`UpdateNotice.tsx`, `UpdateApplied.tsx`).
+El paso "Generate release notes" de la CI arma el cuerpo del Release. Ese cuerpo viaja en `latest.json` y es lo que el personal lee en "Novedades de esta version" al actualizar la app (`UpdateNotice.tsx`, `UpdateApplied.tsx`).
 
-- `feat: ...` → seccion **Novedades**. `fix: ...` → seccion **Correcciones**. La CI solo pone en mayuscula la primera letra.
-- Cualquier otro tipo (`refactor`, `test`, `docs`, `ci`, `chore`, `build`, `release`) NO aparece. El cuerpo del commit tampoco.
-- Sin ningun `feat`/`fix`, la app muestra el generico "Esta version trae mejoras internas y correcciones menores."
+1. **Si el CHANGELOG del commit tageado tiene `## [X.Y.Z]`, esa seccion ES el aviso.** La CI quita `###` y `**`, y renombra `Añadido` → Novedades y `Corregido` → Correcciones. Todo lo demas de la seccion (otros subtitulos, rutas de archivos) tambien lo ve el personal.
+2. `publish-release.sh` genera esa seccion sola antes de tagear, con los **asuntos** de los commits `feat:` (Añadido) y `fix:` (Corregido) desde el tag anterior. Una seccion escrita a mano gana y no se toca.
+3. Sin seccion ni `feat`/`fix`, la app muestra el generico "Esta version trae mejoras internas y correcciones menores."
+
+- Cualquier otro tipo de commit (`refactor`, `test`, `docs`, `ci`, `chore`, `build`, `release`) NO aparece. El cuerpo del commit tampoco.
+- Los asuntos no saben de reverts: un `feat`/`fix` revertido dentro del rango se anunciaria igual. Si hay un `revert` en el rango, o algun asunto quedo mal, se escribe la seccion `## [X.Y.Z]` a mano en `CHANGELOG.md`.
 
 Por eso el asunto de un `feat`/`fix` es texto para profesores: español, sin jerga, dice lo que la persona VE o puede hacer. Ejemplo bueno: `feat(profesores): importar el directorio de profesores desde un Excel`. Malo: `feat: agrega leer_excel_profesores y planificador TS`.
 
@@ -32,7 +35,8 @@ Por eso el asunto de un `feat`/`fix` es texto para profesores: español, sin jer
 - En CADA release se revisan `README.md` y `docs/MANUAL_PERSONAL.md` contra lo que entra, sin excepcion. Todo `feat`/`fix` que el personal ve tiene que quedar explicado en los dos ANTES de tagear: la CI genera el PDF del manual desde ese Markdown y lo adjunta al Release. Lenguaje simple, para profesores, sin jerga tecnica. Si un release no trae nada visible, decirlo en el reporte en vez de saltarse la revision.
 - Una entrada del CHANGELOG escrita a mano gana sobre la generada: el sellador detecta `## [X.Y.Z]` y no la toca.
 - Todo cambio que el personal ve va en un `feat`/`fix` con asunto legible. Lo interno va con otro tipo para no ensuciar las novedades.
-- Un asunto `feat`/`fix` ya pusheado NO se reescribe (nada de rebase ni force-push a `main`). Si quedo mal, se escribe la entrada del CHANGELOG a mano y se avisa a la persona que las novedades de la app mostraran ese asunto.
+- Un asunto `feat`/`fix` ya pusheado NO se reescribe (nada de rebase ni force-push a `main`). Si quedo mal, se escribe la seccion del CHANGELOG a mano: eso corrige el Release y el aviso de la app.
+- Una seccion del CHANGELOG escrita a mano es texto para profesores: sin rutas de archivos ni jerga, porque sale tal cual en la app.
 - Confirmar con la persona, en UN solo mensaje, antes de tagear: la version nueva, la vista previa de las novedades y los issues que se van a cerrar.
 
 ## Decision Gates
@@ -56,7 +60,7 @@ Sin argumento del usuario, decidir leyendo `git log <ultimo-tag>..HEAD`.
 
 1. **Issues primero.** `gh issue list --state open --limit 50 --json number,title,labels,body`. Comparar contra el trabajo pendiente (`git status --short`, `git diff`) y lo ya commiteado sin publicar (`git log --oneline "$(git describe --tags --abbrev=0)"..HEAD`). Anotar que issues resuelve cada unidad de trabajo, con la tabla de arriba.
 2. **Commits.** Si hay trabajo sin commitear, invocar la skill `work-unit-commits` para partirlo en commits por unidad de trabajo. En cada uno:
-   - Asunto con las reglas de "Las novedades salen de los commits".
+   - Asunto con las reglas de "De donde salen las novedades".
    - `Closes #N` / `Refs #N` en el cuerpo, en su propia linea.
    - Revisar que el commit contenga TODOS los archivos de esa unidad: `git show --stat HEAD` contra `git status --short`. Un archivo olvidado (componente nuevo sin agregar, test, script en `package.json`) sale como novedad anunciada que no funciona, o rompe el build de la CI.
 3. **Docs (siempre).** Para cada `feat`/`fix` del rango (los del paso 5 mas los que vas a commitear):
@@ -67,10 +71,13 @@ Sin argumento del usuario, decidir leyendo `git log <ultimo-tag>..HEAD`.
 4. **Verificar.** `npx tsc --noEmit`, `npm test`, `npm run build`. Los tres tienen que pasar. Arbol limpio despues: `git status --short` vacio.
 5. **Vista previa de las novedades**, con la misma regla que la CI:
    ```bash
-   git log --no-merges --format=%s "$(git describe --tags --abbrev=0)"..HEAD \
-     | rg '^(feat|fix)(\([^)]*\))?!?:\s*'
+   prev="$(git describe --tags --abbrev=0)"
+   rg -n "^## \[<X.Y.Z>\]" ../CHANGELOG.md          # si existe, ESA seccion es el aviso
+   git log --no-merges --format=%s "$prev"..HEAD | rg '^(feat|fix)(\([^)]*\))?!?:\s*'
+   git log --no-merges --format='%h %s' "$prev"..HEAD | rg -i '^\w+ revert'
    ```
-   Si sale vacio pero entro algo visible, o algun asunto tiene jerga, corregirlo ANTES de pushear (commit local: `git commit --amend` o rebase local sobre commits no pusheados).
+   - Hay `revert` en el rango → escribir la seccion `## [<X.Y.Z>]` a mano con solo lo que de verdad entra.
+   - Sale vacio pero entro algo visible, o algun asunto tiene jerga → corregir el commit si no esta pusheado (`git commit --amend`); si ya esta pusheado, seccion a mano.
 6. **Push.** `git push origin main`. Confirmar `git rev-parse HEAD` == `git rev-parse origin/main`.
 7. **Version.** `jq -r '.version' src-tauri/tauri.conf.json`. Calcular la nueva con la tabla y confirmarla junto con la vista previa y los issues (ver Hard Rules).
 8. **Publicar.** `bash scripts/publish-release.sh <X.Y.Z>`.

@@ -8,6 +8,16 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.13.0] — 2026-09-14
+
+### Añadido
+
+- La salida a evento guarda el contacto del responsable y los datos de la presentación
+- Los lugares pueden tener subniveles, como SITE 2 / Anaquel 1
+- El lector también reconoce el número de serie del equipo
+
+---
+
 ## [0.12.0] — 2026-09-13
 
 ### Añadido

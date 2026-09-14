@@ -46,6 +46,7 @@ import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSche
 import { formatSqliteDateTime } from "../utils/datetime";
 import { html, buildPrintDocument, printHtmlDocument } from "../utils/print";
 import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
+import { estaDentroDe } from "../utils/tomaFisica";
 
 // Cuantas filas de inventario se pintan de un jalon. Ver `visibles`.
 const FILAS_POR_PAGINA = 100;
@@ -576,8 +577,9 @@ function InventarioPanel() {
       eq.ubicacion,
     ].some(campo => (campo ?? "").toLowerCase().includes(termino));
     const matchesCategory = filterCategory ? eq.categoria_id.toString() === filterCategory : true;
+    // Filtrar por "SITE 2" incluye sus subniveles ("SITE 2 / Anaquel 1").
     const matchesUbicacion = filterUbicacion
-      ? (eq.ubicacion ?? "").trim() === filterUbicacion
+      ? estaDentroDe(eq.ubicacion, filterUbicacion)
       : true;
     return matchesSearch && matchesCategory && matchesUbicacion;
   });

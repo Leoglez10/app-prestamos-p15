@@ -354,6 +354,10 @@ La lista de lugares se arma sola con las ubicaciones que ya existen en tu
 inventario: no hay que escribirlas. El buscador también entiende el lugar, además
 del nombre y el ID patrimonial.
 
+Si un lugar tiene subniveles (por ejemplo **SITE 2 / Anaquel 1**), al elegir
+**SITE 2** en el filtro también aparece todo lo que está en sus anaqueles y
+niveles. Ver [Lugares con subniveles](#lugares-con-subniveles).
+
 > **Un filtro olvidado se ve igual que un inventario vacío.** Por eso los filtros
 > puestos se **marcan en color** y aparece un botón para limpiarlos todos de una
 > vez. Si alguien dice que "falta equipo", revisa eso antes que nada.
@@ -373,7 +377,8 @@ información, sin saltar entre vistas.
    - **Marca, modelo, número de serie** - cápturalos **con el aparato en la
      mano**. Se leen del chasis. Si no se capturan en ese momento, no los
      captura nadie nunca.
-   - **Ubicación**.
+   - **Ubicación**. Si el equipo está en un anaquel o nivel concreto, sepáralo
+     con una diagonal: **SITE 2 / Anaquel 1 / Nivel 3**.
    - **Prestable** o **solo inventario**.
    - **A granel** - actívalo si son varias piezas idénticas en una sola fila
      (adaptadores, cables) y pon el **stock**.
@@ -591,6 +596,8 @@ tecleando a mano, sigue esperando tu `Enter`.
 ## El recorrido, paso a paso
 
 1. Elige el **área** a contar. Usa las ubicaciones recientes o escribe una nueva.
+   Puede ser un lugar completo (**SITE 2**) o solo una parte (**SITE 2 /
+   Anaquel 1**). Ver [Lugares con subniveles](#lugares-con-subniveles).
 2. Si es la primera vez o estás entrenando a alguien, activa **"Modo prueba ·
    no guarda nada"**.
 3. **"Iniciar campaña nueva"** - esto **reinicia toda el área a pendiente** y
@@ -603,6 +610,19 @@ tecleando a mano, sigue esperando tu `Enter`.
    | Azul - **Movido** | Existe, pero su ubicación registrada era otra |
    | Amarillo - **Repetido** | Ya lo escaneaste en esta campaña |
 
+   Puedes escanear (o teclear y dar `Enter`) **la etiqueta de Patrimonio o el
+   número de serie** del fabricante. La app busca así:
+
+   | Si el código... | La app lo busca como |
+   |---|---|
+   | Tiene letras | Número de serie |
+   | Es solo de números | Primero como ID de Patrimonio y, si no aparece, como número de serie |
+
+   Si lo encontró por el número de serie, la tarjeta dice **"por serie"**.
+
+   > **Si varios equipos tienen el mismo número de serie**, la app avisa y **no
+   > marca ninguno**. Escanea la etiqueta de Patrimonio o búscalo a mano.
+
 5. ¿Te equivocaste? Botón **deshacer último escaneo**.
 6. La columna **"Deberían estar aquí"** lista lo que falta. Cada fila tiene dos
    botones:
@@ -613,6 +633,37 @@ tecleando a mano, sigue esperando tu `Enter`.
    | **"No localizada"** | Lo buscaste y **no aparece** |
 
 7. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
+
+### Lugares con subniveles
+
+Un lugar puede dividirse en partes más pequeñas escribiéndolas con una
+**diagonal** (`/`):
+
+- **SITE 2**
+- **SITE 2 / Anaquel 1**
+- **SITE 2 / Anaquel 1 / Nivel 3**
+
+Qué cubre cada recorrido:
+
+| Si eliges el área... | Cuenta |
+|---|---|
+| **SITE 2** | Todo SITE 2, **incluidos sus anaqueles y niveles**: la lista, el conteo y lo que queda pendiente al terminar el área |
+| **SITE 2 / Anaquel 1** | Solo ese anaquel |
+
+Qué pasa al escanear:
+
+| Situación | Resultado |
+|---|---|
+| Estás en **SITE 2 / Anaquel 1** y el equipo estaba guardado solo como **SITE 2** | Se actualiza al lugar más preciso. **No** cuenta como movido |
+| Estás en **SITE 2** y el equipo estaba guardado en **SITE 2 / Anaquel 1** | Conserva su anaquel. **No** cuenta como movido |
+| El equipo estaba en **SITE 2 / Anaquel 1** y lo escaneas en **SITE 2 / Anaquel 2** | Cuenta como **movido** |
+
+No importa si dejas espacios antes o después de la diagonal: la app lo escribe
+siempre igual.
+
+> **Solo la diagonal crea subniveles.** Un lugar escrito como **SITE 2 R2 N1**
+> no tiene relación con **SITE 2**. Si quieres que cuente dentro de SITE 2,
+> cámbiale el nombre a **SITE 2 / R2 / N1**.
 
 ## Modo prueba: entrenar sin miedo
 
@@ -640,6 +691,12 @@ mismo, sin salir de la toma física:
 
 > **Usa "Editarlo completo" cuando el aparato esté en la mano.** La marca, el
 > modelo y el número de serie se leen del chasis AHORA.
+
+Junto a estas opciones aparece **"Se guarda como"**, con dos valores: **ID de
+Patrimonio** o **Número de serie**. La app ya trae uno elegido según el código
+que escaneaste. Revísalo: si se equivocó (por ejemplo, un número de serie hecho
+solo de números), cámbialo antes de continuar. Al ligar el código a un equipo o
+al darlo de alta, se guarda en el campo que elegiste.
 
 Todo lo que se da de alta así entra como **solo inventario**. La toma física
 nunca activa préstamos por su cuenta.

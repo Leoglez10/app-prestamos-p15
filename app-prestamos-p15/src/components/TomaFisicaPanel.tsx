@@ -23,6 +23,7 @@ import { Icon } from "./Icon";
 import { EscaneoRapido } from "./EscaneoRapido";
 import {
   buscarPorIdPatrimonial,
+  buscarPorNumSerie,
   createCategoria,
   createEquipo,
   exportarReporteInventario,
@@ -37,6 +38,7 @@ import {
   registrarRevision,
   revertirRevision,
   vincularIdPatrimonial,
+  vincularNumSerie,
   type Categoria,
   type Equipo,
   type Profesor,
@@ -48,11 +50,26 @@ import { ImportarReportePanel } from "./ImportarReportePanel";
 import {
   calcularProgreso,
   clasificarDisparo,
+  estaDentroDe,
+  lugarAlRevisar,
+  normalizarLugar,
   pendientesDeArea,
   type EquipoRevisable,
 } from "../utils/tomaFisica";
-import { normalizarCodigoPatrimonial } from "../utils/codigoPatrimonial";
+import {
+  clasificarCodigoEscaneado,
+  normalizarCodigoPatrimonial,
+  normalizarNumSerie,
+  type CodigoEscaneado,
+} from "../utils/codigoPatrimonial";
 import { confirmDialog, promptDialog } from "../utils/confirm";
+
+/**
+ * Un código que nadie reclama. `leido` es lo que llegó de la pistola: hace falta
+ * para recalcular `valor` si la persona corrige el tipo (una serie solo de
+ * dígitos se clasifica como Patrimonio).
+ */
+type Desconocido = CodigoEscaneado & { leido: string };
 
 /** Lo que hay que guardar para poder deshacer un disparo. */
 type Previo = {
@@ -65,6 +82,8 @@ type Leido = {
   equipo: Equipo;
   cuando: string;
   previo: Previo;
+  /** Se encontró por número de serie y no por la etiqueta de Patrimonio. */
+  porSerie?: boolean;
 };
 
 /**
@@ -72,7 +91,7 @@ type Leido = {
  * pie, a un metro de la pantalla, con la pistola en la mano.
  */
 type Ultimo =
-  | { tipo: "nuevo" | "movido"; equipo: Equipo; desde: string | null; previo: Previo; disparo: number }
+  | { tipo: "nuevo" | "movido"; equipo: Equipo; desde: string | null; previo: Previo; disparo: number; porSerie: boolean }
   | { tipo: "repetido"; equipo: Equipo; disparo: number }
   | null;
 
@@ -162,7 +181,7 @@ export function TomaFisicaPanel({
   const [flash, setFlash] = useState<"ok" | "alerta" | null>(null);
   const [aviso, setAviso] = useState("");
   const [error, setError] = useState("");
-  const [desconocido, setDesconocido] = useState<string | null>(null);
+  const [desconocido, setDesconocido] = useState<Desconocido | null>(null);
   const [busqueda, setBusqueda] = useState("");
   // Alta al vuelo de un codigo huerfano: `null` mientras no se pida. La
   // categoria se recuerda entre altas porque un recorrido da de alta cosas
@@ -268,12 +287,11 @@ export function TomaFisicaPanel({
    * hay. El padron completo se queda; los revisados bajan y quedan tildados.
    */
   const delArea = useMemo(() => {
-    const area = ubicacion.trim().toLocaleLowerCase();
-    if (!area) return [];
     const pendienteIds = new Set(pendientes.map((equipo) => equipo.id));
 
+    // Incluye los subniveles: recorrer "SITE 2" muestra lo de "SITE 2 / Anaquel 1".
     return equipos
-      .filter((equipo) => (equipo.ubicacion ?? "").trim().toLocaleLowerCase() === area)
+      .filter((equipo) => estaDentroDe(equipo.ubicacion, ubicacion))
       .map((equipo) => ({ equipo, pendiente: pendienteIds.has(equipo.id) }))
       .sort(
         (a, b) =>
@@ -282,13 +300,17 @@ export function TomaFisicaPanel({
       );
   }, [equipos, ubicacion, pendientes]);
 
-  /** Candidatos para un código huérfano: primero los de esta área. */
+  /**
+   * Candidatos para un código huérfano: primero los de esta área. Solo los que
+   * todavía no tienen ese dato, igual que con la etiqueta: ligar nunca pisa una
+   * serie o un ID que ya estaba anotado.
+   */
+  const porSerie = desconocido?.tipo === "serie";
   const candidatos = useMemo(() => {
     const texto = busqueda.trim().toLocaleLowerCase();
-    const area = ubicacion.trim().toLocaleLowerCase();
 
     return equipos
-      .filter((equipo) => !equipo.id_patrimonial && equipo.es_granel === 0)
+      .filter((equipo) => !(porSerie ? equipo.num_serie?.trim() : equipo.id_patrimonial) && equipo.es_granel === 0)
       .filter((equipo) =>
         !texto
           ? true
@@ -299,15 +321,15 @@ export function TomaFisicaPanel({
               .includes(texto)
       )
       .sort((a, b) => {
-        const enArea = (equipo: Equipo) =>
-          (equipo.ubicacion ?? "").trim().toLocaleLowerCase() === area ? 0 : 1;
+        const enArea = (equipo: Equipo) => (estaDentroDe(equipo.ubicacion, ubicacion) ? 0 : 1);
         return enArea(a) - enArea(b) || a.nombre_equipo.localeCompare(b.nombre_equipo);
       })
       .slice(0, 12);
-  }, [equipos, busqueda, ubicacion]);
+  }, [equipos, busqueda, ubicacion, porSerie]);
 
   const abrirRecorrido = (donde: string) => {
-    const limpia = donde.trim();
+    // Normalizada para que "SITE 2/Anaquel 1" y "SITE 2 / Anaquel 1" no sean dos lugares.
+    const limpia = normalizarLugar(donde);
     if (!limpia) return;
     setUbicacion(limpia);
     setUbicacionFijada(true);
@@ -370,7 +392,33 @@ export function TomaFisicaPanel({
     setDisparos(disparo);
 
     try {
-      const equipo = await buscarPorIdPatrimonial(leido);
+      const clasificado = clasificarCodigoEscaneado(leido);
+      if (!clasificado) {
+        enfocarEscaneo();
+        return;
+      }
+
+      // Una serie con letras nunca pasa por el filtro de digitos: "AB-12" se
+      // volveria "12" y podria caer en la etiqueta de otro equipo. Solo digitos
+      // se busca primero como Patrimonio y despues como serie, porque hay
+      // series puramente numericas.
+      let equipo = clasificado.tipo === "patrimonial" ? await buscarPorIdPatrimonial(leido) : null;
+      let encontradoPorSerie = false;
+      if (!equipo) {
+        const serie = await buscarPorNumSerie(leido);
+        if (serie.coincidencias > 1) {
+          // La serie no es unica: elegir una en silencio marcaria otro equipo.
+          tono(false);
+          setFlash("alerta");
+          setAviso(
+            `Esa serie la tienen ${serie.coincidencias} equipos; escanea la etiqueta de Patrimonio o búscalo a mano.`
+          );
+          enfocarEscaneo();
+          return;
+        }
+        equipo = serie.equipo;
+        encontradoPorSerie = equipo !== null;
+      }
 
       if (!equipo) {
         // No es un error: es la puerta de entrada para ligar lo que Patrimonio
@@ -381,13 +429,13 @@ export function TomaFisicaPanel({
         if (prueba) {
           // Ligar una etiqueta es para siempre: en prueba solo se avisa.
           setAviso(
-            `${normalizarCodigoPatrimonial(leido)} no existe en el inventario. ` +
+            `${clasificado.valor} no existe en el inventario. ` +
               "Apaga el modo prueba para ligarlo o darlo de alta."
           );
           enfocarEscaneo();
           return;
         }
-        setDesconocido(normalizarCodigoPatrimonial(leido));
+        setDesconocido({ ...clasificado, leido });
         return;
       }
 
@@ -408,13 +456,13 @@ export function TomaFisicaPanel({
       // El estado previo se guarda ANTES de escribir: es lo unico que hace
       // posible el deshacer sin una tabla de historial.
       const previo = comoPrevio(equipo);
-      if (!prueba) await registrarRevision(equipo.id, ubicacion, quienRevisa);
+      if (!prueba) await registrarRevision(equipo.id, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa);
 
       tono(true);
       setFlash("ok");
-      setUltimo({ tipo: que, equipo, desde: previo.ubicacion, previo, disparo });
+      setUltimo({ tipo: que, equipo, desde: previo.ubicacion, previo, disparo, porSerie: encontradoPorSerie });
       setLeidos((actuales) => [
-        { equipo, cuando: new Date().toLocaleTimeString(), previo },
+        { equipo, cuando: new Date().toLocaleTimeString(), previo, porSerie: encontradoPorSerie },
         ...actuales,
       ]);
       if (!prueba) await recargar();
@@ -457,7 +505,7 @@ export function TomaFisicaPanel({
     setOcupado(true);
     try {
       const previo = comoPrevio(equipo);
-      await registrarRevision(equipoId, ubicacion, quienRevisa);
+      await registrarRevision(equipoId, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa);
       setLeidos((actuales) => [
         { equipo, cuando: new Date().toLocaleTimeString(), previo },
         ...actuales,
@@ -480,10 +528,17 @@ export function TomaFisicaPanel({
 
     try {
       const equipo = equipos.find((item) => item.id === equipoId);
-      await vincularIdPatrimonial(equipoId, desconocido);
-      await registrarRevision(equipoId, ubicacion, quienRevisa);
+      if (desconocido.tipo === "serie") {
+        await vincularNumSerie(equipoId, desconocido.valor);
+      } else {
+        await vincularIdPatrimonial(equipoId, desconocido.valor);
+      }
+      await registrarRevision(equipoId, lugarAlRevisar(equipo?.ubicacion, ubicacion), quienRevisa);
       if (equipo) {
-        const ligado = { ...equipo, id_patrimonial: desconocido };
+        const ligado =
+          desconocido.tipo === "serie"
+            ? { ...equipo, num_serie: desconocido.valor }
+            : { ...equipo, id_patrimonial: desconocido.valor };
         setLeidos((actuales) => [
           { equipo: ligado, cuando: new Date().toLocaleTimeString(), previo: comoPrevio(equipo) },
           ...actuales,
@@ -505,15 +560,20 @@ export function TomaFisicaPanel({
    * Lo que pasa DESPUÉS de que la base aceptó el alta, venga del formulario
    * corto o del completo: el equipo recién creado se cuenta como leído aquí.
    *
-   * Se relee por `id_patrimonial` porque es el único dato que se conoce de los
-   * dos lados; el `id` lo asigna SQLite y sin él no hay revisión que registrar
-   * ni tarjeta que mostrar. Sin etiqueta (un alta que terminó siendo granel) no
-   * hay nada que releer: se recarga y ya.
+   * Se relee por `id_patrimonial` (o por la serie, si no hay etiqueta) porque es
+   * el único dato que se conoce de los dos lados; el `id` lo asigna SQLite y sin
+   * él no hay revisión que registrar ni tarjeta que mostrar. Sin ninguno de los
+   * dos, o con una serie repetida, no hay forma segura de releerlo: se recarga y ya.
    */
-  const cerrarElAlta = async (idPatrimonial: string | null) => {
-    const equipo = idPatrimonial ? await buscarPorIdPatrimonial(idPatrimonial) : null;
+  const cerrarElAlta = async (idPatrimonial: string | null, numSerie: string | null = null) => {
+    const equipo = idPatrimonial
+      ? await buscarPorIdPatrimonial(idPatrimonial)
+      : numSerie
+        ? (await buscarPorNumSerie(numSerie)).equipo
+        : null;
     if (equipo) {
-      await registrarRevision(equipo.id, ubicacion, quienRevisa);
+      // El formulario completo pudo anotarlo en un subnivel del área: no se pisa.
+      await registrarRevision(equipo.id, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa);
       setLeidos((actuales) => [
         { equipo, cuando: new Date().toLocaleTimeString(), previo: comoPrevio(equipo) },
         ...actuales,
@@ -570,7 +630,8 @@ export function TomaFisicaPanel({
       await createEquipo({
         nombre_equipo: nombre,
         identificador: null,
-        id_patrimonial: desconocido,
+        id_patrimonial: desconocido.tipo === "patrimonial" ? desconocido.valor : null,
+        num_serie: desconocido.tipo === "serie" ? desconocido.valor : null,
         ubicacion,
         categoria_id: Number(alta.categoriaId),
         es_prestable: 0,
@@ -579,7 +640,10 @@ export function TomaFisicaPanel({
       });
 
       setUltimaCategoria(alta.categoriaId);
-      await cerrarElAlta(desconocido);
+      await cerrarElAlta(
+        desconocido.tipo === "patrimonial" ? desconocido.valor : null,
+        desconocido.tipo === "serie" ? desconocido.valor : null
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -711,6 +775,7 @@ export function TomaFisicaPanel({
                   placeholder="Ej. Aula 12, Laboratorio de cómputo, Auditorio"
                   autoFocus
                 />
+                <small>Usa / para subniveles: SITE 2 / Anaquel 1</small>
               </div>
               <button type="submit" disabled={!ubicacion.trim()} className="toma-cta">
                 <Icon name="barcode" size="1.4rem" />
@@ -992,7 +1057,7 @@ export function TomaFisicaPanel({
           <label htmlFor="escaneo">
             <Icon name="barcode" size="1.6rem" /> Dispara la pistola contra la etiqueta
           </label>
-          <small>¿Etiqueta rota? Escribe el número y Enter.</small>
+          <small>Etiqueta de Patrimonio o número de serie. ¿Etiqueta rota? Escribe el ID o la serie y Enter.</small>
         </div>
         <input
           id="escaneo"
@@ -1002,7 +1067,6 @@ export function TomaFisicaPanel({
           onFocus={() => setFoco(true)}
           onBlur={() => setFoco(false)}
           placeholder="El código aparece aquí solo…"
-          inputMode="numeric"
           autoComplete="off"
           disabled={desconocido !== null}
         />
@@ -1048,8 +1112,9 @@ export function TomaFisicaPanel({
                 )}
                 <small>
                   {ultimo.equipo.resguardante_nombre
-                    ? `Anotado en ${ubicacion} · resguarda ${ultimo.equipo.resguardante_nombre}`
-                    : `Anotado en ${ubicacion}`}
+                    ? `Anotado en ${lugarAlRevisar(ultimo.previo.ubicacion, ubicacion)} · resguarda ${ultimo.equipo.resguardante_nombre}`
+                    : `Anotado en ${lugarAlRevisar(ultimo.previo.ubicacion, ubicacion)}`}
+                  {ultimo.porSerie && " · por serie"}
                 </small>
               </div>
               <button
@@ -1078,10 +1143,40 @@ export function TomaFisicaPanel({
               <strong>Nadie reclama este código</strong>
               <span>¿A qué equipo pertenece? Queda ligado para siempre.</span>
             </div>
-            <code>{desconocido}</code>
+            <code>{desconocido.valor}</code>
           </div>
 
           <div className="toma-huerfano-cuerpo">
+            {/* Adivinado por el clasificador: con letras es serie, solo dígitos
+                es Patrimonio. Las series solo numéricas se corrigen acá. */}
+            <div className="toma-chips-bloque">
+              <span className="toma-etiqueta">Se guarda como</span>
+              <div className="toma-chips">
+                {(
+                  [
+                    ["patrimonial", "ID de Patrimonio", normalizarCodigoPatrimonial],
+                    ["serie", "Número de serie", normalizarNumSerie],
+                  ] as const
+                ).map(([tipo, texto, normalizar]) => {
+                  const valor = normalizar(desconocido.leido);
+                  const activo = desconocido.tipo === tipo;
+                  return (
+                    <button
+                      key={tipo}
+                      type="button"
+                      className={`toma-chip${activo ? " is-activo" : ""}`}
+                      aria-pressed={activo}
+                      disabled={!valor || ocupado}
+                      onClick={() => valor && setDesconocido({ ...desconocido, tipo, valor })}
+                    >
+                      {activo && <Icon name="check" />}
+                      {texto}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {alta ? (
               <form
                 className="toma-alta"
@@ -1093,7 +1188,8 @@ export function TomaFisicaPanel({
                 <div className="toma-alta-titulo">
                   <strong>Equipo nuevo en {ubicacion}</strong>
                   <span>
-                    La etiqueta <code>{desconocido}</code> y la ubicación ya quedan puestas.
+                    {desconocido.tipo === "serie" ? "La serie" : "La etiqueta"} <code>{desconocido.valor}</code> y la
+                    ubicación ya quedan puestas.
                   </span>
                 </div>
                 <div className="toma-alta-campos">
@@ -1168,13 +1264,15 @@ export function TomaFisicaPanel({
             </div>
 
             {candidatos.length === 0 ? (
-              <p className="toma-vacio">Ningún equipo sin etiqueta coincide con lo que buscaste.</p>
+              <p className="toma-vacio">
+                {porSerie
+                  ? "Ningún equipo sin número de serie coincide con lo que buscaste."
+                  : "Ningún equipo sin etiqueta coincide con lo que buscaste."}
+              </p>
             ) : (
               <ul className="toma-candidatos">
                 {candidatos.map((equipo) => {
-                  const enArea =
-                    (equipo.ubicacion ?? "").trim().toLocaleLowerCase() ===
-                    ubicacion.trim().toLocaleLowerCase();
+                  const enArea = estaDentroDe(equipo.ubicacion, ubicacion);
                   return (
                     <li key={equipo.id}>
                       <div>
@@ -1245,7 +1343,10 @@ export function TomaFisicaPanel({
                 <Icon name="check" />
                 <div>
                   <strong>{leido.equipo.nombre_equipo}</strong>
-                  <span>{detalleDe(leido.equipo)}</span>
+                  <span>
+                    {detalleDe(leido.equipo)}
+                    {leido.porSerie && " · por serie"}
+                  </span>
                 </div>
                 <small>{leido.cuando}</small>
                 <button type="button" className="ghost" disabled={ocupado}
@@ -1324,7 +1425,8 @@ export function TomaFisicaPanel({
         editando={null}
         categorias={categorias}
         prefill={{
-          id_patrimonial: desconocido,
+          id_patrimonial: desconocido?.tipo === "patrimonial" ? desconocido.valor : null,
+          num_serie: desconocido?.tipo === "serie" ? desconocido.valor : null,
           ubicacion,
           nombre_equipo: alta?.nombre ?? null,
           categoria_id: alta?.categoriaId ? Number(alta.categoriaId) : null,
@@ -1332,9 +1434,9 @@ export function TomaFisicaPanel({
         }}
         onCerrar={() => setFormCompleto(false)}
         onCategoriaCreada={async () => setCategorias(await getCategorias())}
-        onGuardado={async (idPatrimonial) => {
+        onGuardado={async (idPatrimonial, numSerie) => {
           if (alta?.categoriaId) setUltimaCategoria(alta.categoriaId);
-          await cerrarElAlta(idPatrimonial);
+          await cerrarElAlta(idPatrimonial, numSerie);
         }}
       />
     </section>

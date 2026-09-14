@@ -27,6 +27,7 @@ import {
 import { generarIdentificadores } from "../utils/identificadores";
 import { listaEstados, type Estado } from "../utils/estados";
 import { promptDialog } from "../utils/confirm";
+import { normalizarLugar } from "../utils/tomaFisica";
 
 // Los campos de la ficha se llenan y se limpian en bloque.
 const FICHA_VACIA = {
@@ -44,6 +45,7 @@ const FICHA_VACIA = {
 /** Lo que ya se sabe de un equipo antes de escribir nada. Solo aplica al alta. */
 export type PrefillEquipo = {
   id_patrimonial?: string | null;
+  num_serie?: string | null;
   ubicacion?: string | null;
   nombre_equipo?: string | null;
   categoria_id?: number | null;
@@ -63,7 +65,7 @@ type Props = {
   prefill?: PrefillEquipo;
   onCerrar: () => void;
   /** Se llama SOLO si la base aceptó la escritura. */
-  onGuardado: (idPatrimonial: string | null) => void | Promise<void>;
+  onGuardado: (idPatrimonial: string | null, numSerie: string | null) => void | Promise<void>;
   /**
    * Una categoría creada desde acá ya existe en la base aunque después se
    * cancele el alta. Sin este aviso, la pantalla de atrás sigue mostrando la
@@ -153,7 +155,11 @@ export function EquipoFormDialog({
       setNombre(prefill?.nombre_equipo ?? "");
       setIdentificador("");
       setIdPatrimonial(prefill?.id_patrimonial ?? "");
-      setFicha({ ...FICHA_VACIA, ubicacion: prefill?.ubicacion ?? "" });
+      setFicha({
+        ...FICHA_VACIA,
+        num_serie: prefill?.num_serie ?? "",
+        ubicacion: prefill?.ubicacion ?? "",
+      });
       setCategoriaId(prefill?.categoria_id ? String(prefill.categoria_id) : "");
       setEstadoEdit("disponible");
       setEsPrestable(prefill?.es_prestable ?? true);
@@ -219,13 +225,15 @@ export function EquipoFormDialog({
 
     setGuardando(true);
     setError("");
+    // "SITE 2/Anaquel 1" y "SITE 2 / Anaquel 1" tienen que ser el mismo lugar.
+    const fichaGuardada = { ...ficha, ubicacion: normalizarLugar(ficha.ubicacion) };
     try {
       if (editando) {
         await updateEquipo(editando.id, {
           nombre_equipo: nombre,
           identificador: identificador || null,
           id_patrimonial: idPatrimonial || null,
-          ...ficha,
+          ...fichaGuardada,
           categoria_id: Number(categoriaId),
           estado: estadoEdit,
           es_prestable: esPrestable ? 1 : 0,
@@ -238,7 +246,7 @@ export function EquipoFormDialog({
           identificador: identificador || null,
           // El granel nunca pasó por Patrimonio: no tiene etiqueta que leer.
           id_patrimonial: null,
-          ...ficha,
+          ...fichaGuardada,
           categoria_id: Number(categoriaId),
           estado: estadoEdit,
           es_prestable: esPrestable ? 1 : 0,
@@ -261,7 +269,7 @@ export function EquipoFormDialog({
           await createEquipo({
             nombre_equipo: nombre,
             identificador: codigo,
-            ...ficha,
+            ...fichaGuardada,
             id_patrimonial: unaSolaUnidad ? idPatrimonial || null : null,
             num_serie: unaSolaUnidad ? ficha.num_serie || null : null,
             categoria_id: Number(categoriaId),
@@ -273,7 +281,7 @@ export function EquipoFormDialog({
         }
       }
 
-      await onGuardado(idPatrimonial || null);
+      await onGuardado(idPatrimonial || null, ficha.num_serie || null);
     } catch (err) {
       // El error se queda DENTRO del diálogo: si se cerrara para mostrarlo
       // afuera, lo escrito se perdería justo cuando hay que corregirlo.
@@ -463,6 +471,7 @@ export function EquipoFormDialog({
                 <datalist id="ubicaciones-conocidas">
                   {ubicacionesConocidas.map(lugar => <option key={lugar} value={lugar} />)}
                 </datalist>
+                <small>Usa / para subniveles: SITE 2 / Anaquel 1</small>
               </div>
               <div>
                 <label>Código del resguardante</label>

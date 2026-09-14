@@ -6,7 +6,10 @@ import {
   fueNoLocalizado,
   construirReporteCsv,
   fueRevisado,
+  estaDentroDe,
+  lugarAlRevisar,
   nombreDelReporte,
+  normalizarLugar,
   pendientesDeArea,
   type EquipoRevisable,
 } from "./tomaFisica.ts";
@@ -160,4 +163,57 @@ test("un equipo que estaba en otra área sale como movido", () => {
 
 test("un equipo sin ubicación previa no es un movimiento, es la primera vez", () => {
   assert.equal(clasificarDisparo(equipo({ ubicacion: null }), "Aula 12", []), "nuevo");
+});
+
+test("normalizar un lugar limpia cada subnivel y respeta mayúsculas", () => {
+  assert.equal(normalizarLugar("site 2/anaquel 1 "), "site 2 / anaquel 1");
+  assert.equal(normalizarLugar("  SITE   2 //  Anaquel 1 / "), "SITE 2 / Anaquel 1");
+  assert.equal(normalizarLugar("Aula 12"), "Aula 12");
+  assert.equal(normalizarLugar(" / "), "");
+  assert.equal(normalizarLugar(null), "");
+});
+
+test("un lugar está dentro de su área y de sí mismo, comparando por subniveles", () => {
+  assert.equal(estaDentroDe("SITE 2 / Anaquel 1", "SITE 2"), true);
+  assert.equal(estaDentroDe("SITE 2 / Anaquel 1 / Nivel 3", "site 2/anaquel 1"), true);
+  assert.equal(estaDentroDe("SITE 2", "site 2 "), true);
+  assert.equal(estaDentroDe("SITE 2", "SITE 2 / Anaquel 1"), false);
+  assert.equal(estaDentroDe("SITE 20", "SITE 2"), false);
+  assert.equal(estaDentroDe("SITE 2", "SITE 20"), false);
+  assert.equal(estaDentroDe("SITE 2 / Anaquel 1", "SITE 2 / Anaquel 2"), false);
+  assert.equal(estaDentroDe(null, "SITE 2"), false);
+  assert.equal(estaDentroDe("SITE 2", "  "), false);
+});
+
+test("recorrer un nivel cubre sus subniveles, y un subnivel solo a sí mismo", () => {
+  const equipos = [
+    equipo({ id: 1, ubicacion: "SITE 2" }),
+    equipo({ id: 2, ubicacion: "SITE 2 / Anaquel 1" }),
+    equipo({ id: 3, ubicacion: "SITE 2 / Anaquel 2" }),
+    equipo({ id: 4, ubicacion: "SITE 20" }),
+  ];
+  assert.deepEqual(pendientesDeArea(equipos, "SITE 2", null).map((e) => e.id), [1, 2, 3]);
+  assert.deepEqual(pendientesDeArea(equipos, "site 2/anaquel 1", null).map((e) => e.id), [2]);
+});
+
+test("precisar o generalizar el lugar no es un movimiento; otra rama sí", () => {
+  const enSite = equipo({ id: 8, ubicacion: "SITE 2" });
+  const enAnaquel = equipo({ id: 9, ubicacion: "SITE 2 / Anaquel 1" });
+  assert.equal(clasificarDisparo(enSite, "SITE 2 / Anaquel 1", []), "nuevo");
+  assert.equal(clasificarDisparo(enAnaquel, "SITE 2", []), "nuevo");
+  assert.equal(clasificarDisparo(enAnaquel, "SITE 2 / Anaquel 2", []), "movido");
+  assert.equal(clasificarDisparo(enSite, "SITE 1", []), "movido");
+  assert.equal(clasificarDisparo(enSite, "SITE 20", []), "movido");
+});
+
+test("al revisar se conserva el lugar más preciso", () => {
+  // Recorrer el site no borra el anaquel que ya estaba anotado.
+  assert.equal(lugarAlRevisar("SITE 2 / Anaquel 1", "SITE 2"), "SITE 2 / Anaquel 1");
+  // Recorrer el anaquel precisa lo que solo decía el site.
+  assert.equal(lugarAlRevisar("SITE 2", "SITE 2 / Anaquel 1"), "SITE 2 / Anaquel 1");
+  // Mismo lugar u otra rama: manda el recorrido.
+  assert.equal(lugarAlRevisar("site 2", "SITE 2"), "SITE 2");
+  assert.equal(lugarAlRevisar("SITE 2 / Anaquel 1", "SITE 2 / Anaquel 2"), "SITE 2 / Anaquel 2");
+  assert.equal(lugarAlRevisar("SITE 20 / Anaquel 1", "SITE 2"), "SITE 2");
+  assert.equal(lugarAlRevisar(null, "Aula 12"), "Aula 12");
 });

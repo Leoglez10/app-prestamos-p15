@@ -142,6 +142,8 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 - ✅ Importación del **directorio de profesores** desde un Excel (Código + Nombre completo), con plan previo y respaldo automático
 - ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
 - ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
+- ✅ En la toma física se escanea la etiqueta de **Patrimonio** o el **número de serie** del fabricante: la app encuentra el equipo con cualquiera de los dos
+- ✅ **Lugares con subniveles** usando `/` (`SITE 2 / Anaquel 1 / Nivel 3`): contar o filtrar `SITE 2` incluye todo lo que hay dentro
 - ✅ **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
 - ✅ Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
 - ✅ Reportes imprimibles en PDF (vía "imprimir" del navegador interno)

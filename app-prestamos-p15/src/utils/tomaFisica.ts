@@ -176,8 +176,58 @@ export const nombreDelReporte = (ahora: Date, extension: "csv" | "xlsx" = "csv")
 };
 
 /**
+ * Los niveles de un lugar: "SITE 2 / Anaquel 1" son dos. Se separa en `/` y se
+ * limpia cada tramo, así "SITE 2/Anaquel 1" y "SITE 2 /  Anaquel 1" son lo mismo.
+ */
+const tramosDeLugar = (texto: string | null | undefined): string[] =>
+  (texto ?? "")
+    .split("/")
+    .map((tramo) => tramo.trim().replace(/\s+/g, " "))
+    .filter(Boolean);
+
+/**
+ * La forma en que se guarda y se muestra un lugar: tramos separados por " / ".
+ * Respeta mayúsculas; la comparación las ignora por su cuenta.
+ */
+export const normalizarLugar = (texto: string | null | undefined): string =>
+  tramosDeLugar(texto).join(" / ");
+
+/**
+ * Si `lugar` queda dentro de `area`: los tramos del área son el principio de los
+ * del lugar. Recorrer "SITE 2" cubre "SITE 2 / Anaquel 1"; al revés no.
+ *
+ * Se compara por tramos y no por texto para que "SITE 2" no contenga "SITE 20".
+ */
+export const estaDentroDe = (
+  lugar: string | null | undefined,
+  area: string | null | undefined
+): boolean => {
+  const tramosLugar = tramosDeLugar(lugar).map((tramo) => tramo.toLocaleLowerCase());
+  const tramosArea = tramosDeLugar(area).map((tramo) => tramo.toLocaleLowerCase());
+  if (tramosLugar.length === 0 || tramosArea.length === 0) return false;
+  if (tramosArea.length > tramosLugar.length) return false;
+  return tramosArea.every((tramo, i) => tramo === tramosLugar[i]);
+};
+
+/**
+ * La ubicación que se escribe al ver un equipo recorriendo `ahora`.
+ *
+ * Si ya estaba anotado más adentro ("SITE 2 / Anaquel 1") y se recorre el nivel
+ * de arriba ("SITE 2"), se conserva el dato preciso: recorrer el site no dice en
+ * qué anaquel está. En cualquier otro caso manda el lugar del recorrido.
+ */
+export const lugarAlRevisar = (
+  antes: string | null | undefined,
+  ahora: string
+): string => {
+  const actual = normalizarLugar(ahora);
+  const previo = normalizarLugar(antes);
+  return estaDentroDe(previo, actual) && !estaDentroDe(actual, previo) ? previo : actual;
+};
+
+/**
  * Lo que Patrimonio dice que vive en esta área y todavía no se vio en esta
- * campaña.
+ * campaña. Incluye los subniveles: recorrer "SITE 2" cubre "SITE 2 / Anaquel 1".
  *
  * Es la única señal de que un aula está terminada: sin ella se dispara hasta
  * que uno se cansa. No hace falta ninguna columna nueva porque
@@ -189,12 +239,9 @@ export const pendientesDeArea = (
   ubicacion: string,
   inicioCampana: string | null
 ): EquipoRevisable[] => {
-  const area = ubicacion.trim().toLocaleLowerCase();
-  if (!area) return [];
-
   return equipos.filter(
     (equipo) =>
-      (equipo.ubicacion ?? "").trim().toLocaleLowerCase() === area &&
+      estaDentroDe(equipo.ubicacion, ubicacion) &&
       !fueRevisado(equipo, inicioCampana) &&
       !fueNoLocalizado(equipo, inicioCampana)
   );
@@ -210,6 +257,9 @@ export type ResultadoDisparo = "repetido" | "movido" | "nuevo";
  * pierde en silencio: `registrarRevision` pisa la columna sin que nadie mire lo
  * que había. Es el dato que más le importa a Patrimonio — un equipo que
  * cambió de aula sin que nadie lo reportara.
+ *
+ * Pasar a un subnivel o a su nivel de arriba ("SITE 2" ↔ "SITE 2 / Anaquel 1")
+ * no es moverse: es el mismo lugar dicho con más o menos detalle.
  */
 export const clasificarDisparo = (
   equipo: EquipoRevisable,
@@ -218,7 +268,8 @@ export const clasificarDisparo = (
 ): ResultadoDisparo => {
   if (yaLeidos.includes(equipo.id)) return "repetido";
 
-  const antes = (equipo.ubicacion ?? "").trim().toLocaleLowerCase();
-  const ahora = ubicacionActual.trim().toLocaleLowerCase();
-  return antes && ahora && antes !== ahora ? "movido" : "nuevo";
+  const antes = equipo.ubicacion;
+  const ahora = ubicacionActual;
+  if (!normalizarLugar(antes) || !normalizarLugar(ahora)) return "nuevo";
+  return estaDentroDe(antes, ahora) || estaDentroDe(ahora, antes) ? "nuevo" : "movido";
 };

@@ -8,6 +8,14 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.14.0] — 2026-09-14
+
+### Añadido
+
+- Registrar el estado durante la toma física
+
+---
+
 ## [0.13.0] — 2026-09-14
 
 ### Añadido

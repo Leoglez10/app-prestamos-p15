@@ -7,7 +7,7 @@
 ### Control de inventario y préstamos de equipo audiovisual para la Preparatoria 15 (UDG)
 
 [![CI — Build Windows Installer](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Leoglez10/app-prestamos-p15/actions/workflows/build-windows.yml)
-[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.13.0-blue)](CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/versi%C3%B3n-0.14.0-blue)](CHANGELOG.md)
 [![Plataforma](https://img.shields.io/badge/plataforma-Windows%2010%2F11-blue)]()
 [![Licencia](https://img.shields.io/badge/usos-Educativo-orange)]()
 [![Autor](https://img.shields.io/badge/autor-Leonardo%20Gonzalez-purple)](https://github.com/Leoglez10)
@@ -165,7 +165,7 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 ### Pasos
 
-1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.13.0_x64-setup.exe`). Hay dos formas:
+1. **Consigue el instalador.** Es un archivo que termina en `.exe` o `.msi` (por ejemplo `App Prestamos P15_0.14.0_x64-setup.exe`). Hay dos formas:
    - **A) Desde GitHub (recomendado).** Entra a <https://github.com/Leoglez10/app-prestamos-p15/releases>, busca la versión más reciente, y en la sección **Assets** descarga el archivo `.exe` (_x64-setup.exe_) o `.msi`.
    - **B) Copia manual** (USB, carpeta compartida, etc.) — alguien que ya tenga el instalador te lo pasa.
 2. **Cópialo a la computadora** destino si lo descargaste en otra máquina.
@@ -743,8 +743,8 @@ npm run tauri build
 
 ```
 src-tauri/target/release/bundle/
-├── msi/App Prestamos P15_0.13.0_x64_en-US.msi
-└── nsi/App Prestamos P15_0.13.0_x64-setup.exe
+├── msi/App Prestamos P15_0.14.0_x64_en-US.msi
+└── nsi/App Prestamos P15_0.14.0_x64-setup.exe
 ```
 
 ### Scripts disponibles
@@ -1026,7 +1026,7 @@ El flujo completo (fork → clonar → rama → cambiar → commit → push → 
 
 ## 🏷 Versionado y publicación
 
-Usamos versionado semántico `MAYOR.MENOR.PARCHE`. La versión actual es **0.13.0**.
+Usamos versionado semántico `MAYOR.MENOR.PARCHE`. La versión actual es **0.14.0**.
 
 - **PARCHE** (0.5.**0** → 0.5.1): bugfixes, sin cambios de comportamiento.
 - **MENOR** (0.**4**.0 → 0.5.0): nuevas funciones, sin romper lo viejo.

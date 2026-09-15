@@ -12,6 +12,7 @@ const equipo = (extra: Partial<EquipoRevisable> = {}): EquipoRevisable => ({
   revisado_por: null,
   no_localizado_en: null,
   no_localizado_por: null,
+  estado: "disponible",
   marca: "DELL",
   modelo: "LATITUDE",
   num_serie: null,
@@ -35,6 +36,16 @@ const fila = (
   `"${id}";"COMPUTADORA";"DELL";"LATITUDE";"";"";"${ubicacion}";"${localizado}";"${cuando}";"${quien}"`;
 
 // --- El parser ---------------------------------------------------------------
+
+test("la columna Estado nueva no impide leer reportes para fusión", () => {
+  const lectura = leerReporteCsv(
+    `﻿"Id";"Descripción";"Marca";"Modelo";"Num Serie";"Resguardante";"Ubicación";"Localizado";"Revisado";"Revisó";"Estado"\n"3382871";"COMPUTADORA PORTATIL";"DELL";"LATITUDE";"";"";"Aula 1";"S";"2026-08-28 10:00:00";"Leo";"En resguardo"\n`
+  );
+
+  assert.equal(lectura.filas.length, 1);
+  assert.equal(lectura.filas[0].id_patrimonial, "3382871");
+  assert.equal(lectura.filas[0].localizado, "S");
+});
 
 test("un campo entrecomillado puede traer el separador adentro", () => {
   // Las descripciones de Patrimonio traen `;` y comas. Partir por separador

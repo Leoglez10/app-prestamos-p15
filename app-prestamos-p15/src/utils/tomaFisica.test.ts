@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import {
   calcularProgreso,
   clasificarDisparo,
+  estadoAlCapturar,
   fueNoLocalizado,
   construirReporteCsv,
+  filasDelReporte,
   fueRevisado,
   estaDentroDe,
   lugarAlRevisar,
@@ -23,6 +25,7 @@ const equipo = (extra: Partial<EquipoRevisable> = {}): EquipoRevisable => ({
   revisado_por: null,
   no_localizado_en: null,
   no_localizado_por: null,
+  estado: "disponible",
   marca: "DELL",
   modelo: "LATITUDE",
   num_serie: null,
@@ -216,4 +219,24 @@ test("al revisar se conserva el lugar más preciso", () => {
   assert.equal(lugarAlRevisar("SITE 2 / Anaquel 1", "SITE 2 / Anaquel 2"), "SITE 2 / Anaquel 2");
   assert.equal(lugarAlRevisar("SITE 20 / Anaquel 1", "SITE 2"), "SITE 2");
   assert.equal(lugarAlRevisar(null, "Aula 12"), "Aula 12");
+});
+
+test("el estado elegido se aplica solo cuando la persona lo indicó", () => {
+  assert.equal(estadoAlCapturar(""), undefined);
+  assert.equal(estadoAlCapturar("  mantenimiento  "), "mantenimiento");
+});
+
+test("el reporte de Patrimonio incluye el estado con una etiqueta legible", () => {
+  const [encabezado, fijo, personalizado] = filasDelReporte(
+    [
+      equipo({ id: 1, estado: "en_resguardo" }),
+      equipo({ id: 2, estado: "en_comodato" }),
+    ],
+    null,
+    [{ valor: "en_comodato", etiqueta: "En comodato institucional" }]
+  );
+
+  assert.equal(encabezado.at(-1), "Estado");
+  assert.equal(fijo.at(-1), "En resguardo");
+  assert.equal(personalizado.at(-1), "En comodato institucional");
 });

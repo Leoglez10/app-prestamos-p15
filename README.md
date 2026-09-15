@@ -140,7 +140,7 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 - ✅ **Escaneo global** en Inventario: apuntas a una etiqueta y se abre la ficha, sin hacer clic en ningún campo primero
 - ✅ Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
 - ✅ Importación del **directorio de profesores** desde un Excel (Código + Nombre completo), con plan previo y respaldo automático
-- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
+- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, captura de **estado del equipo**, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
 - ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
 - ✅ En la toma física se escanea la etiqueta de **Patrimonio** o el **número de serie** del fabricante: la app encuentra el equipo con cualquiera de los dos
 - ✅ **Lugares con subniveles** usando `/` (`SITE 2 / Anaquel 1 / Nivel 3`): contar o filtrar `SITE 2` incluye todo lo que hay dentro
@@ -300,22 +300,23 @@ La app resuelve eso **por velocidad**: la pistola escribe el código entero en m
 1. Elige el **área** a contar (usa las ubicaciones recientes o escribe una nueva).
 2. Si es la primera vez o estás entrenando a alguien, activa **"Modo prueba · no guarda nada"** (ver abajo).
 3. **"Iniciar campaña nueva"** → reinicia todo el área a *pendiente* (pide doble confirmación).
-4. **Escanea** equipo por equipo. Cada disparo da feedback inmediato con sonido y tarjeta:
+4. Antes de escanear, en **"Estado al capturar"** deja **"Conservar estado actual"** o elige la condición que observas. Están los estados fijos y los personalizados que tenga la escuela.
+5. **Escanea** equipo por equipo. Cada disparo da feedback inmediato con sonido y tarjeta:
    - 🟢 **Nuevo aquí** — estaba pendiente, ya está contado
    - 🔵 **Movido** — existe pero su ubicación registrada era otra
    - 🟡 **Repetido** — ya lo escaneaste en esta campaña
-5. Cada escaneo marca automáticamente el equipo como **revisado** en esa ubicación.
-6. ¿Te equivocaste? Botón **deshacer último escaneo**.
-7. La columna **"Deberían estar aquí"** lista lo que falta contar. Cada fila tiene dos botones:
+6. Cada escaneo marca automáticamente el equipo como **revisado** en esa ubicación y, si elegiste uno, guarda ese **estado** junto con la revisión. **"Sí está"** hace lo mismo para una etiqueta rota o ilegible.
+7. ¿Te equivocaste? Botón **deshacer último escaneo**: restaura la revisión, ubicación y estado anteriores.
+8. La columna **"Deberían estar aquí"** lista lo que falta contar. Cada fila tiene dos botones:
    - **"Sí está"** — lo encontraste pero sin escanearlo (etiqueta rota, ilegible)
    - **"No localizada"** — lo buscaste y **no aparece**. Esto es distinto de dejarlo pendiente (ver el reporte, abajo)
-8. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
+9. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
 
 ### 🧪 Modo prueba (para entrenar sin miedo)
 
 El botón **"Modo prueba · no guarda nada"** en la pantalla de inicio corre **el recorrido completo**: la pistola, los tonos, el destello, las tarjetas de color, la detección de repetidos, el botón de deshacer. Todo se ve y suena igual.
 
-La diferencia es que **ninguna escritura llega a la base de datos**. Mientras está activo, aparece un distintivo `Prueba · no se guarda` en la barra superior, y los botones que sí escriben (ligar una etiqueta, dar de alta, marcar no localizada) quedan bloqueados con un aviso.
+La diferencia es que **ninguna escritura llega a la base de datos**, incluido el estado que elijas al capturar. Mientras está activo, aparece un distintivo `Prueba · no se guarda` en la barra superior, y los botones que sí escriben (ligar una etiqueta, dar de alta, marcar no localizada) quedan bloqueados con un aviso.
 
 > 💡 Es la forma de enseñarle el recorrido a un becario nuevo sin arriesgar el conteo real. Apágalo antes de la campaña de verdad.
 
@@ -344,7 +345,9 @@ Son **dos botones y dos archivos distintos**, con los mismos datos y destinos di
 
 Los dos se guardan en `%AppData%\com.p15.prestamos\reportes`, una carpeta **hermana** de `backups` (no está adentro). El CSV va con `;` y BOM UTF-8 a propósito, así Excel en español lo abre en columnas y con los acentos bien.
 
-Columnas: `Id · Descripción · Marca · Modelo · Num Serie · Resguardante · Ubicación · Localizado · Revisado · Revisó`
+Columnas: `Id · Descripción · Marca · Modelo · Num Serie · Resguardante · Ubicación · Localizado · Revisado · Revisó · Estado`
+
+La columna **Estado** muestra la condición que tiene guardada cada equipo con el mismo nombre legible que aparece en Inventario (por ejemplo, *En resguardo* o un estado personalizado).
 
 **La columna `Localizado` tiene TRES estados, no dos:**
 
@@ -373,7 +376,7 @@ La computadora principal **sigue prestando** mientras una segunda camina el edif
 2. **Durante la campaña:** la segunda recorre, la principal presta. **Ninguna de las dos restaura nada.**
 3. **Al terminar:** la segunda exporta el reporte, Drive lo sincroniza, y en la principal entras a **Admin ▸ Inventario ▸ "Traer la toma física de otra computadora"** y eliges el CSV. Ves la vista previa antes de que se escriba nada.
 
-**Qué escribe la fusión:** solo `revisado`, `quién revisó`, `no localizado` y `ubicación`. Los préstamos no comparten ninguna de esas columnas — por eso las dos computadoras pueden trabajar al mismo tiempo sin pisarse.
+**Qué escribe la fusión:** solo `revisado`, `quién revisó`, `no localizado` y `ubicación`. La columna `Estado` se conserva como información del reporte para Patrimonio; los CSV anteriores sin esa columna siguen funcionando. Los préstamos no comparten ninguna de esas columnas — por eso las dos computadoras pueden trabajar al mismo tiempo sin pisarse.
 
 > ✅ **Gana el dato más nuevo equipo por equipo**, no archivo por archivo. Traer el mismo reporte dos veces no cambia nada, y un reporte viejo no puede pisar un recorrido más reciente.
 

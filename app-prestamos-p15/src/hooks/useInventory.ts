@@ -2583,7 +2583,9 @@ export const buscarPorNumSerie = async (
 };
 
 /**
- * Marca un equipo como visto, y de paso le estampa donde estaba.
+ * Marca un equipo como visto y, si quien recorre lo eligió, le deja también el
+ * estado observado. Ambas cosas viajan en el mismo UPDATE para que una revisión
+ * nunca quede guardada sin la condición que se capturó junto a ella.
  *
  * La ubicacion se escribe aca y no en la importacion: es el dato que produce
  * caminar el edificio, y es lo unico que la reimportacion del Excel no puede
@@ -2592,11 +2594,13 @@ export const buscarPorNumSerie = async (
 export const registrarRevision = async (
   equipoId: number,
   ubicacion: string,
-  revisadoPor: string
+  revisadoPor: string,
+  estado?: string
 ): Promise<void> => {
   const db = await getDb();
   const cuando = getCurrentLocalDateTime();
   const donde = ubicacion.trim();
+  const estadoElegido = estado?.trim() ?? "";
 
   // Encontrarlo borra el "no aparecio": la marca es una afirmacion sobre el
   // presente, y el equipo esta ahi. Se limpia aca y no en quien llama porque
@@ -2604,9 +2608,10 @@ export const registrarRevision = async (
   await db.execute(
     `UPDATE inventario
      SET revisado_en = ?, revisado_por = ?, ubicacion = COALESCE(NULLIF(?, ''), ubicacion),
+         estado = COALESCE(NULLIF(?, ''), estado),
          no_localizado_en = NULL, no_localizado_por = NULL
      WHERE id = ?`,
-    [cuando, revisadoPor.trim(), donde, equipoId]
+    [cuando, revisadoPor.trim(), donde, estadoElegido, equipoId]
   );
 };
 
@@ -2636,7 +2641,7 @@ export const limpiarNoLocalizado = async (equipoId: number): Promise<void> => {
 };
 
 /**
- * Deshace el ultimo disparo devolviendo las tres columnas a como estaban.
+ * Deshace el ultimo disparo devolviendo revisión, ubicación y estado a como estaban.
  *
  * Hace falta porque la pistola dispara contra lo que se le ponga enfrente: la
  * etiqueta de al lado, el equipo del pasillo. Sin esto, un disparo equivocado
@@ -2653,12 +2658,12 @@ export const limpiarNoLocalizado = async (equipoId: number): Promise<void> => {
  */
 export const revertirRevision = async (
   equipoId: number,
-  previo: { revisado_en: string | null; revisado_por: string | null; ubicacion: string | null }
+  previo: { revisado_en: string | null; revisado_por: string | null; ubicacion: string | null; estado: string }
 ): Promise<void> => {
   const db = await getDb();
   await db.execute(
-    "UPDATE inventario SET revisado_en = ?, revisado_por = ?, ubicacion = ? WHERE id = ?",
-    [previo.revisado_en, previo.revisado_por, previo.ubicacion, equipoId]
+    "UPDATE inventario SET revisado_en = ?, revisado_por = ?, ubicacion = ?, estado = ? WHERE id = ?",
+    [previo.revisado_en, previo.revisado_por, previo.ubicacion, previo.estado, equipoId]
   );
 };
 
@@ -2732,10 +2737,11 @@ export const exportarReporteInventario = async (
   inicioCampana: string | null
 ): Promise<string> => {
   requireTauriRuntime();
+  const estadosPersonalizados = await getEstadosPersonalizados();
 
   return invoke<string>("guardar_reporte_inventario", {
     nombre: nombreDelReporte(new Date()),
-    contenido: construirReporteCsv(equipos, inicioCampana),
+    contenido: construirReporteCsv(equipos, inicioCampana, estadosPersonalizados),
   });
 };
 
@@ -2751,10 +2757,11 @@ export const exportarReporteInventarioExcel = async (
   inicioCampana: string | null
 ): Promise<string> => {
   requireTauriRuntime();
+  const estadosPersonalizados = await getEstadosPersonalizados();
 
   return invoke<string>("guardar_reporte_inventario_excel", {
     nombre: nombreDelReporte(new Date(), "xlsx"),
-    filas: filasDelReporte(equipos, inicioCampana),
+    filas: filasDelReporte(equipos, inicioCampana, estadosPersonalizados),
   });
 };
 

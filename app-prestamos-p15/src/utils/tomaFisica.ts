@@ -12,6 +12,8 @@
  * nada de esto.
  */
 
+import { etiquetaEstado, type Estado } from "./estados.ts";
+
 export type EquipoRevisable = {
   id: number;
   nombre_equipo: string;
@@ -21,6 +23,7 @@ export type EquipoRevisable = {
   revisado_por: string | null;
   no_localizado_en: string | null;
   no_localizado_por: string | null;
+  estado: string;
   marca: string | null;
   modelo: string | null;
   num_serie: string | null;
@@ -103,6 +106,7 @@ const COLUMNAS_REPORTE = [
   "Localizado",
   "Revisado",
   "Revisó",
+  "Estado",
 ] as const;
 
 /**
@@ -118,7 +122,8 @@ const COLUMNAS_REPORTE = [
  */
 export const filasDelReporte = (
   equipos: EquipoRevisable[],
-  inicioCampana: string | null
+  inicioCampana: string | null,
+  estadosPersonalizados: Estado[] = []
 ): string[][] => {
   const filas = equipos.map((equipo) => {
     const revisado = fueRevisado(equipo, inicioCampana);
@@ -142,6 +147,7 @@ export const filasDelReporte = (
       localizado,
       cuando,
       quien,
+      etiquetaEstado(equipo.estado, estadosPersonalizados),
     ].map((valor) => valor ?? "");
   });
 
@@ -158,9 +164,10 @@ export const filasDelReporte = (
  */
 export const construirReporteCsv = (
   equipos: EquipoRevisable[],
-  inicioCampana: string | null
+  inicioCampana: string | null,
+  estadosPersonalizados: Estado[] = []
 ): string => {
-  const [encabezado, ...filas] = filasDelReporte(equipos, inicioCampana);
+  const [encabezado, ...filas] = filasDelReporte(equipos, inicioCampana, estadosPersonalizados);
 
   return `\ufeff${encabezado.map(campoCsv).join(";")}\n${filas
     .map((fila) => fila.map(campoCsv).join(";"))
@@ -223,6 +230,15 @@ export const lugarAlRevisar = (
   const actual = normalizarLugar(ahora);
   const previo = normalizarLugar(antes);
   return estaDentroDe(previo, actual) && !estaDentroDe(actual, previo) ? previo : actual;
+};
+
+/**
+ * Un estado vacío significa "conservar el actual": la toma física no debe cambiar
+ * el estado de un equipo salvo que quien recorre lo haya elegido expresamente.
+ */
+export const estadoAlCapturar = (estadoElegido: string): string | undefined => {
+  const estado = estadoElegido.trim();
+  return estado || undefined;
 };
 
 /**

@@ -617,7 +617,8 @@ tecleando a mano, sigue esperando tu `Enter`.
    no guarda nada"**.
 3. **"Iniciar campaña nueva"** - esto **reinicia toda el área a pendiente** y
    pide doble confirmación. Hazlo en un momento tranquilo.
-4. **Escanea equipo por equipo.** Cada disparo da sonido y tarjeta de color:
+4. Antes de escanear, en **"Estado al capturar"** deja **"Conservar estado actual"** o elige la condición que observas. Ahí aparecen los estados fijos y los personalizados de la escuela.
+5. **Escanea equipo por equipo.** Cada disparo da sonido y tarjeta de color:
 
    | Color | Significa |
    |---|---|
@@ -638,8 +639,9 @@ tecleando a mano, sigue esperando tu `Enter`.
    > **Si varios equipos tienen el mismo número de serie**, la app avisa y **no
    > marca ninguno**. Escanea la etiqueta de Patrimonio o búscalo a mano.
 
-5. ¿Te equivocaste? Botón **deshacer último escaneo**.
-6. La columna **"Deberían estar aquí"** lista lo que falta. Cada fila tiene dos
+6. Cada escaneo guarda la revisión, la ubicación y, si lo elegiste, el **estado**. El botón **"Sí está"** hace lo mismo cuando la etiqueta está rota o ilegible.
+7. ¿Te equivocaste? Botón **deshacer último escaneo**: restaura la revisión, ubicación y estado anteriores.
+8. La columna **"Deberían estar aquí"** lista lo que falta. Cada fila tiene dos
    botones:
 
    | Botón | Cuándo |
@@ -647,7 +649,7 @@ tecleando a mano, sigue esperando tu `Enter`.
    | **"Sí está"** | Lo encontraste, pero no se pudo escanear (etiqueta rota o ilegible) |
    | **"No localizada"** | Lo buscaste y **no aparece** |
 
-7. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
+9. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
 
 ### Lugares con subniveles
 
@@ -686,9 +688,8 @@ El botón **"Modo prueba · no guarda nada"** corre **el recorrido completo**: l
 pistola, los tonos, el destello, las tarjetas de color, la detección de
 repetidos, el botón de deshacer. Se ve y suena exactamente igual.
 
-La diferencia es que **ninguna escritura llega a la base de datos**. Mientras
-está activo aparece un distintivo `Prueba · no se guarda` en la barra superior, y
-los botones que sí escriben quedan bloqueados con un aviso.
+La diferencia es que **ninguna escritura llega a la base de datos**, incluido el
+estado que elijas al capturar. Mientras está activo aparece un distintivo `Prueba · no se guarda` en la barra superior, y los botones que sí escriben quedan bloqueados con un aviso.
 
 > Es la forma de enseñarle el recorrido a alguien nuevo sin arriesgar el conteo
 > real. **Apágalo antes de la campaña de verdad.**
@@ -733,7 +734,9 @@ botón dice para quién es cada uno:
 - **Dónde quedan:** `%AppData%\com.p15.prestamos\reportes`
   Es una carpeta **hermana** de `backups`, no está adentro.
 - **Columnas:** Id · Descripción · Marca · Modelo · Num Serie · Resguardante ·
-  Ubicación · Localizado · Revisado · Revisó
+  Ubicación · Localizado · Revisado · Revisó · Estado
+- **Estado:** muestra la condición guardada para cada equipo con el mismo nombre
+  legible que aparece en Inventario, incluso si es un estado personalizado.
 - El CSV va con punto y coma y BOM UTF-8 a propósito: así Excel en español lo abre
   en columnas y con los acentos bien.
 
@@ -779,8 +782,10 @@ y ese fusiona.
    eliges el CSV. Ves la vista previa antes de que se escriba nada.
 
 **Qué escribe la fusión:** solo `revisado`, `quién revisó`, `no localizado` y
-`ubicación`. Los préstamos no comparten ninguna de esas columnas - por eso las
-dos computadoras pueden trabajar al mismo tiempo sin pisarse.
+`ubicación`. La columna `Estado` queda como información del reporte para Patrimonio;
+los CSV anteriores sin esa columna siguen funcionando. Los préstamos no comparten
+ninguna de esas columnas - por eso las dos computadoras pueden trabajar al mismo
+tiempo sin pisarse.
 
 > **Gana el dato más nuevo equipo por equipo**, no archivo por archivo. Traer el
 > mismo reporte dos veces no cambia nada, y un reporte viejo no puede pisar un

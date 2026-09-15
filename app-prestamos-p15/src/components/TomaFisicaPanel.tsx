@@ -30,6 +30,7 @@ import {
   exportarReporteInventarioExcel,
   getCategorias,
   getEquipos,
+  getEstadosPersonalizados,
   getInicioCampana,
   getUbicacionesRecientes,
   iniciarCampanaInventario,
@@ -50,6 +51,7 @@ import { ImportarReportePanel } from "./ImportarReportePanel";
 import {
   calcularProgreso,
   clasificarDisparo,
+  estadoAlCapturar,
   estaDentroDe,
   lugarAlRevisar,
   normalizarLugar,
@@ -63,6 +65,7 @@ import {
   type CodigoEscaneado,
 } from "../utils/codigoPatrimonial";
 import { confirmDialog, promptDialog } from "../utils/confirm";
+import { etiquetaEstado, listaEstados, type Estado } from "../utils/estados";
 
 /**
  * Un código que nadie reclama. `leido` es lo que llegó de la pistola: hace falta
@@ -76,6 +79,7 @@ type Previo = {
   revisado_en: string | null;
   revisado_por: string | null;
   ubicacion: string | null;
+  estado: string;
 };
 
 type Leido = {
@@ -91,7 +95,15 @@ type Leido = {
  * pie, a un metro de la pantalla, con la pistola en la mano.
  */
 type Ultimo =
-  | { tipo: "nuevo" | "movido"; equipo: Equipo; desde: string | null; previo: Previo; disparo: number; porSerie: boolean }
+  | {
+      tipo: "nuevo" | "movido";
+      equipo: Equipo;
+      desde: string | null;
+      previo: Previo;
+      disparo: number;
+      porSerie: boolean;
+      estadoAplicado?: string;
+    }
   | { tipo: "repetido"; equipo: Equipo; disparo: number }
   | null;
 
@@ -111,6 +123,7 @@ const comoRevisable = (equipo: Equipo): EquipoRevisable => ({
   revisado_por: equipo.revisado_por,
   no_localizado_en: equipo.no_localizado_en,
   no_localizado_por: equipo.no_localizado_por,
+  estado: equipo.estado,
   marca: equipo.marca,
   modelo: equipo.modelo,
   num_serie: equipo.num_serie,
@@ -121,6 +134,7 @@ const comoPrevio = (equipo: Equipo): Previo => ({
   revisado_en: equipo.revisado_en,
   revisado_por: equipo.revisado_por,
   ubicacion: equipo.ubicacion,
+  estado: equipo.estado,
 });
 
 const detalleDe = (equipo: Equipo): string =>
@@ -166,12 +180,16 @@ export function TomaFisicaPanel({
   const [cargando, setCargando] = useState(true);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [estadosExtra, setEstadosExtra] = useState<Estado[]>([]);
   const [inicioCampana, setInicioCampana] = useState<string | null>(null);
   const [recientes, setRecientes] = useState<string[]>([]);
 
   const [ubicacion, setUbicacion] = useState("");
   const [ubicacionFijada, setUbicacionFijada] = useState(false);
   const [codigo, setCodigo] = useState("");
+  // Vacío conserva el estado que ya tenía: elegir uno lo aplica al siguiente
+  // equipo capturado, sin interrumpir el bucle de la pistola.
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
   const [leidos, setLeidos] = useState<Leido[]>([]);
   const [ultimo, setUltimo] = useState<Ultimo>(null);
   // Cuenta los disparos solo para que la tarjeta se vuelva a animar cuando se
@@ -206,18 +224,22 @@ export function TomaFisicaPanel({
   const [consultaRapida, setConsultaRapida] = useState(false);
 
   const quienRevisa = adminUser.nombre;
+  const estadosDisponibles = useMemo(() => listaEstados(estadosExtra), [estadosExtra]);
 
   const recargar = useCallback(async () => {
-    const [filas, inicio, areas, cats] = await Promise.all([
+    const [filas, inicio, areas, cats, extras] = await Promise.all([
       getEquipos(),
       getInicioCampana(),
       getUbicacionesRecientes(),
       getCategorias(),
+      // Si los personalizados no se pueden leer, la toma sigue con los fijos.
+      getEstadosPersonalizados().catch(() => []),
     ]);
     setEquipos(filas);
     setInicioCampana(inicio);
     setRecientes(areas);
     setCategorias(cats);
+    setEstadosExtra(extras);
   }, []);
 
   useEffect(() => {
@@ -456,13 +478,30 @@ export function TomaFisicaPanel({
       // El estado previo se guarda ANTES de escribir: es lo unico que hace
       // posible el deshacer sin una tabla de historial.
       const previo = comoPrevio(equipo);
-      if (!prueba) await registrarRevision(equipo.id, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa);
+      const estadoAplicado = estadoAlCapturar(estadoSeleccionado);
+      if (!prueba) {
+        await registrarRevision(
+          equipo.id,
+          lugarAlRevisar(equipo.ubicacion, ubicacion),
+          quienRevisa,
+          estadoAplicado
+        );
+      }
+      const equipoRevisado = estadoAplicado ? { ...equipo, estado: estadoAplicado } : equipo;
 
       tono(true);
       setFlash("ok");
-      setUltimo({ tipo: que, equipo, desde: previo.ubicacion, previo, disparo, porSerie: encontradoPorSerie });
+      setUltimo({
+        tipo: que,
+        equipo: equipoRevisado,
+        desde: previo.ubicacion,
+        previo,
+        disparo,
+        porSerie: encontradoPorSerie,
+        estadoAplicado,
+      });
       setLeidos((actuales) => [
-        { equipo, cuando: new Date().toLocaleTimeString(), previo, porSerie: encontradoPorSerie },
+        { equipo: equipoRevisado, cuando: new Date().toLocaleTimeString(), previo, porSerie: encontradoPorSerie },
         ...actuales,
       ]);
       if (!prueba) await recargar();
@@ -505,9 +544,11 @@ export function TomaFisicaPanel({
     setOcupado(true);
     try {
       const previo = comoPrevio(equipo);
-      await registrarRevision(equipoId, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa);
+      const estadoAplicado = estadoAlCapturar(estadoSeleccionado);
+      await registrarRevision(equipoId, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa, estadoAplicado);
+      const equipoRevisado = estadoAplicado ? { ...equipo, estado: estadoAplicado } : equipo;
       setLeidos((actuales) => [
-        { equipo, cuando: new Date().toLocaleTimeString(), previo },
+        { equipo: equipoRevisado, cuando: new Date().toLocaleTimeString(), previo },
         ...actuales,
       ]);
       tono(true);
@@ -533,12 +574,20 @@ export function TomaFisicaPanel({
       } else {
         await vincularIdPatrimonial(equipoId, desconocido.valor);
       }
-      await registrarRevision(equipoId, lugarAlRevisar(equipo?.ubicacion, ubicacion), quienRevisa);
+      const estadoAplicado = estadoAlCapturar(estadoSeleccionado);
+      await registrarRevision(
+        equipoId,
+        lugarAlRevisar(equipo?.ubicacion, ubicacion),
+        quienRevisa,
+        estadoAplicado
+      );
       if (equipo) {
-        const ligado =
-          desconocido.tipo === "serie"
+        const ligado = {
+          ...(desconocido.tipo === "serie"
             ? { ...equipo, num_serie: desconocido.valor }
-            : { ...equipo, id_patrimonial: desconocido.valor };
+            : { ...equipo, id_patrimonial: desconocido.valor }),
+          ...(estadoAplicado ? { estado: estadoAplicado } : {}),
+        };
         setLeidos((actuales) => [
           { equipo: ligado, cuando: new Date().toLocaleTimeString(), previo: comoPrevio(equipo) },
           ...actuales,
@@ -566,6 +615,8 @@ export function TomaFisicaPanel({
    * dos, o con una serie repetida, no hay forma segura de releerlo: se recarga y ya.
    */
   const cerrarElAlta = async (idPatrimonial: string | null, numSerie: string | null = null) => {
+    // También se protege acá: quien llama puede cambiar, pero prueba nunca escribe.
+    if (prueba) return;
     const equipo = idPatrimonial
       ? await buscarPorIdPatrimonial(idPatrimonial)
       : numSerie
@@ -573,9 +624,16 @@ export function TomaFisicaPanel({
         : null;
     if (equipo) {
       // El formulario completo pudo anotarlo en un subnivel del área: no se pisa.
-      await registrarRevision(equipo.id, lugarAlRevisar(equipo.ubicacion, ubicacion), quienRevisa);
+      const estadoAplicado = estadoAlCapturar(estadoSeleccionado);
+      await registrarRevision(
+        equipo.id,
+        lugarAlRevisar(equipo.ubicacion, ubicacion),
+        quienRevisa,
+        estadoAplicado
+      );
+      const equipoRevisado = estadoAplicado ? { ...equipo, estado: estadoAplicado } : equipo;
       setLeidos((actuales) => [
-        { equipo, cuando: new Date().toLocaleTimeString(), previo: comoPrevio(equipo) },
+        { equipo: equipoRevisado, cuando: new Date().toLocaleTimeString(), previo: comoPrevio(equipo) },
         ...actuales,
       ]);
       tono(true);
@@ -652,6 +710,9 @@ export function TomaFisicaPanel({
   };
 
   const nuevaCampana = async () => {
+    // El botón se deshabilita en prueba, pero el guard local evita escribir si se
+    // llega por teclado, una llamada futura o una actualización tardía de React.
+    if (prueba || ocupado) return;
     const sigue = await confirmDialog(
       "Iniciar una campaña nueva marca todo el inventario como pendiente otra vez. " +
         "No se borra nada, pero el conteo vuelve a cero. ¿Continuar?"
@@ -839,7 +900,7 @@ export function TomaFisicaPanel({
                 </small>
               </div>
 
-              <button type="button" className="toma-link-danger" onClick={() => void nuevaCampana()} disabled={ocupado}>
+              <button type="button" className="toma-link-danger" onClick={() => void nuevaCampana()} disabled={ocupado || prueba}>
                 Iniciar campaña nueva
               </button>
             </div>
@@ -1070,6 +1131,27 @@ export function TomaFisicaPanel({
           autoComplete="off"
           disabled={desconocido !== null}
         />
+        <div className="toma-estado-captura">
+          <label htmlFor="estado-captura">Estado al capturar</label>
+          <select
+            id="estado-captura"
+            value={estadoSeleccionado}
+            disabled={desconocido !== null || ocupado}
+            onChange={(e) => {
+              setEstadoSeleccionado(e.target.value);
+              // Elegir el estado no puede dejar la pistola apuntando al vacío.
+              enfocarEscaneo();
+            }}
+          >
+            <option value="">Conservar estado actual</option>
+            {estadosDisponibles.map((estado) => (
+              <option key={estado.valor} value={estado.valor}>
+                {estado.etiqueta}
+              </option>
+            ))}
+          </select>
+          <small>Se aplica al escanear o marcar “Sí está”.</small>
+        </div>
       </form>
 
       {!desconocido && (
@@ -1115,6 +1197,7 @@ export function TomaFisicaPanel({
                     ? `Anotado en ${lugarAlRevisar(ultimo.previo.ubicacion, ubicacion)} · resguarda ${ultimo.equipo.resguardante_nombre}`
                     : `Anotado en ${lugarAlRevisar(ultimo.previo.ubicacion, ubicacion)}`}
                   {ultimo.porSerie && " · por serie"}
+                  {ultimo.estadoAplicado && ` · estado: ${etiquetaEstado(ultimo.estadoAplicado, estadosExtra)}`}
                 </small>
               </div>
               <button
@@ -1351,7 +1434,7 @@ export function TomaFisicaPanel({
                 <small>{leido.cuando}</small>
                 <button type="button" className="ghost" disabled={ocupado}
                   aria-label={`Deshacer lectura de ${leido.equipo.nombre_equipo}, ${leido.equipo.id_patrimonial ?? leido.equipo.id}`}
-                  title="Restaura la revisión y ubicación anteriores; no elimina el equipo ni su etiqueta."
+                  title="Restaura la revisión, ubicación y estado anteriores; no elimina el equipo ni su etiqueta."
                   onClick={() => void deshacer(leido.equipo.id, leido.previo)}>
                   <Icon name="refresh" /> Deshacer
                 </button>

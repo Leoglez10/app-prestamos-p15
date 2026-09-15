@@ -2192,6 +2192,31 @@ button.ghost {
   background: var(--background-default);
 }
 
+/* El estado queda junto al disparo, pero su elección devuelve el foco al campo:
+   cambiar una condición no puede cortar el ritmo de la pistola. */
+.toma-estado-captura {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 190px;
+}
+
+.toma-estado-captura label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.toma-estado-captura select {
+  min-height: 44px;
+}
+
+.toma-estado-captura small {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
 @keyframes tomaRespira {
   0%, 100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.14); }
   50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.2); }

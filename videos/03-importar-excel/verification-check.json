@@ -13,7 +13,7 @@
         "message": "Detected 3 matching img entries with the same source/start/duration.",
         "selector": "[data-composition-id]",
         "dataAttributes": {},
-        "sourceFile": "/Users/leoglez/Documents/Proyectos/prestamos-p15/app-prestamos-p15/videos/03-importar-excel/index.html",
+        "sourceFile": "/Users/leoglez/Development/prestamos-p15/app-prestamos-p15/videos/03-importar-excel/index.html",
         "bbox": {
           "x": 0,
           "y": 0,

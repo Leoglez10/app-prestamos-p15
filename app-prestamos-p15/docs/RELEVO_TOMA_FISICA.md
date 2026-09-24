@@ -76,6 +76,10 @@ nada que perder.
    otra computadora** → elegir el CSV.
 4. Se ve la vista previa. Nada se escribe hasta confirmar.
 
+![Toma de inventario: panel La campaña con las descargas de Excel y CSV](img/toma-fisica.png)
+
+*En el panel **La campaña**, **Descargar CSV para otra computadora** genera el archivo que la principal trae después con **Traer la toma física de otra computadora**.*
+
 ---
 
 ## Qué escribe la fusión, exactamente

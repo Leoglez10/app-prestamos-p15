@@ -38,6 +38,10 @@ Al terminar, el instalador se genera en:
 5. Instalar la app en la laptop nueva.
 6. Restaurar la base de datos con ese respaldo.
 
+![Configuración: sección Respaldos con los botones Crear respaldo, Abrir carpeta e Importar respaldo](app-prestamos-p15/docs/img/configuracion.png)
+
+*Los botones **Crear respaldo**, **Abrir carpeta** e **Importar respaldo** están al final de `Configuración`, en la sección Respaldos.*
+
 ### Opción 2: copiar directamente la base de datos
 
 La base de datos `prestamos.db` se guarda en la carpeta de datos de la app en Windows.

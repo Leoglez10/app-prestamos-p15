@@ -178,6 +178,10 @@ categoría e identificador, y ya agrega el primer resultado al presionar `Enter`
 Sumando `id_patrimonial` a ese predicado, la pistola funciona **sin una sola
 pantalla nueva**: apuntás, dispara, el equipo entra al carrito.
 
+![Toma de inventario con el contador Sin etiqueta de Patrimonio y la descarga del Excel para Patrimonio](img/toma-fisica.png)
+
+*Así quedó la pestaña **Toma de inventario**: la pistola registra cada etiqueta en el área elegida, el contador **Sin etiqueta de Patrimonio** marca los equipos sin `id_patrimonial` y **Descargar Excel para Patrimonio** genera el entregable.*
+
 ---
 
 ## 7. El camino crítico: poblar `id_patrimonial`

@@ -118,16 +118,23 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 <div align="center">
 
-| Modo | Captura |
+| Pantalla | Captura |
 |---|---|
-| **🏠 Inicio** — pantalla central con 3 tarjetas | ![Inicio](app-prestamos-p15/docs/img/inicio.png) |
-| **🛠 Admin** — acceso admin (código + PIN) | ![Admin](app-prestamos-p15/docs/img/admin.png) |
-| **⚡ Préstamo Rápido** — acceso admin (solo código) | ![Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido.png) |
-| **📱 Kiosko** — _(requiere Tauri + SQLite; ver nota)_ | _(pendiente)_ |
+| **🏠 Inicio** — tarjetas "Soy Profesor" y "Préstamo Rápido", botón "Administrador" y conteo de equipos | ![Inicio](app-prestamos-p15/docs/img/inicio.png) |
+| **📱 Kiosko: código** — el profesor se identifica con su código UDG | ![Kiosko, pantalla de código](app-prestamos-p15/docs/img/kiosko-codigo.png) |
+| **📱 Kiosko: catálogo** — "Por devolver", categorías, carrito y "Confirmar y llevar" | ![Kiosko, catálogo y carrito](app-prestamos-p15/docs/img/kiosko.png) |
+| **⚡ Préstamo Rápido: acceso** — el admin entra solo con su código | ![Acceso a Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido-acceso.png) |
+| **⚡ Préstamo Rápido** — formulario de alumno/profesor, "Salida a evento" e historial | ![Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido.png) |
+| **🛠 Admin ▸ Inventario** — filtros, conteos por estado y alta rápida | ![Admin, Inventario](app-prestamos-p15/docs/img/admin.png) |
+| **📋 Admin ▸ Toma de inventario** — área actual, avance de la campaña y reporte para Patrimonio | ![Toma de inventario](app-prestamos-p15/docs/img/toma-fisica.png) |
+| **🗂 Admin ▸ Categorías** — Prestable vs Solo inventario por categoría | ![Categorías](app-prestamos-p15/docs/img/categorias.png) |
+| **👥 Admin ▸ Profesores** — directorio e "Importar desde Excel" | ![Profesores](app-prestamos-p15/docs/img/profesores.png) |
+| **📄 Admin ▸ Reportes** — historial de préstamos con filtros y PDF | ![Reportes](app-prestamos-p15/docs/img/reportes.png) |
+| **⚙️ Admin ▸ Configuración** — actualizaciones, reportar un problema, kiosko y respaldos | ![Configuración](app-prestamos-p15/docs/img/configuracion.png) |
 
 </div>
 
-> 📸 **Nota sobre las capturas**: las tres primeras se tomaron con `npm run dev` (Vite solo). Mostramos la pantalla en estado **pre-login**, antes de entrar. El **Kiosko** necesita la base de datos activa desde el arranque (no tiene estado pre-login), así que su captura real requiere `npm run tauri dev` con la app de escritorio. Para actualizarlas: `npm run dev` → abrir <http://localhost:1770/> → capturar y guardar en `docs/img/`.
+> 📸 **Nota sobre las capturas**: se tomaron con la app de escritorio (versión 0.14.0). Para actualizarlas: abre la app, captura cada pantalla y guárdala en `app-prestamos-p15/docs/img/` con el mismo nombre de archivo.
 
 ### Funciones principales
 
@@ -196,6 +203,8 @@ La app viene con un administrador precargado (solo para empezar):
 
 ### Flujo 1: Un profesor quiere pedir prestado un equipo (Kiosko)
 
+![Kiosko: catálogo, carrito y equipos por devolver](app-prestamos-p15/docs/img/kiosko.png)
+
 1. Abre la app. Verás 3 tarjetas grandes.
 2. Haz clic en **"Soy Profesor"**.
 3. Escribe tu **código UDG** (por ejemplo `223992647`) → Enter. No necesitas contraseña.
@@ -208,6 +217,8 @@ La app viene con un administrador precargado (solo para empezar):
 8. Para **devolver**: entra de nuevo con tu código, ve a tus préstamos activos y devuelve uno por uno o toca **"Devolver todo"**.
 
 ### Flujo 2: Préstamo a un alumno (Préstamo Rápido)
+
+![Préstamo Rápido: formulario a la izquierda, historial a la derecha](app-prestamos-p15/docs/img/prestamo-rapido.png)
 
 1. En la pantalla de inicio, clic en **"Préstamo Rápido"**.
 2. El admin entra con su **código** (sin PIN — esto es intencional, queda auditoría de quién autorizó).
@@ -229,6 +240,8 @@ La app viene con un administrador precargado (solo para empezar):
 Los datos del expositor solo se guardan si escribes su nombre; si no, la app avisa: *"Escribe el nombre del expositor o borra sus datos."* Todo esto aparece en el detalle del evento y en el acta impresa.
 
 ### Flujo 3: Administrar todo (Admin)
+
+![Admin: pestaña Inventario con filtros y conteos por estado](app-prestamos-p15/docs/img/admin.png)
 
 1. En la pantalla de inicio, clic en **"Administrador"**.
 2. Escribe tu **código** y tu **PIN**.
@@ -286,6 +299,8 @@ La app puede cargar el inventario oficial desde el **Excel de Patrimonio** sin t
 ## 📋 Toma de inventario físico
 
 Sirve para **cuadrar lo que hay físicamente en los estantes contra lo que dice la app**, usando un lector de códigos de barras. Está en **Admin** ▸ pestaña **Toma de inventario**.
+
+![Toma de inventario: área actual, avance de la campaña y descargas para Patrimonio](app-prestamos-p15/docs/img/toma-fisica.png)
 
 ### La pistola dispara sola
 

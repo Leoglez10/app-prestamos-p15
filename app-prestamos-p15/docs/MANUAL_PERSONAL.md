@@ -194,6 +194,10 @@ con distinto nivel de acceso.
 | **Préstamo Rápido** | Un administrador | Solo su **código**. Sin PIN. | Prestar a **alumnos**, y sacar equipo a **eventos** |
 | **Administrador** | Un administrador | **Código + PIN** | Todo lo demás: inventario, categorías, profesores, reportes, respaldos, toma física |
 
+![Pantalla de inicio con las tarjetas Soy Profesor y Préstamo Rápido, y el botón Administrador](img/inicio.png)
+
+*Pantalla de inicio. "Soy Profesor" y "Préstamo Rápido" son las tarjetas grandes; "Administrador" es el botón de arriba a la derecha. Abajo, el conteo de equipos disponibles, en préstamo y fuera de servicio.*
+
 ## Por qué el Préstamo Rápido no pide PIN
 
 Es a propósito. Un préstamo a alumno suele ser una urgencia de pasillo, y pedir
@@ -266,6 +270,14 @@ Cada tarea es una receta. Sigue los pasos en orden.
 6. **Confirmar.** El equipo queda marcado como prestado con fecha y hora, y la
    sesión se cierra sola en 3 segundos.
 
+![Kiosko: pantalla donde el profesor escribe su código](img/kiosko-codigo.png)
+
+*Paso 2: el profesor escribe su código en el recuadro y toca **Identificarse**.*
+
+![Kiosko: catálogo por categorías, carrito y lista Por devolver](img/kiosko.png)
+
+*Pasos 3 a 6: a la izquierda, **Por devolver** (lo que ya tiene prestado); en el centro, las categorías; a la derecha, el buscador, el **Carrito** y el botón **Confirmar y llevar**.*
+
 ## Recibir una devolución (Kiosko)
 
 1. El profesor entra otra vez con su código.
@@ -288,6 +300,14 @@ Cada tarea es una receta. Sigue los pasos en orden.
 4. El sistema guarda solo **quién autorizó** (tu nombre y código).
 5. Cuando el alumno regresa el equipo, márcalo como **devuelto** en el historial
    de abajo.
+
+![Préstamo Rápido: pantalla de acceso con el código administrativo](img/prestamo-rapido-acceso.png)
+
+*Paso 2: el administrador escribe solo su código y toca **Acceder a préstamos**. No pide PIN.*
+
+![Préstamo Rápido: formulario a la izquierda e historial a la derecha](img/prestamo-rapido.png)
+
+*A la izquierda, el formulario (con el selector **Alumno / Profesor** y la pestaña **Salida a evento**). A la derecha, el historial: las pestañas **En préstamo**, **Más de 1 día** y **Devueltos**, y el botón verde **Devolver** en cada fila.*
 
 ### Los tres estados del historial
 
@@ -369,6 +389,10 @@ La lista de lugares se arma sola con las ubicaciones que ya existen en tu
 inventario: no hay que escribirlas. El buscador también entiende el lugar, además
 del nombre y el ID patrimonial.
 
+![Admin: pestaña Inventario con buscador, filtros y conteos por estado](img/admin.png)
+
+*Arriba, el buscador y los tres filtros; debajo, los conteos por estado (Prestables, Disponible, Prestado…). Cada fila muestra si el equipo es **Prestable** o **Solo inventario** y su estado.*
+
 Si un lugar tiene subniveles (por ejemplo **SITE 2 / Anaquel 1**), al elegir
 **SITE 2** en el filtro también aparece todo lo que está en sus anaqueles y
 niveles. Ver [Lugares con subniveles](#lugares-con-subniveles).
@@ -406,6 +430,10 @@ información, sin saltar entre vistas.
 
 > Un profesor sin dar de alta **no puede usar el kiosko**. Es la causa número uno
 > de "mi código no funciona".
+
+![Admin: pestaña Profesores con el formulario Agregar Profesor y el directorio](img/profesores.png)
+
+***Agregar Profesor** arriba (con la casilla **Hacer administrador**), el buscador y la lista. El botón **Importar desde Excel** está arriba a la derecha.*
 
 ## Dar de alta muchos profesores con un Excel
 
@@ -447,6 +475,10 @@ Este es el concepto que más confusión genera, así que va directo:
 |---|---|
 | **Prestable** | Aparece en el kiosko. Un profesor lo puede pedir. |
 | **Solo inventario** | **No** aparece en el kiosko. Existe para llevar el conteo y nada más. |
+
+![Admin: pestaña Categorías con la columna Préstamo](img/categorias.png)
+
+*La columna **Préstamo** dice si la categoría es **Prestable** o **Solo inventario**; tócala para cambiarla.*
 
 Un proyector fijo del salón 12 debe ser *solo inventario*: es de la escuela, se
 cuenta en la toma física, pero nadie se lo lleva.
@@ -501,6 +533,10 @@ puede escanear.
 
 **Admin** → pestaña **Configuración**.
 
+![Admin: pestaña Configuración con Actualizaciones, Reportar un problema, Kiosko y Respaldos](img/configuracion.png)
+
+*De arriba abajo: **Actualizaciones**, **Reportar un problema**, **Kiosko** (las casillas que deciden qué ve el profesor) y **Respaldos**.*
+
 Ahí se decide **qué ve un profesor** cuando entra al kiosko: si se muestra el
 catálogo completo, y el resto de ajustes de esa pantalla.
 
@@ -525,6 +561,10 @@ guarda un PDF por sí sola**: en ese diálogo elige **Microsoft Print to PDF** y
 decide el nombre y la carpeta.
 
 ### Reporte de préstamos
+
+![Admin: pestaña Reportes con el historial de préstamos y sus filtros](img/reportes.png)
+
+*Filtros de texto, estado, categoría y fechas arriba; el botón **Generar PDF de reportes** prepara el documento para imprimir.*
 
 1. **Admin** → pestaña **Reportes**.
 2. Filtra por **fecha**, **estado** o **categoría** y ajusta título, subtítulo,
@@ -593,6 +633,10 @@ equipo.
 Sirve para cuadrar **lo que hay en los estantes** contra **lo que dice la app**.
 
 Está en **Admin** → pestaña **Toma de inventario**.
+
+![Toma de inventario: avance de la campaña, área actual y descargas para Patrimonio](img/toma-fisica.png)
+
+*Arriba, el avance de la campaña (revisados, faltan por ver, sin etiqueta). En el centro eliges el área y tocas **Empezar a escanear**; a la derecha, las descargas del Excel para Patrimonio y del CSV para otra computadora.*
 
 ## Primero: la pistola dispara sola
 

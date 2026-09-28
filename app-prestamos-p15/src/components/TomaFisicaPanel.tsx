@@ -38,6 +38,7 @@ import {
   marcarNoLocalizado,
   registrarRevision,
   revertirRevision,
+  updateEquipo,
   vincularIdPatrimonial,
   vincularNumSerie,
   type Categoria,
@@ -176,6 +177,7 @@ export function TomaFisicaPanel({
   onRecorrido?: (abierto: boolean) => void;
 }) {
   const escaneoRef = useRef<HTMLInputElement>(null);
+  const observacionesRef = useRef<HTMLTextAreaElement>(null);
 
   const [cargando, setCargando] = useState(true);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
@@ -222,6 +224,11 @@ export function TomaFisicaPanel({
   // sin dejar la campana llena de revisiones falsas que despues hay que limpiar.
   const [prueba, setPrueba] = useState(false);
   const [consultaRapida, setConsultaRapida] = useState(false);
+  const [edicionObservaciones, setEdicionObservaciones] = useState<{
+    equipoId: number;
+    texto: string;
+    error: string;
+  } | null>(null);
 
   const quienRevisa = adminUser.nombre;
   const estadosDisponibles = useMemo(() => listaEstados(estadosExtra), [estadosExtra]);
@@ -360,9 +367,11 @@ export function TomaFisicaPanel({
     setCerrando(false);
     setAviso("");
     setError("");
+    setEdicionObservaciones(null);
   };
 
   const cerrarRecorrido = () => {
+    setEdicionObservaciones(null);
     setUbicacionFijada(false);
     setCerrando(false);
     setLeidos([]);
@@ -370,6 +379,55 @@ export function TomaFisicaPanel({
     setNoLocalizados([]);
     setAbiertoEn(null);
     setAviso("");
+  };
+
+  const abrirObservaciones = (equipo: Equipo) => {
+    if (ocupado || edicionObservaciones) return;
+    setEdicionObservaciones({ equipoId: equipo.id, texto: equipo.observaciones ?? "", error: "" });
+  };
+
+  const cancelarObservaciones = () => {
+    if (ocupado) return;
+    setEdicionObservaciones(null);
+    enfocarEscaneo();
+  };
+
+  const guardarObservaciones = async (e: FormEvent) => {
+    e.preventDefault();
+    const edicion = edicionObservaciones;
+    if (!edicion || ocupado || prueba || !equipos.some((equipo) => equipo.id === edicion.equipoId)) return;
+
+    setOcupado(true);
+    setEdicionObservaciones({ ...edicion, error: "" });
+    try {
+      // updateEquipo escribe solo las claves enviadas: no toca revisión, ubicación ni estado.
+      await updateEquipo(edicion.equipoId, { observaciones: edicion.texto });
+      const observaciones = edicion.texto.trim() || null;
+      setEquipos((actuales) => actuales.map((equipo) =>
+        equipo.id === edicion.equipoId ? { ...equipo, observaciones } : equipo
+      ));
+      setLeidos((actuales) => actuales.map((leido) =>
+        leido.equipo.id === edicion.equipoId
+          ? { ...leido, equipo: { ...leido.equipo, observaciones } }
+          : leido
+      ));
+      setUltimo((actual) => actual?.equipo.id === edicion.equipoId
+        ? { ...actual, equipo: { ...actual.equipo, observaciones } }
+        : actual
+      );
+      setEdicionObservaciones(null);
+      enfocarEscaneo();
+    } catch (err) {
+      setEdicionObservaciones((actual) => actual?.equipoId === edicion.equipoId
+        ? { ...actual, error: `No se pudieron guardar las observaciones: ${err instanceof Error ? err.message : String(err)}` }
+        : actual
+      );
+    } finally {
+      setOcupado(false);
+      if (edicionObservaciones?.equipoId === edicion.equipoId) {
+        requestAnimationFrame(() => observacionesRef.current?.focus());
+      }
+    }
   };
 
   /** "Lo busque y no aparecio", firmado. Distinto de "todavia no llegue ahi". */
@@ -404,7 +462,7 @@ export function TomaFisicaPanel({
   const escanear = async (e?: FormEvent) => {
     e?.preventDefault();
     const leido = codigo.trim();
-    if (!leido || ocupado || !ubicacionFijada || cerrando || consultaRapida) return;
+    if (!leido || ocupado || edicionObservaciones || !ubicacionFijada || cerrando || consultaRapida) return;
 
     setOcupado(true);
     setError("");
@@ -1129,14 +1187,14 @@ export function TomaFisicaPanel({
           onBlur={() => setFoco(false)}
           placeholder="El código aparece aquí solo…"
           autoComplete="off"
-          disabled={desconocido !== null}
+          disabled={desconocido !== null || edicionObservaciones !== null}
         />
         <div className="toma-estado-captura">
           <label htmlFor="estado-captura">Estado al capturar</label>
           <select
             id="estado-captura"
             value={estadoSeleccionado}
-            disabled={desconocido !== null || ocupado}
+            disabled={desconocido !== null || ocupado || edicionObservaciones !== null}
             onChange={(e) => {
               setEstadoSeleccionado(e.target.value);
               // Elegir el estado no puede dejar la pistola apuntando al vacío.
@@ -1154,7 +1212,7 @@ export function TomaFisicaPanel({
         </div>
       </form>
 
-      {!desconocido && (
+      {!desconocido && !edicionObservaciones && (
         <div className={`toma-sin-foco-aviso${foco ? " is-focused" : ""}`} aria-hidden={foco}>
           <Icon name="alert" /> El campo perdió el foco: la pistola está disparando al vacío.
           <button type="button" onClick={enfocarEscaneo}>Recuperarlo</button>
@@ -1175,6 +1233,7 @@ export function TomaFisicaPanel({
             <div className="toma-tarjeta-cuerpo">
               <strong>Repetido</strong>
               <span>{ultimo.equipo.nombre_equipo} ya se leyó aquí.</span>
+              <span>Observaciones: {ultimo.equipo.observaciones || "Sin observaciones"}</span>
               <small>No pasa nada: seguí con el siguiente.</small>
             </div>
           ) : (
@@ -1199,6 +1258,7 @@ export function TomaFisicaPanel({
                   {ultimo.porSerie && " · por serie"}
                   {ultimo.estadoAplicado && ` · estado: ${etiquetaEstado(ultimo.estadoAplicado, estadosExtra)}`}
                 </small>
+                <span>Observaciones: {ultimo.equipo.observaciones || "Sin observaciones"}</span>
               </div>
               <button
                 type="button"
@@ -1214,6 +1274,45 @@ export function TomaFisicaPanel({
           <div className="toma-tarjeta-tiempo" style={{ animationDuration: `${DURACION[ultimo.tipo]}ms` }} />
         </div>
       )}
+
+      {edicionObservaciones && (() => {
+        const equipo = equipos.find((item) => item.id === edicionObservaciones.equipoId);
+        if (!equipo) return null;
+        return (
+          <form className="toma-alta" onSubmit={(e) => void guardarObservaciones(e)}>
+            <strong>Observaciones de {equipo.nombre_equipo}</strong>
+            <p>Actual: {equipo.observaciones || "Sin observaciones"}</p>
+            <p>Escaneo en pausa: guarda o cancela para continuar.</p>
+            <label htmlFor="toma-observaciones">Observaciones permanentes</label>
+            <textarea
+              id="toma-observaciones"
+              ref={observacionesRef}
+              value={edicionObservaciones.texto}
+              onChange={(e) => setEdicionObservaciones((actual) => actual
+                ? { ...actual, texto: e.target.value, error: "" }
+                : actual
+              )}
+              aria-invalid={!!edicionObservaciones.error}
+              aria-describedby={edicionObservaciones.error ? "toma-observaciones-error" : undefined}
+              disabled={ocupado}
+              rows={3}
+              autoFocus
+            />
+            {edicionObservaciones.error && (
+              <div id="toma-observaciones-error" className="feedback error" role="alert">
+                {edicionObservaciones.error}
+              </div>
+            )}
+            {prueba && <small>Modo prueba: no se pueden guardar observaciones.</small>}
+            <div className="toma-alta-acciones">
+              <button type="submit" disabled={ocupado || prueba}>Guardar observaciones</button>
+              <button type="button" className="ghost" onClick={cancelarObservaciones} disabled={ocupado}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        );
+      })()}
 
       {aviso && <div className="feedback">{aviso}</div>}
       {error && <div className="feedback error">{error}</div>}
@@ -1432,6 +1531,13 @@ export function TomaFisicaPanel({
                   </span>
                 </div>
                 <small>{leido.cuando}</small>
+                <button type="button" className="ghost" disabled={ocupado || edicionObservaciones !== null}
+                  onClick={() => {
+                    const equipo = equipos.find((item) => item.id === leido.equipo.id);
+                    if (equipo) abrirObservaciones(equipo);
+                  }}>
+                  Ver / editar observaciones
+                </button>
                 <button type="button" className="ghost" disabled={ocupado}
                   aria-label={`Deshacer lectura de ${leido.equipo.nombre_equipo}, ${leido.equipo.id_patrimonial ?? leido.equipo.id}`}
                   title="Restaura la revisión, ubicación y estado anteriores; no elimina el equipo ni su etiqueta."
@@ -1466,6 +1572,10 @@ export function TomaFisicaPanel({
                         : "Sin etiqueta · no se puede escanear"}
                     </span>
                   </div>
+                  <button type="button" className="ghost" disabled={ocupado || edicionObservaciones !== null}
+                    onClick={() => abrirObservaciones(equipo)}>
+                    Ver / editar observaciones
+                  </button>
                   {pendiente && !equipo.id_patrimonial && (
                     <button
                       type="button"
@@ -1496,7 +1606,7 @@ export function TomaFisicaPanel({
         </div>
       </div>
 
-      <button type="button" className="ghost toma-terminar" disabled={ocupado} onClick={() => setCerrando(true)}>
+      <button type="button" className="ghost toma-terminar" disabled={ocupado || edicionObservaciones !== null} onClick={() => setCerrando(true)}>
         <Icon name="checkCircle" size="1.3rem" /> Terminar {ubicacion}
       </button>
 

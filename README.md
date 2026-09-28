@@ -243,6 +243,8 @@ Los datos del expositor solo se guardan si escribes su nombre; si no, la app avi
 
 ![Admin: pestaña Inventario con filtros y conteos por estado](app-prestamos-p15/docs/img/admin.png)
 
+[Ver Inventario en una ventana más pequeña](app-prestamos-p15/docs/img/admin-ventana-reducida.png).
+
 1. En la pantalla de inicio, clic en **"Administrador"**.
 2. Escribe tu **código** y tu **PIN**.
 3. Tienes pestañas:
@@ -326,6 +328,10 @@ La app resuelve eso **por velocidad**: la pistola escribe el código entero en m
    - **"Sí está"** — lo encontraste pero sin escanearlo (etiqueta rota, ilegible)
    - **"No localizada"** — lo buscaste y **no aparece**. Esto es distinto de dejarlo pendiente (ver el reporte, abajo)
 9. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
+
+### Observaciones del equipo
+
+En **"Leídos aquí"** o en la lista de equipos del área, pulsa **"Ver / editar observaciones"** para consultar la nota del equipo. Puedes cambiarla y pulsar **"Guardar observaciones"**: la nota queda guardada de forma permanente en el equipo. Si no quieres cambiarla, pulsa **"Cancelar"**. Mientras editas, el escaneo se pausa hasta que guardes o canceles. En **modo prueba** puedes consultar y escribir, pero no guardar observaciones; apágalo para guardar la nota.
 
 ### 🧪 Modo prueba (para entrenar sin miedo)
 

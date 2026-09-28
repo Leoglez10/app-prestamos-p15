@@ -695,6 +695,10 @@ tecleando a mano, sigue esperando tu `Enter`.
 
 9. Cuando la columna se vacía, terminaste el área. Exporta el **reporte**.
 
+### Ver o editar observaciones durante la toma
+
+En **"Leídos aquí"** o en la lista de equipos del área, pulsa **"Ver / editar observaciones"** para leer la nota del equipo. Si necesitas cambiarla, escribe la nueva nota y pulsa **"Guardar observaciones"**. Queda guardada de forma permanente en el equipo. Si no quieres cambiarla, pulsa **"Cancelar"**. El escaneo se pausa mientras editas y continúa cuando guardas o cancelas. En **modo prueba** puedes consultar y escribir, pero no guardar observaciones; apágalo antes de guardar la nota.
+
 ### Lugares con subniveles
 
 Un lugar puede dividirse en partes más pequeñas escribiéndolas con una

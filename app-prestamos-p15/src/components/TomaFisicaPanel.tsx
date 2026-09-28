@@ -55,6 +55,7 @@ import {
   estadoAlCapturar,
   estaDentroDe,
   lugarAlRevisar,
+  lugarCorregido,
   normalizarLugar,
   pendientesDeArea,
   type EquipoRevisable,
@@ -230,6 +231,13 @@ export function TomaFisicaPanel({
     error: string;
   } | null>(null);
 
+  const [edicionLugar, setEdicionLugar] = useState<{
+    equipoId: number;
+    texto: string;
+    error: string;
+  } | null>(null);
+  const editando = edicionObservaciones !== null || edicionLugar !== null;
+
   const quienRevisa = adminUser.nombre;
   const estadosDisponibles = useMemo(() => listaEstados(estadosExtra), [estadosExtra]);
 
@@ -368,10 +376,12 @@ export function TomaFisicaPanel({
     setAviso("");
     setError("");
     setEdicionObservaciones(null);
+    setEdicionLugar(null);
   };
 
   const cerrarRecorrido = () => {
     setEdicionObservaciones(null);
+    setEdicionLugar(null);
     setUbicacionFijada(false);
     setCerrando(false);
     setLeidos([]);
@@ -381,8 +391,55 @@ export function TomaFisicaPanel({
     setAviso("");
   };
 
+  const abrirLugar = (equipo: Equipo) => {
+    if (ocupado || editando) return;
+    setEdicionLugar({ equipoId: equipo.id, texto: equipo.ubicacion ?? "", error: "" });
+  };
+
+  const cancelarLugar = () => {
+    if (ocupado) return;
+    setEdicionLugar(null);
+    enfocarEscaneo();
+  };
+
+  const guardarLugar = async (e: FormEvent) => {
+    e.preventDefault();
+    const edicion = edicionLugar;
+    if (!edicion || ocupado || prueba || !equipos.some((equipo) => equipo.id === edicion.equipoId)) return;
+    const ubicacionNueva = lugarCorregido(edicion.texto);
+    if (!ubicacionNueva) {
+      setEdicionLugar({ ...edicion, error: "Escribe el lugar donde está el equipo." });
+      return;
+    }
+
+    setOcupado(true);
+    setEdicionLugar({ ...edicion, error: "" });
+    try {
+      // updateEquipo escribe solo las claves enviadas: no toca revisión, observaciones ni estado.
+      await updateEquipo(edicion.equipoId, { ubicacion: ubicacionNueva });
+      const conLugar = <T extends { ubicacion: string | null }>(equipo: T): T => ({ ...equipo, ubicacion: ubicacionNueva });
+      setEquipos((actuales) => actuales.map((equipo) => equipo.id === edicion.equipoId ? conLugar(equipo) : equipo));
+      setLeidos((actuales) => actuales.map((leido) =>
+        leido.equipo.id === edicion.equipoId ? { ...leido, equipo: conLugar(leido.equipo) } : leido
+      ));
+      setUltimo((actual) => actual?.equipo.id === edicion.equipoId
+        ? { ...actual, equipo: conLugar(actual.equipo) }
+        : actual
+      );
+      setEdicionLugar(null);
+      enfocarEscaneo();
+    } catch (err) {
+      setEdicionLugar((actual) => actual?.equipoId === edicion.equipoId
+        ? { ...actual, error: `No se pudo guardar el lugar: ${err instanceof Error ? err.message : String(err)}` }
+        : actual
+      );
+    } finally {
+      setOcupado(false);
+    }
+  };
+
   const abrirObservaciones = (equipo: Equipo) => {
-    if (ocupado || edicionObservaciones) return;
+    if (ocupado || editando) return;
     setEdicionObservaciones({ equipoId: equipo.id, texto: equipo.observaciones ?? "", error: "" });
   };
 
@@ -462,7 +519,7 @@ export function TomaFisicaPanel({
   const escanear = async (e?: FormEvent) => {
     e?.preventDefault();
     const leido = codigo.trim();
-    if (!leido || ocupado || edicionObservaciones || !ubicacionFijada || cerrando || consultaRapida) return;
+    if (!leido || ocupado || editando || !ubicacionFijada || cerrando || consultaRapida) return;
 
     setOcupado(true);
     setError("");
@@ -1187,14 +1244,14 @@ export function TomaFisicaPanel({
           onBlur={() => setFoco(false)}
           placeholder="El código aparece aquí solo…"
           autoComplete="off"
-          disabled={desconocido !== null || edicionObservaciones !== null}
+          disabled={desconocido !== null || editando}
         />
         <div className="toma-estado-captura">
           <label htmlFor="estado-captura">Estado al capturar</label>
           <select
             id="estado-captura"
             value={estadoSeleccionado}
-            disabled={desconocido !== null || ocupado || edicionObservaciones !== null}
+            disabled={desconocido !== null || ocupado || editando}
             onChange={(e) => {
               setEstadoSeleccionado(e.target.value);
               // Elegir el estado no puede dejar la pistola apuntando al vacío.
@@ -1212,7 +1269,7 @@ export function TomaFisicaPanel({
         </div>
       </form>
 
-      {!desconocido && !edicionObservaciones && (
+      {!desconocido && !editando && (
         <div className={`toma-sin-foco-aviso${foco ? " is-focused" : ""}`} aria-hidden={foco}>
           <Icon name="alert" /> El campo perdió el foco: la pistola está disparando al vacío.
           <button type="button" onClick={enfocarEscaneo}>Recuperarlo</button>
@@ -1307,6 +1364,43 @@ export function TomaFisicaPanel({
             <div className="toma-alta-acciones">
               <button type="submit" disabled={ocupado || prueba}>Guardar observaciones</button>
               <button type="button" className="ghost" onClick={cancelarObservaciones} disabled={ocupado}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        );
+      })()}
+
+      {edicionLugar && (() => {
+        const equipo = equipos.find((item) => item.id === edicionLugar.equipoId);
+        if (!equipo) return null;
+        return (
+          <form className="toma-alta" onSubmit={(e) => void guardarLugar(e)}>
+            <strong>Lugar de {equipo.nombre_equipo}</strong>
+            <p>Actual: {equipo.ubicacion || "Sin lugar"}</p>
+            <p>Escaneo en pausa: guarda o cancela para continuar.</p>
+            <label htmlFor="toma-lugar">Lugar correcto (niveles separados por /)</label>
+            <input
+              id="toma-lugar"
+              value={edicionLugar.texto}
+              onChange={(e) => setEdicionLugar((actual) => actual
+                ? { ...actual, texto: e.target.value, error: "" }
+                : actual
+              )}
+              aria-invalid={!!edicionLugar.error}
+              aria-describedby={edicionLugar.error ? "toma-lugar-error" : undefined}
+              disabled={ocupado}
+              autoFocus
+            />
+            {edicionLugar.error && (
+              <div id="toma-lugar-error" className="feedback error" role="alert">
+                {edicionLugar.error}
+              </div>
+            )}
+            {prueba && <small>Modo prueba: no se puede guardar el lugar.</small>}
+            <div className="toma-alta-acciones">
+              <button type="submit" disabled={ocupado || prueba}>Guardar lugar</button>
+              <button type="button" className="ghost" onClick={cancelarLugar} disabled={ocupado}>
                 Cancelar
               </button>
             </div>
@@ -1531,12 +1625,19 @@ export function TomaFisicaPanel({
                   </span>
                 </div>
                 <small>{leido.cuando}</small>
-                <button type="button" className="ghost" disabled={ocupado || edicionObservaciones !== null}
+                <button type="button" className="ghost" disabled={ocupado || editando}
                   onClick={() => {
                     const equipo = equipos.find((item) => item.id === leido.equipo.id);
                     if (equipo) abrirObservaciones(equipo);
                   }}>
                   Ver / editar observaciones
+                </button>
+                <button type="button" className="ghost" disabled={ocupado || editando}
+                  onClick={() => {
+                    const equipo = equipos.find((item) => item.id === leido.equipo.id);
+                    if (equipo) abrirLugar(equipo);
+                  }}>
+                  Corregir lugar
                 </button>
                 <button type="button" className="ghost" disabled={ocupado}
                   aria-label={`Deshacer lectura de ${leido.equipo.nombre_equipo}, ${leido.equipo.id_patrimonial ?? leido.equipo.id}`}
@@ -1572,7 +1673,7 @@ export function TomaFisicaPanel({
                         : "Sin etiqueta · no se puede escanear"}
                     </span>
                   </div>
-                  <button type="button" className="ghost" disabled={ocupado || edicionObservaciones !== null}
+                  <button type="button" className="ghost" disabled={ocupado || editando}
                     onClick={() => abrirObservaciones(equipo)}>
                     Ver / editar observaciones
                   </button>
@@ -1606,7 +1707,7 @@ export function TomaFisicaPanel({
         </div>
       </div>
 
-      <button type="button" className="ghost toma-terminar" disabled={ocupado || edicionObservaciones !== null} onClick={() => setCerrando(true)}>
+      <button type="button" className="ghost toma-terminar" disabled={ocupado || editando} onClick={() => setCerrando(true)}>
         <Icon name="checkCircle" size="1.3rem" /> Terminar {ubicacion}
       </button>
 

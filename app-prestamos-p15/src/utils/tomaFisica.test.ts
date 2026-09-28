@@ -10,6 +10,7 @@ import {
   fueRevisado,
   estaDentroDe,
   lugarAlRevisar,
+  lugarCorregido,
   nombreDelReporte,
   normalizarLugar,
   pendientesDeArea,
@@ -239,4 +240,10 @@ test("el reporte de Patrimonio incluye el estado con una etiqueta legible", () =
   assert.equal(encabezado.at(-1), "Estado");
   assert.equal(fijo.at(-1), "En resguardo");
   assert.equal(personalizado.at(-1), "En comodato institucional");
+});
+
+test("lugarCorregido normaliza el texto y rechaza un lugar vacío", () => {
+  assert.equal(lugarCorregido("  site 2/anaquel 1 "), "site 2 / anaquel 1");
+  assert.equal(lugarCorregido(" / "), null);
+  assert.equal(lugarCorregido(""), null);
 });

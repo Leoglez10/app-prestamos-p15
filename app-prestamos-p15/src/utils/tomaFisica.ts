@@ -199,6 +199,9 @@ const tramosDeLugar = (texto: string | null | undefined): string[] =>
 export const normalizarLugar = (texto: string | null | undefined): string =>
   tramosDeLugar(texto).join(" / ");
 
+/** El lugar tecleado al corregir un equipo, normalizado; `null` si no queda nada. */
+export const lugarCorregido = (texto: string): string | null => normalizarLugar(texto) || null;
+
 /**
  * Si `lugar` queda dentro de `area`: los tramos del área son el principio de los
  * del lugar. Recorrer "SITE 2" cubre "SITE 2 / Anaquel 1"; al revés no.

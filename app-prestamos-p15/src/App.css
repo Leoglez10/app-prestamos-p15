@@ -1572,11 +1572,10 @@ button.ghost {
 .home-updates { align-self: end; display: grid; gap: 1rem; }
 .home-updates .update-notice,
 .home-updates .update-applied {
+  border-color: var(--border-subtle);
   width: 100%; margin: 0; padding: 1.1rem 1.4rem;
-  border-left-width: 6px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border-left-width: 1px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
-.home-updates .update-notice { background: linear-gradient(90deg, rgba(37, 99, 235, 0.08), var(--surface-default) 60%); }
-.home-updates .update-applied { background: linear-gradient(90deg, rgba(5, 150, 105, 0.08), var(--surface-default) 60%); }
 .home-updates [role="status"] { font-size: 1.1rem; font-weight: 800; }
 
 .home-hero { align-self: end; display: grid; gap: 0.5rem; max-width: 46ch; }

@@ -333,6 +333,10 @@ La app resuelve eso **por velocidad**: la pistola escribe el código entero en m
 
 En **"Leídos aquí"** o en la lista de equipos del área, pulsa **"Ver / editar observaciones"** para consultar la nota del equipo. Puedes cambiarla y pulsar **"Guardar observaciones"**: la nota queda guardada de forma permanente en el equipo. Si no quieres cambiarla, pulsa **"Cancelar"**. Mientras editas, el escaneo se pausa hasta que guardes o canceles. En **modo prueba** puedes consultar y escribir, pero no guardar observaciones; apágalo para guardar la nota.
 
+### Corregir el lugar de un equipo
+
+En **"Leídos aquí"**, pulsa **"Corregir lugar"** en el equipo que quedó con el lugar equivocado, escribe el lugar correcto (niveles separados por `/`, como `SITE 2 / Anaquel 1`) y pulsa **"Guardar lugar"**. Solo cambia el lugar; la revisión, el estado y las observaciones no se tocan. Mientras editas, el escaneo se pausa hasta que guardes o canceles. El lugar no puede quedar vacío, y en **modo prueba** no se puede guardar.
+
 ### 🧪 Modo prueba (para entrenar sin miedo)
 
 El botón **"Modo prueba · no guarda nada"** en la pantalla de inicio corre **el recorrido completo**: la pistola, los tonos, el destello, las tarjetas de color, la detección de repetidos, el botón de deshacer. Todo se ve y suena igual.

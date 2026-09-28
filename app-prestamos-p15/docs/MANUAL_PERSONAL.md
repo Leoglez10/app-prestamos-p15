@@ -699,6 +699,10 @@ tecleando a mano, sigue esperando tu `Enter`.
 
 En **"Leídos aquí"** o en la lista de equipos del área, pulsa **"Ver / editar observaciones"** para leer la nota del equipo. Si necesitas cambiarla, escribe la nueva nota y pulsa **"Guardar observaciones"**. Queda guardada de forma permanente en el equipo. Si no quieres cambiarla, pulsa **"Cancelar"**. El escaneo se pausa mientras editas y continúa cuando guardas o cancelas. En **modo prueba** puedes consultar y escribir, pero no guardar observaciones; apágalo antes de guardar la nota.
 
+### Corregir el lugar de un equipo ya escaneado
+
+Si un equipo quedó con el lugar equivocado, en **"Leídos aquí"** pulsa **"Corregir lugar"**, escribe el lugar correcto (los niveles se separan con `/`, por ejemplo `SITE 2 / Anaquel 1`) y pulsa **"Guardar lugar"**. Cambia solo el lugar: la revisión, el estado y las observaciones quedan como estaban. Si no quieres cambiarlo, pulsa **"Cancelar"**. El escaneo se pausa mientras editas y continúa cuando guardas o cancelas. El lugar no puede quedar vacío. En **modo prueba** no se puede guardar el lugar; apágalo antes de corregirlo.
+
 ### Lugares con subniveles
 
 Un lugar puede dividirse en partes más pequeñas escribiéndolas con una

@@ -1513,9 +1513,9 @@ button.ghost {
    ========================================================================== */
 .home-main {
   display: grid;
-  /* rows: topbar / slack / hero / actions / stats / slack — slack split top+bottom
-     keeps the content block optically centered instead of dumped at the bottom */
-  grid-template-rows: auto 1fr auto auto 1fr;
+  /* rows: topbar / updates (slack) / hero / actions / stats / slack — slack split
+     top+bottom keeps the content block optically centered instead of dumped at the bottom */
+  grid-template-rows: auto 1fr auto auto auto 1fr;
   gap: clamp(1rem, 2.6vh, 2rem);
   min-height: 100dvh;
   width: 100%;

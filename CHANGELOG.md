@@ -8,6 +8,14 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.15.1] — 2026-09-28
+
+### Añadido
+
+- Corregir el lugar de un equipo ya escaneado en la toma física
+
+---
+
 ## [0.15.0] — 2026-09-28
 
 ### Añadido

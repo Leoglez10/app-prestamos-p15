@@ -8,6 +8,8 @@ import { ReleaseNotes } from "./ReleaseNotes";
 // Resolving consumes the change, so StrictMode's second mount would find nothing
 // left to show. One resolution per webview, shared by every mount.
 let pending: Promise<VersionChange | null> | null = null;
+// Home unmounts when you leave it, so "Entendido" has to outlive the component or the card returns.
+let dismissedForSession = false;
 function readChange() {
   pending ??= getVersion().then(
     (version) => resolveVersionChange(browserStorage(), version),
@@ -18,7 +20,7 @@ function readChange() {
 
 export function UpdateApplied() {
   const [change, setChange] = useState<VersionChange | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(dismissedForSession);
   useEffect(() => {
     if (!isTauri()) return;
     let alive = true;
@@ -37,7 +39,7 @@ export function UpdateApplied() {
       ) : null}
       {applied ? (
         <div className="update-actions">
-          <button type="button" onClick={() => setDismissed(true)}>Entendido</button>
+          <button type="button" onClick={() => { dismissedForSession = true; setDismissed(true); }}>Entendido</button>
         </div>
       ) : null}
     </aside>

@@ -3,6 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { isTauri } from "@tauri-apps/api/core";
 import { browserStorage, resolveVersionChange } from "../utils/updateHistory";
 import type { VersionChange } from "../utils/updateHistory";
+import { ReleaseNotes } from "./ReleaseNotes";
 
 // Resolving consumes the change, so StrictMode's second mount would find nothing
 // left to show. One resolution per webview, shared by every mount.
@@ -32,10 +33,7 @@ export function UpdateApplied() {
         {applied ? `Listo, la aplicación se actualizó. Venías de la versión ${applied.previous} y ahora estás usando la ${applied.current}.` : ""}
       </p>
       {applied?.notes ? (
-        <details>
-          <summary>Novedades de esta versión</summary>
-          <pre className="update-notes">{applied.notes}</pre>
-        </details>
+        <ReleaseNotes notes={applied.notes} />
       ) : null}
       {applied ? (
         <div className="update-actions">

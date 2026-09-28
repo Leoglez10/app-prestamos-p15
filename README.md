@@ -580,13 +580,13 @@ Más info en `docs/sqlite-backup-restore-guide.md`.
 
 **La app se actualiza sola. No tienes que bajar nada de GitHub.**
 
-Busca versión nueva al abrir y cada 6 horas mientras está abierta. Cuando encuentra una, aparece un aviso arriba de la pantalla:
+Busca versión nueva al abrir y cada 6 horas mientras está abierta. Cuando encuentra una, aparece una **tarjeta azul en la pantalla principal**, arriba de *¿Qué necesitas hacer?* (no en el kiosko ni en Préstamo Rápido, para no interrumpir un préstamo):
 
-1. El aviso dice **"Versión X disponible. No se descarga nada hasta que confirmes."** Puedes abrir **Notas de la versión** para ver qué trae.
+1. La tarjeta dice **"Versión X disponible. No se descarga nada hasta que confirmes."** y debajo muestra las novedades que trae.
 2. **Crea un respaldo** antes de actualizar (Configuración → Respaldos), y guarda lo que tengas a medias.
 3. Toca **Actualizar ahora…**. La app te pide confirmación una vez más, muestra la descarga en KB y avisa que **Windows va a cerrar la aplicación** para instalar.
    - Si prefieres seguir trabajando, toca **Más tarde**: el aviso se va por esta sesión y no descarga nada.
-4. Cuando termina, abre la app de nuevo. Aparece **Novedades de esta versión** con lo que cambió; toca **Entendido**.
+4. Cuando termina, abre la app de nuevo. En la pantalla principal aparece una **tarjeta verde** con lo que cambió; toca **Entendido**.
 
 La base de datos se conserva intacta y las migraciones corren solas.
 

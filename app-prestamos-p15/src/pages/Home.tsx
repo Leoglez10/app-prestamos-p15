@@ -6,6 +6,8 @@ import { getEquipos, type Equipo } from "../hooks/useInventory";
 import { esPrestableEfectivo } from "../utils/equipoFicha";
 import { formatSqliteDateTime, formatSqliteLoanDate } from "../utils/datetime";
 import { html, printHtmlDocument } from "../utils/print";
+import { UpdateApplied } from "../components/UpdateApplied";
+import { UpdateNotice } from "../components/UpdateNotice";
 
 type StatKey = "disponibles" | "enPrestamo" | "fueraDeServicio";
 
@@ -212,6 +214,12 @@ export default function Home() {
           </Link>
         </div>
       </header>
+
+      {/* Updates live on the home screen only, so they never interrupt a loan in progress. */}
+      <div className="home-updates">
+        <UpdateApplied />
+        <UpdateNotice />
+      </div>
 
       <section className="home-hero">
         <p className="home-eyebrow">Sistema de préstamos P15</p>

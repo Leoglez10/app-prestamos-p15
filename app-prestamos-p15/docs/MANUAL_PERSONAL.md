@@ -1271,7 +1271,9 @@ Es el relevo de ida, sin vuelta:
 **La app se actualiza sola. Ya no hay que bajar el instalador de GitHub.**
 
 Busca una versión nueva al abrir y cada 6 horas mientras está abierta. Cuando
-encuentra una, aparece un aviso arriba de la pantalla.
+encuentra una, aparece una **tarjeta azul en la pantalla principal**, arriba de
+*¿Qué necesitas hacer?*, con la lista de novedades a la vista. En el kiosko,
+Préstamo Rápido y Admin no aparece, para no interrumpir un préstamo.
 
 ### Cómo actualizo la app
 
@@ -1279,15 +1281,15 @@ encuentra una, aparece un aviso arriba de la pantalla.
    cambió: es tu vuelta atrás si algo sale raro.
 2. Termina lo que estés haciendo y **cierra los préstamos a medias**. Al final la
    app se cierra para instalar.
-3. En el aviso de arriba de la pantalla vas a leer:
+3. En la tarjeta de la pantalla principal vas a leer:
    *"Versión X disponible. No se descarga nada hasta que confirmes."*
-   Abre **Notas de la versión** si quieres ver qué trae.
+   Debajo están las novedades que trae, cada una en su etiqueta.
 4. Toca **Actualizar ahora…**. La app pide confirmación una vez más y solo
    entonces empieza a descargar; vas viendo los KB que bajan.
 5. Cuando termina la descarga avisa que **Windows va a cerrar la aplicación**
    para instalar. Déjala trabajar.
-6. Abre la app de nuevo. Aparece **Novedades de esta versión** con lo que cambió;
-   toca **Entendido**.
+6. Abre la app de nuevo. En la pantalla principal aparece una **tarjeta verde**
+   con la versión anterior, la nueva y lo que cambió; toca **Entendido**.
 7. Prueba un inicio de sesión, abre Inventario y confirma que los préstamos
    activos siguen presentes antes de volver a operar.
 

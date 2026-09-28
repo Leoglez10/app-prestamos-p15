@@ -6,8 +6,6 @@ import PrestamoRapido from "./pages/PrestamoRapido";
 import { useAutoBackup } from "./hooks/useAutoBackup";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { UpdateProvider } from "./updates/UpdateProvider";
-import { UpdateNotice } from "./components/UpdateNotice";
-import { UpdateApplied } from "./components/UpdateApplied";
 import "./App.css";
 
 function App() {
@@ -17,8 +15,6 @@ function App() {
     <BrowserRouter>
       <UpdateProvider>
         <ErrorBoundary>
-          <UpdateApplied />
-          <UpdateNotice />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/admin" element={<Admin />} />

@@ -31,7 +31,7 @@ export function UpdateSettingsPanel() {
               : installed
                 ? "La actualización está instalada. Cerrá y abrí la aplicación; no hace falta volver a instalar."
                 : state.version
-                  ? `Versión ${state.version} disponible. ${state.status === "deferred" ? "La pospusiste por esta sesión; buscá manualmente para volver a verla." : "Revisá el aviso de actualización al inicio de la pantalla."}`
+                  ? `Versión ${state.version} disponible. ${state.status === "deferred" ? "La pospusiste por esta sesión; buscá manualmente para volver a verla." : "Revisá el aviso de actualización en la pantalla principal."}`
                   : "Buscamos al abrir la aplicación y cada 6 horas mientras permanece abierta.";
   return (
     <section className="panel update-settings" aria-labelledby="update-settings-heading">

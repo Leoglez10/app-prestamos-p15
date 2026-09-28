@@ -1,5 +1,6 @@
 import { useUpdates } from "../updates/updateContext";
 import { isUpdateBusy } from "../utils/updateController";
+import { ReleaseNotes } from "./ReleaseNotes";
 
 function confirmExit(): Promise<boolean> {
   // Native <dialog> keeps keyboard focus contained without closing any existing form.
@@ -64,10 +65,7 @@ export function UpdateNotice() {
     <aside className="update-notice" aria-label="Actualizaciones de la aplicación" hidden={!state.notice}>
       <p role="status" aria-live="polite">{state.notice ? message : ""}</p>
       {state.notes && !progress && !restartOnly ? (
-        <details>
-          <summary>Notas de la versión</summary>
-          <pre className="update-notes">{state.notes}</pre>
-        </details>
+        <ReleaseNotes notes={state.notes} />
       ) : null}
       {progress ? (
         <div className="update-progress">

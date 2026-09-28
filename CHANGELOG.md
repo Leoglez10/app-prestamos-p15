@@ -8,6 +8,15 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.15.0] — 2026-09-28
+
+### Añadido
+
+- Editar observaciones en toma física
+- Mostrar el aviso de actualización y sus novedades en la pantalla principal
+
+---
+
 ## [0.14.0] — 2026-09-14
 
 ### Añadido

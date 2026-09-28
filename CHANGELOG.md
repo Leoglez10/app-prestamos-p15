@@ -8,6 +8,14 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.15.2] — 2026-09-28
+
+### Corregido
+
+- El aviso de "se actualizó" ya no reaparece tras pulsar Entendido
+
+---
+
 ## [0.15.1] — 2026-09-28
 
 ### Añadido

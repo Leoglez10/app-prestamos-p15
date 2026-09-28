@@ -1296,7 +1296,7 @@ Préstamo Rápido y Admin no aparece, para no interrumpir un préstamo.
    entonces empieza a descargar; vas viendo los KB que bajan.
 5. Cuando termina la descarga avisa que **Windows va a cerrar la aplicación**
    para instalar. Déjala trabajar.
-6. Abre la app de nuevo. En la pantalla principal aparece una **tarjeta verde**
+6. Abre la app de nuevo. En la pantalla principal aparece una **tarjeta**
    con la versión anterior, la nueva y lo que cambió; toca **Entendido**.
 7. Prueba un inicio de sesión, abre Inventario y confirma que los préstamos
    activos siguen presentes antes de volver a operar.

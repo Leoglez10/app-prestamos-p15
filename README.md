@@ -596,7 +596,7 @@ Busca versión nueva al abrir y cada 6 horas mientras está abierta. Cuando encu
 2. **Crea un respaldo** antes de actualizar (Configuración → Respaldos), y guarda lo que tengas a medias.
 3. Toca **Actualizar ahora…**. La app te pide confirmación una vez más, muestra la descarga en KB y avisa que **Windows va a cerrar la aplicación** para instalar.
    - Si prefieres seguir trabajando, toca **Más tarde**: el aviso se va por esta sesión y no descarga nada.
-4. Cuando termina, abre la app de nuevo. En la pantalla principal aparece una **tarjeta verde** con lo que cambió; toca **Entendido**.
+4. Cuando termina, abre la app de nuevo. En la pantalla principal aparece una **tarjeta** con lo que cambió; toca **Entendido**.
 
 La base de datos se conserva intacta y las migraciones corren solas.
 

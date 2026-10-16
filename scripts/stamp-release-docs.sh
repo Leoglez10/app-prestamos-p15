@@ -18,8 +18,7 @@
 set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# README and CHANGELOG live at the git root, one level above the app directory.
-REPO="$(cd "$ROOT/.." && pwd)"
+REPO="$ROOT"
 README="$REPO/README.md"
 CHANGELOG="$REPO/CHANGELOG.md"
 MANUAL="$ROOT/docs/MANUAL_PERSONAL.md"

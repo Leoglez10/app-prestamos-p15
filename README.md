@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app-prestamos-p15/img/logo-p15.png" alt="Logo Preparatoria 15" width="150"/>
+<img src="img/logo-p15.png" alt="Logo Preparatoria 15" width="150"/>
 
 # App Prestamos P15
 
@@ -49,7 +49,7 @@
 >
 > - **Historial de versiones y cambios** → [CHANGELOG.md](CHANGELOG.md)
 > - **Instalador de Windows ya compilado** → [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases)
-> - **Manual completo para el personal** → [docs/MANUAL_PERSONAL.md](app-prestamos-p15/docs/MANUAL_PERSONAL.md) (cada Release incluye también el PDF)
+> - **Manual completo para el personal** → [docs/MANUAL_PERSONAL.md](docs/MANUAL_PERSONAL.md) (cada Release incluye también el PDF)
 > - **Guías técnicas por tema** (importación, respaldos, toma física, roadmap) → [Documentación relacionada](#-documentación-relacionada)
 > - **Todo el código fuente en un solo archivo de texto** → [gitingest.com/Leoglez10/app-prestamos-p15](https://gitingest.com/Leoglez10/app-prestamos-p15)
 >
@@ -120,21 +120,21 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 | Pantalla | Captura |
 |---|---|
-| **🏠 Inicio** — tarjetas "Soy Profesor" y "Préstamo Rápido", botón "Administrador" y conteo de equipos | ![Inicio](app-prestamos-p15/docs/img/inicio.png) |
-| **📱 Kiosko: código** — el profesor se identifica con su código UDG | ![Kiosko, pantalla de código](app-prestamos-p15/docs/img/kiosko-codigo.png) |
-| **📱 Kiosko: catálogo** — "Por devolver", categorías, carrito y "Confirmar y llevar" | ![Kiosko, catálogo y carrito](app-prestamos-p15/docs/img/kiosko.png) |
-| **⚡ Préstamo Rápido: acceso** — el admin entra solo con su código | ![Acceso a Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido-acceso.png) |
-| **⚡ Préstamo Rápido** — formulario de alumno/profesor, "Salida a evento" e historial | ![Préstamo Rápido](app-prestamos-p15/docs/img/prestamo-rapido.png) |
-| **🛠 Admin ▸ Inventario** — filtros, conteos por estado y alta rápida | ![Admin, Inventario](app-prestamos-p15/docs/img/admin.png) |
-| **📋 Admin ▸ Toma de inventario** — área actual, avance de la campaña y reporte para Patrimonio | ![Toma de inventario](app-prestamos-p15/docs/img/toma-fisica.png) |
-| **🗂 Admin ▸ Categorías** — Prestable vs Solo inventario por categoría | ![Categorías](app-prestamos-p15/docs/img/categorias.png) |
-| **👥 Admin ▸ Profesores** — directorio e "Importar desde Excel" | ![Profesores](app-prestamos-p15/docs/img/profesores.png) |
-| **📄 Admin ▸ Reportes** — historial de préstamos con filtros y PDF | ![Reportes](app-prestamos-p15/docs/img/reportes.png) |
-| **⚙️ Admin ▸ Configuración** — actualizaciones, reportar un problema, kiosko y respaldos | ![Configuración](app-prestamos-p15/docs/img/configuracion.png) |
+| **🏠 Inicio** — tarjetas "Soy Profesor" y "Préstamo Rápido", botón "Administrador" y conteo de equipos | ![Inicio](docs/img/inicio.png) |
+| **📱 Kiosko: código** — el profesor se identifica con su código UDG | ![Kiosko, pantalla de código](docs/img/kiosko-codigo.png) |
+| **📱 Kiosko: catálogo** — "Por devolver", categorías, carrito y "Confirmar y llevar" | ![Kiosko, catálogo y carrito](docs/img/kiosko.png) |
+| **⚡ Préstamo Rápido: acceso** — el admin entra solo con su código | ![Acceso a Préstamo Rápido](docs/img/prestamo-rapido-acceso.png) |
+| **⚡ Préstamo Rápido** — formulario de alumno/profesor, "Salida a evento" e historial | ![Préstamo Rápido](docs/img/prestamo-rapido.png) |
+| **🛠 Admin ▸ Inventario** — filtros, conteos por estado y alta rápida | ![Admin, Inventario](docs/img/admin.png) |
+| **📋 Admin ▸ Toma de inventario** — área actual, avance de la campaña y reporte para Patrimonio | ![Toma de inventario](docs/img/toma-fisica.png) |
+| **🗂 Admin ▸ Categorías** — Prestable vs Solo inventario por categoría | ![Categorías](docs/img/categorias.png) |
+| **👥 Admin ▸ Profesores** — directorio e "Importar desde Excel" | ![Profesores](docs/img/profesores.png) |
+| **📄 Admin ▸ Reportes** — historial de préstamos con filtros y PDF | ![Reportes](docs/img/reportes.png) |
+| **⚙️ Admin ▸ Configuración** — actualizaciones, reportar un problema, kiosko y respaldos | ![Configuración](docs/img/configuracion.png) |
 
 </div>
 
-> 📸 **Nota sobre las capturas**: se tomaron con la app de escritorio (versión 0.14.0). Para actualizarlas: abre la app, captura cada pantalla y guárdala en `app-prestamos-p15/docs/img/` con el mismo nombre de archivo.
+> 📸 **Nota sobre las capturas**: se tomaron con la app de escritorio (versión 0.14.0). Para actualizarlas: abre la app, captura cada pantalla y guárdala en `docs/img/` con el mismo nombre de archivo.
 
 ### Funciones principales
 
@@ -203,7 +203,7 @@ La app viene con un administrador precargado (solo para empezar):
 
 ### Flujo 1: Un profesor quiere pedir prestado un equipo (Kiosko)
 
-![Kiosko: catálogo, carrito y equipos por devolver](app-prestamos-p15/docs/img/kiosko.png)
+![Kiosko: catálogo, carrito y equipos por devolver](docs/img/kiosko.png)
 
 1. Abre la app. Verás 3 tarjetas grandes.
 2. Haz clic en **"Soy Profesor"**.
@@ -218,7 +218,7 @@ La app viene con un administrador precargado (solo para empezar):
 
 ### Flujo 2: Préstamo a un alumno (Préstamo Rápido)
 
-![Préstamo Rápido: formulario a la izquierda, historial a la derecha](app-prestamos-p15/docs/img/prestamo-rapido.png)
+![Préstamo Rápido: formulario a la izquierda, historial a la derecha](docs/img/prestamo-rapido.png)
 
 1. En la pantalla de inicio, clic en **"Préstamo Rápido"**.
 2. El admin entra con su **código** (sin PIN — esto es intencional, queda auditoría de quién autorizó).
@@ -241,9 +241,9 @@ Los datos del expositor solo se guardan si escribes su nombre; si no, la app avi
 
 ### Flujo 3: Administrar todo (Admin)
 
-![Admin: pestaña Inventario con filtros y conteos por estado](app-prestamos-p15/docs/img/admin.png)
+![Admin: pestaña Inventario con filtros y conteos por estado](docs/img/admin.png)
 
-[Ver Inventario en una ventana más pequeña](app-prestamos-p15/docs/img/admin-ventana-reducida.png).
+[Ver Inventario en una ventana más pequeña](docs/img/admin-ventana-reducida.png).
 
 1. En la pantalla de inicio, clic en **"Administrador"**.
 2. Escribe tu **código** y tu **PIN**.
@@ -294,7 +294,7 @@ La app puede cargar el inventario oficial desde el **Excel de Patrimonio** sin t
 
 > ⚠️ **¿Importaste y nadie puede pedir nada?** No es un error: es intencional. Activa "Prestable" en las categorías que quieras prestar.
 
-📚 Detalles técnicos del formato y la importación: [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) · [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md)
+📚 Detalles técnicos del formato y la importación: [docs/INVENTARIO_PATRIMONIO.md](docs/INVENTARIO_PATRIMONIO.md) · [docs/PLAN_IMPORTACION_PATRIMONIO.md](docs/PLAN_IMPORTACION_PATRIMONIO.md)
 
 ---
 
@@ -302,7 +302,7 @@ La app puede cargar el inventario oficial desde el **Excel de Patrimonio** sin t
 
 Sirve para **cuadrar lo que hay físicamente en los estantes contra lo que dice la app**, usando un lector de códigos de barras. Está en **Admin** ▸ pestaña **Toma de inventario**.
 
-![Toma de inventario: área actual, avance de la campaña y descargas para Patrimonio](app-prestamos-p15/docs/img/toma-fisica.png)
+![Toma de inventario: área actual, avance de la campaña y descargas para Patrimonio](docs/img/toma-fisica.png)
 
 ### La pistola dispara sola
 
@@ -407,7 +407,7 @@ La computadora principal **sigue prestando** mientras una segunda camina el edif
 
 > ⚠️ Los equipos que la segunda computadora dio de **alta al vuelo** no se fusionan solos: salen listados aparte para darlos de alta a mano. El reporte no trae la categoría, y elegirla automáticamente sería adivinar.
 
-📚 Detalle completo: [docs/RELEVO_TOMA_FISICA.md](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md)
+📚 Detalle completo: [docs/RELEVO_TOMA_FISICA.md](docs/RELEVO_TOMA_FISICA.md)
 
 ### Tips
 
@@ -415,7 +415,7 @@ La computadora principal **sigue prestando** mientras una segunda camina el edif
 - La campaña reinicia pendientes al iniciarla: hazla en un momento tranquilo y termina el área completa.
 - Antes de mandar el reporte a Patrimonio, revisa que no queden celdas vacías en `Localizado` de un área que sí terminaste.
 
-📚 Detalle técnico del formato de etiquetas: [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md)
+📚 Detalle técnico del formato de etiquetas: [docs/INVENTARIO_PATRIMONIO.md](docs/INVENTARIO_PATRIMONIO.md)
 
 ---
 
@@ -658,7 +658,7 @@ GitHub es como un **Google Drive para código**: guarda versiones, lleva histori
 
 ```powershell
 git clone https://github.com/Leoglez10/app-prestamos-p15.git
-cd app-prestamos-p15/app-prestamos-p15
+cd app-prestamos-p15
 ```
 
 Reemplaza `USUARIO` por el usuario/organización de GitHub. Si usas SSH:
@@ -742,7 +742,7 @@ El repo tiene el workflow activo `.github/workflows/build-windows.yml`. Cuando p
 
 ```powershell
 git clone https://github.com/Leoglez10/app-prestamos-p15.git
-cd app-prestamos-p15/app-prestamos-p15
+cd app-prestamos-p15
 
 # Instala dependencias JavaScript
 npm install
@@ -812,9 +812,10 @@ npm test
 ## 🗺 Estructura del proyecto: dónde está cada cosa
 
 ```
-app-prestamos-p15/                ← Carpeta del repo
+app-prestamos-p15/                ← Carpeta del repo (todo vive aquí, sin subcarpetas anidadas)
 ├── 📁 .github/workflows/
-│   └── build-windows.yml         ← CI activo: compila y publica al crear tags v*
+│   ├── build-windows.yml         ← CI activo: compila y publica al crear tags v*
+│   └── issue-email.yml           ← Manda correo al abrir un issue o marcarlo «completado»
 ├── 📁 .github/ISSUE_TEMPLATE/
 │   ├── bug.yml                   ← Formulario "Reportar un problema" (para usuarios)
 │   ├── feature.yml               ← Formulario "Sugerir una mejora"
@@ -824,112 +825,107 @@ app-prestamos-p15/                ← Carpeta del repo
 ├── 📄 CONTRIBUTING.md            ← Cómo reportar issues y contribuir código
 ├── 📄 LICENSE                    ← Uso interno educativo
 ├── 📄 README_INSTALACION.md      ← Guía corta de instalación y actualización
-└── app-prestamos-p15/            ← Carpeta real del proyecto (necesaria así para el CI)
-    │
-    ├── 📄 package.json            ← Dependencias JS y scripts
-    ├── 📄 vite.config.ts         ← Configuración Vite
-    ├── 📄 tsconfig.json          ← Reglas TypeScript
-    ├── 📄 index.html             ← Entrada HTML (carga React)
-    │
-    ├── 🖼 img/
-    │   ├── logo-p15.png          ← Logo de la P15 (usar en reportes y README)
-    │   └── logo-p15.jpg
-    │
-    ├── 📁 public/                ← Assets estáticos públicos (SVGs de Tauri/Vite)
-    │
-    ├── 📁 src/                   ← CÓDIGO FRONTEND (React + TS)
-    │   ├── main.tsx              ← Punto de arranque (envuelve App con AuthProvider)
-    │   ├── App.tsx               ← Router. 4 rutas: /, /admin, /kiosko, /prestamo-rapido
-    │   ├── App.css               ← Estilos globales
-    │   ├── auth/                 ← Lógica de autenticación
-    │   │   ├── AuthContext.tsx   ← Provider de sesión (revalida contra DB)
-    │   │   ├── LoginForm.tsx     ← Form code-only para Préstamo Rápido
-    │   │   ├── loginStorage.ts   ← Guarda sesión en localStorage (TTL 8h)
-    │   │   ├── SessionBadge.tsx  ← Badge "Sesión: nombre (código)"
-    │   │   └── types.ts
-    │   ├── hooks/
-    │   │   ├── useInventory.ts   ← ⭐ EL CORAZÓN DE LA APP (~2 070 líneas)
-    │   │   │                        Define el esquema, migraciones, reglas de negocio,
-    │   │   │                        y todos los accesos a SQLite.
-    │   │   ├── useAutoBackup.ts  ← Respaldo automático: revisa cada 15 min si toca
-    │   │   ├── usePistola.ts     ← Dispara el escaneo en un campo de texto
-    │   │   └── useEscaneoGlobal.ts ← Escucha la pistola sin campo enfocado (Inventario)
-    │   ├── pages/
-    │   │   ├── Home.tsx          ← Pantalla con 3 tarjetas (Profesor/Admin/Préstamo Rápido)
-    │   │   ├── Kiosk.tsx         ← Flujo del profesor
-    │   │   ├── Admin.tsx         ← Panel admin (~2 890 líneas; deuda técnica conocida)
-    │   │   └── PrestamoRapido.tsx← Préstamo a alumnos con autenticación simple
-    │   ├── components/
-    │   │   ├── TomaFisicaPanel.tsx        ← Campañas de conteo físico (pestaña de Admin)
-    │   │   ├── ImportarPatrimonioPanel.tsx← Importación del Excel de Patrimonio
-    │   │   ├── EquipoFormDialog.tsx       ← Ficha completa de alta/edición de equipo
-    │   │   ├── EquipoDetalleModal.tsx     ← Ficha de solo lectura (la que abre el escaneo)
-    │   │   ├── RedCelularPanel.tsx        ← Experimento: acceso LAN desde celular
-    │   │   └── Icon.tsx                   ← Iconos SVG inline
-    │   └── utils/                ← Lógica pura, con pruebas (7 suites)
-    │       ├── pistola.ts        ← Distingue la ráfaga del lector de una persona tecleando
-    │       ├── tomaFisica.ts     ← Progreso, clasificación del disparo y reporte CSV
-    │       ├── backupSchedule.ts ← Cuándo toca el próximo respaldo automático
-    │       ├── importacionPatrimonio.ts ← Plan previo de la importación del Excel
-    │       ├── codigoPatrimonial.ts     ← Etiqueta de Patrimonio de la UdeG (Code 39)
-    │       ├── identificadores.ts       ← Normalización de códigos y series
-    │       ├── equipoFicha.ts    ← Armado de la ficha del equipo
-    │       ├── confirm.ts        ← Confirmaciones de acciones destructivas
-    │       ├── print.ts          ← Genera HTML e imprime PDF vía iframe + window.print()
-    │       └── datetime.ts       ← Parseo/formateo de fechas SQLite (es-MX)
-    │
-    ├── 🦀 src-tauri/              ← CÓDIGO RUST (shell del escritorio)
-    │   ├── Cargo.toml            ← Dependencias Rust
-    │   ├── tauri.conf.json       ← Configuración de la ventana, bundle, identificador
-    │   ├── src/
-    │   │   └── lib.rs            ← 9 comandos nativos:
-    │   │                            🔹 get_database_url    → ruta de la BD
-    │   │                            🔹 create_backup        → crea backups en disco
-    │   │                            🔹 guardar_reporte_inventario → guarda reportes exportados
-    │   │                            🔹 open_backups_dir     → abre la carpeta de respaldos
-    │   │                            🔹 list_backups         → enumera respaldos
-    │   │                            🔹 restore_backup_from_bytes → restaura validando magic header
-    │   │                            🔹 restore_backup_from_path → restaura desde una ruta local
-    │   │                            🔹 celular_registrar_dispositivo → registra acceso móvil experimental
-    │   │                            🔹 local_ip             → obtiene la IP para acceso LAN
-    │   ├── capabilities/
-    │   │   └── default.json      ← Permisos: core, opener, sql (execute, load, select)
-    │   └── icons/                ← Iconos de Windows (.ico, .icns, PNGs)
-    │
-    ├── 📊 database.sql           ← Paper trail histórico (NO es la fuente de verdad)
-    │
-    ├── 📁 docs/                   ← DOCUMENTACIÓN TÉCNICA
-    │   ├── ENGINEERING_HANDBOOK.md   ← Guía maestra de ingeniería y mantenimiento
-    │   ├── INVENTARIO_PATRIMONIO.md  ← Formato y reglas del Excel de Patrimonio
-    │   ├── PLAN_IMPORTACION_PATRIMONIO.md ← Diseño de la importación
-    │   ├── QR_CELULAR.md             ← Experimento de acceso por celular
-    │   ├── ROADMAP.md                ← Rumbo del proyecto
-    │   ├── REPO_CLEANUP.md           ← Qué borrar/archivar
-    │   ├── sqlite-backup-restore-guide.md
-    │   ├── postgres-restore-guide.md ← ETL legacy Postgres→SQLite
-    │   ├── legacy_profile.json       ← Perfil del schema Postgres histórico
-    │   └── archive/                  ← Documentos históricos (COMPLETADO, TODO, etc.)
-    │
-    ├── 📁 scripts/               ← UTILITARIOS
-    │   ├── publish-release.sh    ← Bump de versión + tag + push (dispara la CI)
-    │   ├── stamp-release-docs.sh ← Sella la versión en README, CHANGELOG y manual
-    │   ├── test-publish-release.sh
-    │   ├── backup_sqlite.py
-    │   ├── restore_sqlite.py
-    │   ├── migrate_postgres_to_sqlite.py
-    │   ├── migrate_legacy_p15_to_sqlite.py
-    │   └── legacy_table_mapping.sample.json
-    │
-    ├── 📁 openspec/               ← SDD (Spec-Driven Development)
-    │   ├── config.yaml            ← Reglas del proceso SDD
-    │   ├── specs/                 ← Especificaciones vivas
-    │   └── changes/archive/       ← Cambios ya cerrados (admin-auth, login-solo-codigo)
-    │
-    ├── 📁 .github/workflows/
-    │   └── tauri-build.yml        ← Workflow histórico anidado; GitHub no lo ejecuta desde aquí
-    │
-    ├── 📁 .agents/skills/         ← Skills personales de AI (no se suben al hacer cambios)
-    └── 📄 README.md               ← ESTE ARCHIVO
+│
+├── 📄 package.json            ← Dependencias JS y scripts
+├── 📄 vite.config.ts         ← Configuración Vite
+├── 📄 tsconfig.json          ← Reglas TypeScript
+├── 📄 index.html             ← Entrada HTML (carga React)
+│
+├── 🖼 img/
+│   ├── logo-p15.png          ← Logo de la P15 (usar en reportes y README)
+│   └── logo-p15.jpg
+│
+├── 📁 public/                ← Assets estáticos públicos (SVGs de Tauri/Vite)
+│
+├── 📁 src/                   ← CÓDIGO FRONTEND (React + TS)
+│   ├── main.tsx              ← Punto de arranque (envuelve App con AuthProvider)
+│   ├── App.tsx               ← Router. 4 rutas: /, /admin, /kiosko, /prestamo-rapido
+│   ├── App.css               ← Estilos globales
+│   ├── auth/                 ← Lógica de autenticación
+│   │   ├── AuthContext.tsx   ← Provider de sesión (revalida contra DB)
+│   │   ├── LoginForm.tsx     ← Form code-only para Préstamo Rápido
+│   │   ├── loginStorage.ts   ← Guarda sesión en localStorage (TTL 8h)
+│   │   ├── SessionBadge.tsx  ← Badge "Sesión: nombre (código)"
+│   │   └── types.ts
+│   ├── hooks/
+│   │   ├── useInventory.ts   ← ⭐ EL CORAZÓN DE LA APP (~2 070 líneas)
+│   │   │                        Define el esquema, migraciones, reglas de negocio,
+│   │   │                        y todos los accesos a SQLite.
+│   │   ├── useAutoBackup.ts  ← Respaldo automático: revisa cada 15 min si toca
+│   │   ├── usePistola.ts     ← Dispara el escaneo en un campo de texto
+│   │   └── useEscaneoGlobal.ts ← Escucha la pistola sin campo enfocado (Inventario)
+│   ├── pages/
+│   │   ├── Home.tsx          ← Pantalla con 3 tarjetas (Profesor/Admin/Préstamo Rápido)
+│   │   ├── Kiosk.tsx         ← Flujo del profesor
+│   │   ├── Admin.tsx         ← Panel admin (~2 890 líneas; deuda técnica conocida)
+│   │   └── PrestamoRapido.tsx← Préstamo a alumnos con autenticación simple
+│   ├── components/
+│   │   ├── TomaFisicaPanel.tsx        ← Campañas de conteo físico (pestaña de Admin)
+│   │   ├── ImportarPatrimonioPanel.tsx← Importación del Excel de Patrimonio
+│   │   ├── EquipoFormDialog.tsx       ← Ficha completa de alta/edición de equipo
+│   │   ├── EquipoDetalleModal.tsx     ← Ficha de solo lectura (la que abre el escaneo)
+│   │   ├── RedCelularPanel.tsx        ← Experimento: acceso LAN desde celular
+│   │   └── Icon.tsx                   ← Iconos SVG inline
+│   └── utils/                ← Lógica pura, con pruebas (7 suites)
+│       ├── pistola.ts        ← Distingue la ráfaga del lector de una persona tecleando
+│       ├── tomaFisica.ts     ← Progreso, clasificación del disparo y reporte CSV
+│       ├── backupSchedule.ts ← Cuándo toca el próximo respaldo automático
+│       ├── importacionPatrimonio.ts ← Plan previo de la importación del Excel
+│       ├── codigoPatrimonial.ts     ← Etiqueta de Patrimonio de la UdeG (Code 39)
+│       ├── identificadores.ts       ← Normalización de códigos y series
+│       ├── equipoFicha.ts    ← Armado de la ficha del equipo
+│       ├── confirm.ts        ← Confirmaciones de acciones destructivas
+│       ├── print.ts          ← Genera HTML e imprime PDF vía iframe + window.print()
+│       └── datetime.ts       ← Parseo/formateo de fechas SQLite (es-MX)
+│
+├── 🦀 src-tauri/              ← CÓDIGO RUST (shell del escritorio)
+│   ├── Cargo.toml            ← Dependencias Rust
+│   ├── tauri.conf.json       ← Configuración de la ventana, bundle, identificador
+│   ├── src/
+│   │   └── lib.rs            ← 9 comandos nativos:
+│   │                            🔹 get_database_url    → ruta de la BD
+│   │                            🔹 create_backup        → crea backups en disco
+│   │                            🔹 guardar_reporte_inventario → guarda reportes exportados
+│   │                            🔹 open_backups_dir     → abre la carpeta de respaldos
+│   │                            🔹 list_backups         → enumera respaldos
+│   │                            🔹 restore_backup_from_bytes → restaura validando magic header
+│   │                            🔹 restore_backup_from_path → restaura desde una ruta local
+│   │                            🔹 celular_registrar_dispositivo → registra acceso móvil experimental
+│   │                            🔹 local_ip             → obtiene la IP para acceso LAN
+│   ├── capabilities/
+│   │   └── default.json      ← Permisos: core, opener, sql (execute, load, select)
+│   └── icons/                ← Iconos de Windows (.ico, .icns, PNGs)
+│
+├── 📊 database.sql           ← Paper trail histórico (NO es la fuente de verdad)
+│
+├── 📁 docs/                   ← DOCUMENTACIÓN TÉCNICA
+│   ├── ENGINEERING_HANDBOOK.md   ← Guía maestra de ingeniería y mantenimiento
+│   ├── INVENTARIO_PATRIMONIO.md  ← Formato y reglas del Excel de Patrimonio
+│   ├── PLAN_IMPORTACION_PATRIMONIO.md ← Diseño de la importación
+│   ├── QR_CELULAR.md             ← Experimento de acceso por celular
+│   ├── ROADMAP.md                ← Rumbo del proyecto
+│   ├── REPO_CLEANUP.md           ← Qué borrar/archivar
+│   ├── sqlite-backup-restore-guide.md
+│   ├── postgres-restore-guide.md ← ETL legacy Postgres→SQLite
+│   ├── legacy_profile.json       ← Perfil del schema Postgres histórico
+│   └── archive/                  ← Documentos históricos (COMPLETADO, TODO, etc.)
+│
+├── 📁 scripts/               ← UTILITARIOS
+│   ├── publish-release.sh    ← Bump de versión + tag + push (dispara la CI)
+│   ├── stamp-release-docs.sh ← Sella la versión en README, CHANGELOG y manual
+│   ├── test-publish-release.sh
+│   ├── backup_sqlite.py
+│   ├── restore_sqlite.py
+│   ├── migrate_postgres_to_sqlite.py
+│   ├── migrate_legacy_p15_to_sqlite.py
+│   └── legacy_table_mapping.sample.json
+│
+├── 📁 openspec/               ← SDD (Spec-Driven Development)
+│   ├── config.yaml            ← Reglas del proceso SDD
+│   ├── specs/                 ← Especificaciones vivas
+│   └── changes/archive/       ← Cambios ya cerrados (admin-auth, login-solo-codigo)
+│
+└── 📁 .agents/skills/         ← Skills personales de AI (no se suben al hacer cambios)
 ```
 
 > 💡 Regla de oro para principiantes:
@@ -1099,7 +1095,7 @@ Después de tocar cualquiera de los dos scripts, corré su autocomprobación: `b
 El workflow **`.github/workflows/build-windows.yml`** se dispara con tags `v*` (o a mano con *Run workflow*):
 
 1. Levanta un runner de Windows con Node 20, Rust stable y Bun.
-2. `npm ci` dentro de `app-prestamos-p15/`.
+2. `npm ci` en la raíz del repo.
 3. `tauri-action` compila para `x86_64-pc-windows-msvc`.
 4. Publica un **Release público** con el `.exe`, el `.msi`, sus firmas, el `latest.json` del actualizador y el **PDF del manual del personal** adjuntos.
 
@@ -1113,17 +1109,17 @@ Si la compilación falla, el badge de arriba se pone rojo y no se publica nada.
 
 | Doc | Para qué sirve |
 |---|---|
-| [docs/MANUAL_PERSONAL.md](app-prestamos-p15/docs/MANUAL_PERSONAL.md) | **Manual operativo completo** para el personal; cada Release adjunta la misma versión en PDF |
-| [docs/ENGINEERING_HANDBOOK.md](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
-| [docs/INVENTARIO_PATRIMONIO.md](app-prestamos-p15/docs/INVENTARIO_PATRIMONIO.md) | Formato y reglas del Excel de Patrimonio |
-| [docs/PLAN_IMPORTACION_PATRIMONIO.md](app-prestamos-p15/docs/PLAN_IMPORTACION_PATRIMONIO.md) | Diseño técnico de la importación |
-| [docs/RELEVO_TOMA_FISICA.md](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md) | Toma física en dos computadoras: qué fusiona y qué no |
-| [docs/QR_CELULAR.md](app-prestamos-p15/docs/QR_CELULAR.md) | Experimento: acceso desde celular por LAN |
-| [docs/REPO_CLEANUP.md](app-prestamos-p15/docs/REPO_CLEANUP.md) | Qué carpetas borrar/archivar |
-| [docs/sqlite-backup-restore-guide.md](app-prestamos-p15/docs/sqlite-backup-restore-guide.md) | Backup/restore con scripts Python |
-| [docs/postgres-restore-guide.md](app-prestamos-p15/docs/postgres-restore-guide.md) | Migrar desde un Postgres legacy |
-| [docs/SERVIDOR.md](app-prestamos-p15/docs/SERVIDOR.md) | Notas sobre alojar los datos en un servidor (exploración) |
-| [docs/ROADMAP.md](app-prestamos-p15/docs/ROADMAP.md) | Rumbo del proyecto y pendientes |
+| [docs/MANUAL_PERSONAL.md](docs/MANUAL_PERSONAL.md) | **Manual operativo completo** para el personal; cada Release adjunta la misma versión en PDF |
+| [docs/ENGINEERING_HANDBOOK.md](docs/ENGINEERING_HANDBOOK.md) | **Guía maestra** para mantener el código |
+| [docs/INVENTARIO_PATRIMONIO.md](docs/INVENTARIO_PATRIMONIO.md) | Formato y reglas del Excel de Patrimonio |
+| [docs/PLAN_IMPORTACION_PATRIMONIO.md](docs/PLAN_IMPORTACION_PATRIMONIO.md) | Diseño técnico de la importación |
+| [docs/RELEVO_TOMA_FISICA.md](docs/RELEVO_TOMA_FISICA.md) | Toma física en dos computadoras: qué fusiona y qué no |
+| [docs/QR_CELULAR.md](docs/QR_CELULAR.md) | Experimento: acceso desde celular por LAN |
+| [docs/REPO_CLEANUP.md](docs/REPO_CLEANUP.md) | Qué carpetas borrar/archivar |
+| [docs/sqlite-backup-restore-guide.md](docs/sqlite-backup-restore-guide.md) | Backup/restore con scripts Python |
+| [docs/postgres-restore-guide.md](docs/postgres-restore-guide.md) | Migrar desde un Postgres legacy |
+| [docs/SERVIDOR.md](docs/SERVIDOR.md) | Notas sobre alojar los datos en un servidor (exploración) |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Rumbo del proyecto y pendientes |
 | [CHANGELOG.md](CHANGELOG.md) | Qué cambió en cada versión publicada |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Cómo reportar problemas y contribuir código |
 | [README_INSTALACION.md](README_INSTALACION.md) | Instalación y actualización manual |
@@ -1163,7 +1159,7 @@ En corto: cualquier institución educativa puede usarlo, instalarlo, estudiarlo 
 
 <div align="center">
 
-**¿Dudas?** [Dudas frecuentes](#-dudas-frecuentes) · [Respaldo y recuperación](#-respaldo-y-recuperación-importante) · [Handbook de ingeniería](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md)
+**¿Dudas?** [Dudas frecuentes](#-dudas-frecuentes) · [Respaldo y recuperación](#-respaldo-y-recuperación-importante) · [Handbook de ingeniería](docs/ENGINEERING_HANDBOOK.md)
 
 Hecho con 💙 para la comunidad de la **Preparatoria 15** — *respalda siempre* 💾
 

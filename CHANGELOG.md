@@ -292,7 +292,7 @@ que la acompaña, y el manual en PDF que trae este Release.
   - No hizo falta un formato nuevo — reutiliza el mismo CSV que ya exporta la toma física.
 
 - Documentación del relevo entre dos computadoras en
-  [docs/RELEVO_TOMA_FISICA.md](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md).
+  [docs/RELEVO_TOMA_FISICA.md](docs/RELEVO_TOMA_FISICA.md).
 
 ### Interno
 

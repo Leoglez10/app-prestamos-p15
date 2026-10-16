@@ -19,7 +19,7 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 
 bash -n "$TARGET" || fail "syntax error in publish-release.sh"
 
-ROOT="$TMP/proj"
+ROOT="$TMP"
 mkdir -p "$ROOT/src-tauri" "$ROOT/scripts"
 printf '{\n\t"version": "0.1.0",\n\t"productName": "X"\n}\n' > "$ROOT/src-tauri/tauri.conf.json"
 printf '{\n  "version": "0.1.0"\n}\n' > "$ROOT/package.json"
@@ -29,7 +29,7 @@ printf '[package]\nname = "app-prestamos-p15"\nversion = "0.1.0"\n\n[dependencie
 printf '[[package]]\nname = "serde"\nversion = "1.0.0"\n\n[[package]]\nname = "app-prestamos-p15"\nversion = "0.1.0"\ndependencies = [\n "serde",\n]\n' > "$ROOT/src-tauri/Cargo.lock"
 cp "$TARGET" "$ROOT/scripts/"
 
-# Docs de cara al usuario: README y CHANGELOG en la raiz del repo, el manual en la app.
+# Docs de cara al usuario: README, CHANGELOG y manual viven en la raiz del repo.
 mkdir -p "$ROOT/docs"
 cat > "$TMP/README.md" <<'EOF'
 [![Versión](https://img.shields.io/badge/versi%C3%B3n-0.1.0-blue)](CHANGELOG.md)

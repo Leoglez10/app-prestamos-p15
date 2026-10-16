@@ -162,7 +162,7 @@ Serie corta de videos de capacitación para el personal de la Preparatoria 15: p
 
 > 📎 Los equipos dados de **alta al vuelo** en la segunda computadora **no** se fusionan solos: salen listados aparte para darlos de alta a mano. El reporte no trae la categoría, y elegirla sería adivinar.
 
-📚 Detalle escrito: [README.md](README.md) §"Respaldo y recuperación" y [docs/RELEVO_TOMA_FISICA.md](app-prestamos-p15/docs/RELEVO_TOMA_FISICA.md)
+📚 Detalle escrito: [README.md](README.md) §"Respaldo y recuperación" y [docs/RELEVO_TOMA_FISICA.md](docs/RELEVO_TOMA_FISICA.md)
 
 ---
 
@@ -170,7 +170,7 @@ Serie corta de videos de capacitación para el personal de la Preparatoria 15: p
 
 - **RedCelular** (acceso LAN desde celular) y **fotos de devolución**: siguen marcados como experimento en el código (`RedCelularPanel.tsx:2`, `Admin.tsx:33`). No se capacita sobre funciones experimentales — si dejan de serlo, entran al video 6.
 - **Respaldo automatizado con Python** (`scripts/backup_sqlite.py`): es opcional y de perfil técnico. Vive en el README; no va a video.
-- Flujos de desarrollador (compilar, CI, migraciones): viven en [docs/ENGINEERING_HANDBOOK.md](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md).
+- Flujos de desarrollador (compilar, CI, migraciones): viven en [docs/ENGINEERING_HANDBOOK.md](docs/ENGINEERING_HANDBOOK.md).
 
 ---
 

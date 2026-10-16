@@ -38,7 +38,7 @@ Al terminar, el instalador se genera en:
 5. Instalar la app en la laptop nueva.
 6. Restaurar la base de datos con ese respaldo.
 
-![Configuración: sección Respaldos con los botones Crear respaldo, Abrir carpeta e Importar respaldo](app-prestamos-p15/docs/img/configuracion.png)
+![Configuración: sección Respaldos con los botones Crear respaldo, Abrir carpeta e Importar respaldo](docs/img/configuracion.png)
 
 *Los botones **Crear respaldo**, **Abrir carpeta** e **Importar respaldo** están al final de `Configuración`, en la sección Respaldos.*
 

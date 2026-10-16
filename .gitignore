@@ -12,7 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
-app-prestamos-p15/output/
+output/
 
 # Database
 prestamos.db
@@ -53,32 +53,32 @@ src-tauri/target-codex-*
 
 # HyperFrames video-authoring skills: agent tooling, not app code.
 # ~22 MB of vendored assets (mp4, fonts). Reinstall from skills-lock.json.
-app-prestamos-p15/.agents/skills/captions-overlay/
-app-prestamos-p15/.agents/skills/changelog-video/
-app-prestamos-p15/.agents/skills/cut-the-curve/
-app-prestamos-p15/.agents/skills/embedded-captions/
-app-prestamos-p15/.agents/skills/faceless-explainer/
-app-prestamos-p15/.agents/skills/figma/
-app-prestamos-p15/.agents/skills/general-video/
-app-prestamos-p15/.agents/skills/hyperframes/
-app-prestamos-p15/.agents/skills/hyperframes-animation/
-app-prestamos-p15/.agents/skills/hyperframes-audio/
-app-prestamos-p15/.agents/skills/hyperframes-cli/
-app-prestamos-p15/.agents/skills/hyperframes-core/
-app-prestamos-p15/.agents/skills/hyperframes-creative/
-app-prestamos-p15/.agents/skills/hyperframes-keyframes/
-app-prestamos-p15/.agents/skills/hyperframes-registry/
-app-prestamos-p15/.agents/skills/media-use/
-app-prestamos-p15/.agents/skills/motion-doctrine/
-app-prestamos-p15/.agents/skills/motion-graphics/
-app-prestamos-p15/.agents/skills/music-to-video/
-app-prestamos-p15/.agents/skills/oversized-cursor/
-app-prestamos-p15/.agents/skills/pr-to-video/
-app-prestamos-p15/.agents/skills/product-launch-video/
-app-prestamos-p15/.agents/skills/remotion-to-hyperframes/
-app-prestamos-p15/.agents/skills/seam-craft/
-app-prestamos-p15/.agents/skills/slideshow/
-app-prestamos-p15/.agents/skills/talking-head-recut/
+.agents/skills/captions-overlay/
+.agents/skills/changelog-video/
+.agents/skills/cut-the-curve/
+.agents/skills/embedded-captions/
+.agents/skills/faceless-explainer/
+.agents/skills/figma/
+.agents/skills/general-video/
+.agents/skills/hyperframes/
+.agents/skills/hyperframes-animation/
+.agents/skills/hyperframes-audio/
+.agents/skills/hyperframes-cli/
+.agents/skills/hyperframes-core/
+.agents/skills/hyperframes-creative/
+.agents/skills/hyperframes-keyframes/
+.agents/skills/hyperframes-registry/
+.agents/skills/media-use/
+.agents/skills/motion-doctrine/
+.agents/skills/motion-graphics/
+.agents/skills/music-to-video/
+.agents/skills/oversized-cursor/
+.agents/skills/pr-to-video/
+.agents/skills/product-launch-video/
+.agents/skills/remotion-to-hyperframes/
+.agents/skills/seam-craft/
+.agents/skills/slideshow/
+.agents/skills/talking-head-recut/
 
 # Videos tutoriales (HyperFrames): fuente sí, binarios no.
 # Se guardan los guiones, storyboards, composiciones HTML y los JSON de
@@ -91,3 +91,9 @@ videos/*/.media/
 videos/*/.hyperframes/
 videos/*/node_modules/
 .orca
+
+# Local Pi/agent runtime state
+.pi/
+
+# Wrangler local state
+worker/.wrangler/

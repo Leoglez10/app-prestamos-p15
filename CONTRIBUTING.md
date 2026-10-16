@@ -53,7 +53,7 @@ No necesitas permisos de escritura: trabajas sobre tu propia copia y propones el
 
 # 2. Clona TU fork (reemplaza TU-USUARIO)
 git clone https://github.com/TU-USUARIO/app-prestamos-p15.git
-cd app-prestamos-p15/app-prestamos-p15
+cd app-prestamos-p15
 
 # 3. Instala dependencias
 npm install
@@ -106,7 +106,7 @@ git push -u origin feat/mi-cambio
 3. Al aprobarse, se fusiona a `main` y sale en una versión futura.
 
 > 📚 Antes de tocar zonas grandes del código, lee
-> [`docs/ENGINEERING_HANDBOOK.md`](app-prestamos-p15/docs/ENGINEERING_HANDBOOK.md).
+> [`docs/ENGINEERING_HANDBOOK.md`](docs/ENGINEERING_HANDBOOK.md).
 > Hay deudas técnicas documentadas (monolito en `Admin.tsx`, mezcla de responsabilidades
 > en `useInventory.ts`) que conviene conocer antes de modificar.
 

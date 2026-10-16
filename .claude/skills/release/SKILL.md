@@ -26,7 +26,7 @@ Por eso el asunto de un `feat`/`fix` es texto para profesores: español, sin jer
 
 ## Hard Rules
 
-- Correr todo desde `app-prestamos-p15/` (el directorio anidado, donde viven `scripts/` y `src-tauri/`). `gh` y `git` funcionan desde ahi igual.
+- Correr todo desde la raiz del repo (donde viven `scripts/`, `src-tauri/`, README y CHANGELOG).
 - NUNCA crear el tag a mano. Solo `bash scripts/publish-release.sh <X.Y.Z>`.
 - El script exige arbol limpio y `HEAD == origin/main`. Commitear y pushear ANTES.
 - No bumpear versiones a mano en `tauri.conf.json`, `package.json` ni `Cargo.toml`: el script los sincroniza.
@@ -64,7 +64,7 @@ Sin argumento del usuario, decidir leyendo `git log <ultimo-tag>..HEAD`.
    - `Closes #N` / `Refs #N` en el cuerpo, en su propia linea.
    - Revisar que el commit contenga TODOS los archivos de esa unidad: `git show --stat HEAD` contra `git status --short`. Un archivo olvidado (componente nuevo sin agregar, test, script en `package.json`) sale como novedad anunciada que no funciona, o rompe el build de la CI.
 3. **Docs (siempre).** Para cada `feat`/`fix` del rango (los del paso 5 mas los que vas a commitear):
-   - Buscar si ya esta explicado: `rg -n -i "<palabra clave>" ../README.md docs/MANUAL_PERSONAL.md` (el README vive en la raiz; el manual, dentro del directorio de la app).
+   - Buscar si ya esta explicado: `rg -n -i "<palabra clave>" README.md docs/MANUAL_PERSONAL.md`.
    - Si falta, escribirlo en los dos: en el manual, en la seccion de esa pantalla, con pasos que siga un profesor; en el README, en la lista de funciones.
    - La entrada del CHANGELOG solo si los bullets generados no se leerian bien.
    - Commitear los docs JUNTO al `feat`/`fix` que explican; si ese commit ya se pusheo, en uno aparte `docs: ...` (no ensucia las novedades). Armar una tabla `cambio → seccion del README → seccion del manual` para el reporte; ninguna celda vacia salvo cambios invisibles para el personal.
@@ -72,7 +72,7 @@ Sin argumento del usuario, decidir leyendo `git log <ultimo-tag>..HEAD`.
 5. **Vista previa de las novedades**, con la misma regla que la CI:
    ```bash
    prev="$(git describe --tags --abbrev=0)"
-   rg -n "^## \[<X.Y.Z>\]" ../CHANGELOG.md          # si existe, ESA seccion es el aviso
+   rg -n "^## \[<X.Y.Z>\]" CHANGELOG.md             # si existe, ESA seccion es el aviso
    git log --no-merges --format=%s "$prev"..HEAD | rg '^(feat|fix)(\([^)]*\))?!?:\s*'
    git log --no-merges --format='%h %s' "$prev"..HEAD | rg -i '^\w+ revert'
    ```
@@ -99,8 +99,8 @@ Reportar: issues ligados y su estado final, los commits que entraron, la tabla c
 
 ## References
 
-- `app-prestamos-p15/scripts/publish-release.sh` — bumpea, sincroniza, commitea, pushea y tagea.
-- `app-prestamos-p15/scripts/stamp-release-docs.sh` — sella la version en README, CHANGELOG y manual (misma agrupacion feat/fix que la CI).
-- `app-prestamos-p15/scripts/test-publish-release.sh` — autocomprobacion de los dos scripts.
+- `scripts/publish-release.sh` — bumpea, sincroniza, commitea, pushea y tagea.
+- `scripts/stamp-release-docs.sh` — sella la version en README, CHANGELOG y manual (misma agrupacion feat/fix que la CI).
+- `scripts/test-publish-release.sh` — autocomprobacion de los dos scripts.
 - `.github/workflows/build-windows.yml` — dispara en tags `v*`; el paso "Generate release notes" arma el cuerpo desde los asuntos feat/fix; publica el instalador firmado, el `latest.json` y el PDF del manual.
-- `app-prestamos-p15/src/components/UpdateNotice.tsx`, `UpdateApplied.tsx` — donde el personal ve esas novedades.
+- `src/components/UpdateNotice.tsx`, `UpdateApplied.tsx` — donde el personal ve esas novedades.

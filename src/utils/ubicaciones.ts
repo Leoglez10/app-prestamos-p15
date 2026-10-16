@@ -1,4 +1,4 @@
-import { normalizarLugar } from "./tomaFisica.ts";
+import { estaDentroDe, normalizarLugar } from "./tomaFisica.ts";
 
 type LocationNode = { name: string; path: string };
 type Locations = ReadonlyArray<string | null | undefined>;
@@ -19,6 +19,28 @@ export const hijosDeUbicacion = (locations: Locations, parent: string): Location
     if (!children.has(key)) children.set(key, { name, path: [...prefix, name].join(" / ") });
   }
   return [...children.values()].sort((a, b) => a.name.localeCompare(b.name, "es", { numeric: true }));
+};
+
+/** Busca dentro del nivel visible sin cambiar la ruta elegida. */
+export const filtrarUbicaciones = (nodes: LocationNode[], search: string): LocationNode[] => {
+  const query = search.trim().toLocaleLowerCase();
+  return nodes.filter((node) => node.name.toLocaleLowerCase().includes(query));
+};
+
+/** Conserva los sufijos y no toca rutas fuera del subárbol. También sirve para borradores. */
+export const remapearUbicacion = (path: string, source: string, destination: string): string => {
+  if (!estaDentroDe(path, source)) return path;
+  return [...segments(destination), ...segments(path).slice(segments(source).length)].join(" / ");
+};
+
+/** Al quitar un prefijo, un borrador no debe volver a crear el lugar eliminado. */
+export const remapearBorradores = (paths: string[], source: string, destination: string, removed = false): string[] =>
+  paths.map((path) => remapearUbicacion(path, source, destination))
+    .filter((path) => !removed || !estaDentroDe(path, source));
+
+export const seleccionTrasCambio = (path: string, source: string, destination: string, removed = false): string => {
+  const mapped = estaDentroDe(path, source) ? remapearUbicacion(path, source, destination) : destination;
+  return removed && estaDentroDe(mapped, source) ? destination : mapped;
 };
 
 export const rutaDeUbicacion = (path: string): LocationNode[] => {

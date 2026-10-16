@@ -1,4 +1,5 @@
 import Database from "@tauri-apps/plugin-sql";
+import { crearServicioReubicacion, type OperacionUbicacion, type PlanCambioUbicacion, type PlanReubicacion } from "../utils/reubicarUbicacion";
 
 import { isTauri } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
@@ -2665,6 +2666,25 @@ export const revertirRevision = async (
     "UPDATE inventario SET revisado_en = ?, revisado_por = ?, ubicacion = ?, estado = ? WHERE id = ?",
     [previo.revisado_en, previo.revisado_por, previo.ubicacion, previo.estado, equipoId]
   );
+};
+
+/** Vista previa sin escrituras; el servicio valida y aplica en una sentencia. */
+export const previsualizarReubicacion = async (origen: string, padre: string): Promise<PlanReubicacion> =>
+  crearServicioReubicacion(await getDb()).previsualizar(origen, padre);
+
+export const previsualizarCambioUbicacion = async (
+  origen: string,
+  operacion: OperacionUbicacion
+): Promise<PlanCambioUbicacion> => crearServicioReubicacion(await getDb()).previsualizarCambio(origen, operacion);
+
+export const aplicarReubicacion = async (
+  plan: PlanReubicacion,
+  options: { confirmado: boolean; prueba: boolean }
+): Promise<void> => {
+  // Rechazar antes incluso de abrir/preparar una conexión en modo prueba.
+  if (options.prueba) throw new Error("Modo prueba: no se pueden reorganizar ubicaciones.");
+  if (!options.confirmado) throw new Error("Confirma el cambio antes de guardar.");
+  await crearServicioReubicacion(await getDb()).aplicar(plan, options);
 };
 
 /**

@@ -1,6 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { agregarSubnivel, hijosDeUbicacion, rutaDeUbicacion } from "./ubicaciones.ts";
+import { agregarSubnivel, hijosDeUbicacion, rutaDeUbicacion, filtrarUbicaciones, remapearUbicacion, remapearBorradores, seleccionTrasCambio } from "./ubicaciones.ts";
+
+test("filtra sin distinguir mayúsculas, conserva rutas y remapea solo segmentos del origen", () => {
+  const children = hijosDeUbicacion(["SITE 1", "SITE 10", "Almacén"], "");
+  assert.deepEqual(filtrarUbicaciones(children, " site 1 ").map((node) => node.path), ["SITE 1", "SITE 10"]);
+  assert.deepEqual(filtrarUbicaciones(children, "nada"), []);
+  assert.deepEqual(filtrarUbicaciones(children, " "), children);
+  assert.equal(remapearUbicacion(" site 1 / Cajón / Nivel A ", "SITE 1", "SITE 2 / SITE 1"), "SITE 2 / SITE 1 / Cajón / Nivel A");
+  assert.equal(remapearUbicacion("SITE 10", "SITE 1", "SITE 2 / SITE 1"), "SITE 10");
+});
+
+test("sesión remapea borradores y selección sin resucitar el prefijo eliminado", () => {
+  const paths = ["A / X", "a / x / Nuevo", "A / X / X / Borrador", "A / XYZ", "B / Fijo"];
+  assert.deepEqual(remapearBorradores(paths, "A / X", "A", true), ["A", "A / Nuevo", "A / XYZ", "B / Fijo"]);
+  assert.equal(seleccionTrasCambio("A / X / X / Borrador", "A / X", "A", true), "A");
+  assert.equal(seleccionTrasCambio("A / X / Nuevo", "A / X", "A", true), "A / Nuevo");
+  assert.equal(seleccionTrasCambio("", "A / X", "A / Y"), "A / Y");
+  assert.deepEqual(remapearBorradores(["A / X / Nuevo", "A / XYZ"], "A / X", "A / x"), ["A / x / Nuevo", "A / XYZ"]);
+});
 
 const locations = [
   " SITE 1/ Almacén / Anaquel 1 ",

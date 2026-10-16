@@ -713,6 +713,60 @@ La ruta de arriba permite volver a cualquier nivel anterior; **"Todos los
 lugares"** vuelve al inicio. Para comenzar el recorrido, pulsa
 **"Escanear aquí: …"**. También puedes escanear en un nivel que tenga subniveles.
 
+Si hay muchos lugares, usa **"Buscar en este nivel"**. El conteo muestra cuántos
+coinciden; la lista tiene desplazamiento propio para no alargar toda la pantalla.
+Buscar no cambia la ruta ni inicia un recorrido.
+
+Los lugares guardados tienen un menú **⋯** junto al nombre: **Renombrar**,
+**Cambiar de padre…** y **Eliminar lugar…**. El nombre sigue sirviendo solo para
+entrar. Puedes abrir el menú con el teclado; **Escape** lo cierra.
+
+**Para cambiar el padre de un lugar existente:**
+
+1. Abre **⋯ → Cambiar de padre…** junto al lugar.
+2. En **"Es subnivel de…"**, elige otro lugar existente o **"Sin padre"** para
+   dejarlo en el nivel principal.
+3. Pulsa **"Ver equipos afectados"**. Revisa la ruta anterior, la nueva y la lista
+   de equipos; también se moverán todos los subniveles, conservando sus nombres.
+4. Solo **"Confirmar y guardar cambio de padre"** actualiza el inventario.
+   **"Cancelar"** no guarda nada. Después de guardar, la selección y los borradores
+   de esta sesión siguen la nueva ruta.
+
+Por ejemplo, **Anaquel 1** puede pasar a **SITE 2 / Anaquel 1**. No se combinan
+lugares con el mismo nombre en el destino ni se permite poner un lugar dentro de
+sí mismo o de sus subniveles.
+
+**Para renombrar:**
+
+1. Abre **⋯ → Renombrar** y escribe **solo el nuevo nombre**, sin `/`.
+   El padre se conserva. También puedes corregir únicamente las mayúsculas.
+2. Pulsa **"Ver equipos afectados"**: el nombre cambiará en sus rutas y en las de
+   todos sus subniveles, sin alterar el resto de los datos.
+3. Revisa y pulsa **"Confirmar y guardar nuevo nombre"**. No se aceptan nombres
+   vacíos, el mismo nombre sin cambios ni un hermano que ya exista.
+
+**Para eliminar un lugar sin borrar equipos:**
+
+1. Abre **⋯ → Eliminar lugar…** y elige en **"Trasladar equipos y subniveles a…"**
+   un destino existente fuera del lugar que vas a quitar. Puede ser su padre.
+2. Pulsa **"Ver equipos afectados"**. Los equipos directos pasarán al destino y
+   los subniveles conservarán sus nombres debajo de él.
+3. Revisa y pulsa **"Confirmar traslado y eliminar lugar"**. **No se elimina
+   ningún equipo**, ni sus revisiones, estado u observaciones.
+
+Ejemplo: quitar **SITE 1 / Almacén** y trasladar a **SITE 2** convierte
+**SITE 1 / Almacén / Cajón A** en **SITE 2 / Cajón A**. SITE 2 puede tener equipos
+propios; si ya existe allí una rama **Cajón A**, el cambio se rechaza para no
+combinar lugares. También se rechaza un traslado al padre si un subnivel volvería
+a crear la ruta que quieres eliminar: elige otro destino.
+
+En las tres operaciones, **Cancelar** no guarda nada. Los borradores siguen la
+nueva ruta; al eliminar un lugar, se descartan los borradores que lo volverían a
+crear. Si el inventario cambia desde la vista previa,
+vuelve a pulsar **"Ver equipos afectados"** y revisa antes de confirmar otra vez.
+La reorganización está desactivada en **modo prueba**. Los lugares que solo son
+borradores no se pueden reorganizar: primero deben tener un equipo asignado.
+
 **Para agregar un lugar:**
 
 1. Entra al lugar que lo contiene y pulsa **"+ Agregar subnivel"**. En el inicio,
@@ -726,8 +780,9 @@ agregarlos no cambia el inventario: el lugar queda guardado al asignárselo a un
 equipo durante la toma. En modo prueba no se guarda. Si sales del panel sin
 asignarlo, tendrás que agregarlo de nuevo.
 
-Los niveles se guardan separados por una **diagonal** (`/`), sin cambiar los
-lugares que ya tenías:
+Los niveles se guardan separados por una **diagonal** (`/`). Agregar un borrador
+no cambia los lugares que ya tenías; renombrar, cambiar el padre o eliminar un
+lugar sí actualiza las rutas de sus equipos, únicamente después de confirmar:
 
 - **SITE 2**
 - **SITE 2 / Anaquel 1**
@@ -753,7 +808,8 @@ siempre igual.
 
 > **Solo la diagonal crea subniveles.** Un lugar escrito como **SITE 2 R2 N1**
 > no tiene relación con **SITE 2**. Si quieres que cuente dentro de SITE 2,
-> cámbiale el nombre a **SITE 2 / R2 / N1**.
+> corrige la ubicación del equipo a **SITE 2 / R2 / N1** desde su ficha; el menú
+> **Renombrar** solo acepta un nombre, no una ruta completa.
 
 ## Modo prueba: entrenar sin miedo
 

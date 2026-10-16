@@ -22,7 +22,13 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { Icon } from "./Icon";
 import { EscaneoRapido } from "./EscaneoRapido";
 import { UbicacionSelector } from "./UbicacionSelector";
+import { ReubicarUbicacionDialog } from "./ReubicarUbicacionDialog";
+import { remapearBorradores, remapearUbicacion, seleccionTrasCambio } from "../utils/ubicaciones";
+import type { AccionUbicacion, PlanReubicacion } from "../utils/reubicarUbicacion";
 import {
+  aplicarReubicacion,
+  previsualizarReubicacion,
+  previsualizarCambioUbicacion,
   buscarPorIdPatrimonial,
   buscarPorNumSerie,
   createCategoria,
@@ -196,6 +202,7 @@ export function TomaFisicaPanel({
   );
 
   const [ubicacion, setUbicacion] = useState("");
+  const [reubicando, setReubicando] = useState<{ origen: string; accion: AccionUbicacion } | null>(null);
   const [ubicacionFijada, setUbicacionFijada] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [modoEscaneo, setModoEscaneo] = useState<ModoEscaneo>("auto");
@@ -265,6 +272,23 @@ export function TomaFisicaPanel({
     setCategorias(cats);
     setEstadosExtra(extras);
   }, []);
+
+  const guardarReubicacion = async (plan: PlanReubicacion) => {
+    if (prueba) throw new Error("Modo prueba: no se pueden reorganizar ubicaciones.");
+    await aplicarReubicacion(plan, { confirmado: true, prueba });
+    const remap = (path: string) => remapearUbicacion(path, plan.origen, plan.destino);
+    const removed = plan.operacion?.tipo === "eliminar";
+    setBorradores((paths) => remapearBorradores(paths, plan.origen, plan.destino, removed));
+    setUbicacion((path) => seleccionTrasCambio(path, plan.origen, plan.destino, removed));
+    // Reflejar el cambio confirmado aun si la recarga posterior falla. No dejar
+    // una vista previa reintentable de una operación que ya se guardó.
+    setEquipos((rows) => rows.map((row) => ({ ...row, ubicacion: row.ubicacion === null ? null : remap(row.ubicacion) })));
+    setRecientes((paths) => paths.map(remap));
+    setAviso(`Cambio guardado: ${plan.origen} → ${plan.destino}.`);
+    setError("");
+    try { await recargar(); }
+    catch { setError("El cambio se guardó, pero no se pudo recargar la lista. Sal y vuelve a entrar al panel para actualizarla."); }
+  };
 
   useEffect(() => {
     let vivo = true;
@@ -923,7 +947,23 @@ export function TomaFisicaPanel({
               onNavigate={setUbicacion}
               onAdd={(path) => setBorradores((actuales) => [...actuales, path])}
               onSelect={abrirRecorrido}
+              onManage={(origen, accion) => setReubicando({ origen, accion })}
+              persistedLocations={equipos.map((equipo) => equipo.ubicacion)}
+              practice={prueba}
             />
+            {reubicando && (
+              <ReubicarUbicacionDialog
+                key={`${reubicando.accion}:${reubicando.origen}`}
+                origen={reubicando.origen}
+                accion={reubicando.accion}
+                locations={equipos.map((equipo) => equipo.ubicacion)}
+                practice={prueba}
+                onPreview={previsualizarReubicacion}
+                onPreviewCambio={previsualizarCambioUbicacion}
+                onApply={guardarReubicacion}
+                onClose={() => setReubicando(null)}
+              />
+            )}
             <div className="stack" style={{ gap: "0.9rem" }}>
               <button
                 type="button"

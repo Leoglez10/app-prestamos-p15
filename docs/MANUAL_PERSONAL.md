@@ -654,9 +654,10 @@ tecleando a mano, sigue esperando tu `Enter`.
 
 ## El recorrido, paso a paso
 
-1. Elige el **área** a contar. Usa las ubicaciones recientes o escribe una nueva.
-   Puede ser un lugar completo (**SITE 2**) o solo una parte (**SITE 2 /
-   Anaquel 1**). Ver [Lugares con subniveles](#lugares-con-subniveles).
+1. Elige el **área** a contar: entra a un lugar para ver sus subniveles y pulsa
+   **"Escanear aquí: …"** cuando estés en el nivel correcto. Puede ser un lugar
+   completo (**SITE 2**) o solo una parte (**SITE 2 / Anaquel 1**).
+   Ver [Lugares con subniveles](#lugares-con-subniveles).
 2. Si es la primera vez o estás entrenando a alguien, activa **"Modo prueba ·
    no guarda nada"**.
 3. **"Iniciar campaña nueva"** - esto **reinicia toda el área a pendiente** y
@@ -706,8 +707,27 @@ Si un equipo quedó con el lugar equivocado, en **"Leídos aquí"** pulsa **"Cor
 
 ### Lugares con subniveles
 
-Un lugar puede dividirse en partes más pequeñas escribiéndolas con una
-**diagonal** (`/`):
+El selector muestra **un nivel a la vez**. Pulsa **SITE 2** para entrar, luego
+**Anaquel 1** para ver sus niveles. Entrar a un lugar **no inicia el escaneo**.
+La ruta de arriba permite volver a cualquier nivel anterior; **"Todos los
+lugares"** vuelve al inicio. Para comenzar el recorrido, pulsa
+**"Escanear aquí: …"**. También puedes escanear en un nivel que tenga subniveles.
+
+**Para agregar un lugar:**
+
+1. Entra al lugar que lo contiene y pulsa **"+ Agregar subnivel"**. En el inicio,
+   usa **"+ Agregar ubicación"** para crear un lugar principal.
+2. Escribe **solo el nombre**, por ejemplo **Anaquel 2**, sin diagonales, y pulsa
+   **"Agregar"**. La app abre ese nuevo nivel; aún no empieza a escanear.
+3. Pulsa **"Escanear aquí: Anaquel 2"** cuando estés listo.
+
+Los lugares nuevos son **borradores mientras este panel siga abierto**. Navegar o
+agregarlos no cambia el inventario: el lugar queda guardado al asignárselo a un
+equipo durante la toma. En modo prueba no se guarda. Si sales del panel sin
+asignarlo, tendrás que agregarlo de nuevo.
+
+Los niveles se guardan separados por una **diagonal** (`/`), sin cambiar los
+lugares que ya tenías:
 
 - **SITE 2**
 - **SITE 2 / Anaquel 1**

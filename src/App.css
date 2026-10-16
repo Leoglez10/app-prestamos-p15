@@ -1973,6 +1973,98 @@ button.ghost {
   box-shadow: none;
 }
 
+/* Selector por niveles: la ruta orienta; solo el botón azul abre el recorrido. */
+.ubicacion-selector {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.ubicacion-ruta ol,
+.ubicacion-hijos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ubicacion-ruta ol,
+.ubicacion-ruta li,
+.ubicacion-alta-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ubicacion-ruta button {
+  width: auto;
+  padding: 0.65rem;
+  color: var(--text-secondary);
+  background: var(--surface-default);
+  border: 1px solid var(--border-subtle);
+}
+
+.ubicacion-ruta [aria-current] {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  font-weight: 700;
+}
+
+.ubicacion-nivel h3 {
+  margin: 0.3rem 0;
+  font-size: 1.6rem;
+}
+
+.ubicacion-hijos {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ubicacion-hijos button {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 52px;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  background: var(--surface-default);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--brand-primary);
+  border-radius: 10px;
+}
+
+.ubicacion-selector button,
+.ubicacion-selector h3,
+.ubicacion-selector small {
+  overflow-wrap: anywhere;
+}
+
+.ubicacion-selector :focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
+.ubicacion-selector .ubicacion-vacio {
+  padding: 1rem;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 10px;
+}
+
+.ubicacion-agregar { justify-self: start; width: auto; }
+
+.ubicacion-alta,
+.ubicacion-escanear {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ubicacion-alta-acciones button { width: auto; }
+.ubicacion-selector .ubicacion-error { color: var(--danger-base); }
+.ubicacion-selector small { color: var(--text-secondary); line-height: 1.5; }
+
 .toma-lateral {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;

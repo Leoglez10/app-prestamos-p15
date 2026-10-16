@@ -21,6 +21,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { EscaneoRapido } from "./EscaneoRapido";
+import { UbicacionSelector } from "./UbicacionSelector";
 import {
   buscarPorIdPatrimonial,
   buscarPorNumSerie,
@@ -187,6 +188,12 @@ export function TomaFisicaPanel({
   const [estadosExtra, setEstadosExtra] = useState<Estado[]>([]);
   const [inicioCampana, setInicioCampana] = useState<string | null>(null);
   const [recientes, setRecientes] = useState<string[]>([]);
+  // Sin catálogo ni escrituras: sobreviven a cerrar el recorrido, no al salir del panel.
+  const [borradores, setBorradores] = useState<string[]>([]);
+  const ubicacionesDisponibles = useMemo(
+    () => [...recientes, ...equipos.map((equipo) => equipo.ubicacion), ...borradores],
+    [recientes, equipos, borradores]
+  );
 
   const [ubicacion, setUbicacion] = useState("");
   const [ubicacionFijada, setUbicacionFijada] = useState(false);
@@ -910,54 +917,14 @@ export function TomaFisicaPanel({
               <p>Se le pone esta ubicación a todo lo que escanees, hasta que la cambies.</p>
             </div>
 
-            {recientes.length > 0 && (
-              <div className="toma-chips-bloque">
-                <span className="toma-etiqueta">Donde estuviste</span>
-                <div className="toma-chips">
-                  {recientes.map((area) => (
-                    <button
-                      key={area}
-                      type="button"
-                      className={`toma-chip${area === ubicacion ? " is-activo" : ""}`}
-                      onClick={() => setUbicacion(area)}
-                    >
-                      {area === ubicacion && <Icon name="check" />}
-                      {area}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                abrirRecorrido(ubicacion);
-              }}
-              className="stack"
-              style={{ gap: "0.9rem" }}
-            >
-              <div>
-                <label htmlFor="ubicacion">
-                  {recientes.length > 0 ? "O escribe una nueva" : "Ubicación"}
-                </label>
-                <input
-                  id="ubicacion"
-                  value={ubicacion}
-                  onChange={(e) => setUbicacion(e.target.value)}
-                  placeholder="Ej. Aula 12, Laboratorio de cómputo, Auditorio"
-                  autoFocus
-                />
-                <small>Usa / para subniveles: SITE 2 / Anaquel 1</small>
-              </div>
-              <button type="submit" disabled={!ubicacion.trim()} className="toma-cta">
-                <Icon name="barcode" size="1.4rem" />
-                {prueba
-                  ? "Probar la pistola sin guardar nada"
-                  : ubicacion.trim()
-                    ? `Empezar a escanear en ${ubicacion.trim()}`
-                    : "Empezar a escanear"}
-              </button>
+            <UbicacionSelector
+              locations={ubicacionesDisponibles}
+              value={ubicacion}
+              onNavigate={setUbicacion}
+              onAdd={(path) => setBorradores((actuales) => [...actuales, path])}
+              onSelect={abrirRecorrido}
+            />
+            <div className="stack" style={{ gap: "0.9rem" }}>
               <button
                 type="button"
                 className={`toma-chip${prueba ? " is-activo" : ""}`}
@@ -974,7 +941,7 @@ export function TomaFisicaPanel({
                   ni liga etiquetas. Para ensayar el recorrido.
                 </small>
               )}
-            </form>
+            </div>
           </div>
 
           <aside className="toma-lateral">

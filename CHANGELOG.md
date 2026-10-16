@@ -8,6 +8,14 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.15.3] — 2026-10-16
+
+### Añadido
+
+- Elegir antes de escanear si se busca por serie o por ID de Patrimonio
+
+---
+
 ## [0.15.2] — 2026-09-28
 
 ### Corregido

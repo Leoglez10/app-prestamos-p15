@@ -61,7 +61,8 @@ import {
   type EquipoRevisable,
 } from "../utils/tomaFisica";
 import {
-  clasificarCodigoEscaneado,
+  resolverCodigoEscaneado,
+  type ModoEscaneo,
   normalizarCodigoPatrimonial,
   normalizarNumSerie,
   type CodigoEscaneado,
@@ -190,6 +191,7 @@ export function TomaFisicaPanel({
   const [ubicacion, setUbicacion] = useState("");
   const [ubicacionFijada, setUbicacionFijada] = useState(false);
   const [codigo, setCodigo] = useState("");
+  const [modoEscaneo, setModoEscaneo] = useState<ModoEscaneo>("auto");
   // Vacío conserva el estado que ya tenía: elegir uno lo aplica al siguiente
   // equipo capturado, sin interrumpir el bucle de la pistola.
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
@@ -529,32 +531,27 @@ export function TomaFisicaPanel({
     setDisparos(disparo);
 
     try {
-      const clasificado = clasificarCodigoEscaneado(leido);
-      if (!clasificado) {
+      const resultado = await resolverCodigoEscaneado(leido, modoEscaneo, {
+        porId: buscarPorIdPatrimonial,
+        porSerie: buscarPorNumSerie,
+      });
+      if (!resultado) {
+        if (modoEscaneo === "patrimonial") {
+          setAviso("El ID de Patrimonio debe contener solo números. Elige Serie para códigos con letras.");
+        }
         enfocarEscaneo();
         return;
       }
-
-      // Una serie con letras nunca pasa por el filtro de digitos: "AB-12" se
-      // volveria "12" y podria caer en la etiqueta de otro equipo. Solo digitos
-      // se busca primero como Patrimonio y despues como serie, porque hay
-      // series puramente numericas.
-      let equipo = clasificado.tipo === "patrimonial" ? await buscarPorIdPatrimonial(leido) : null;
-      let encontradoPorSerie = false;
-      if (!equipo) {
-        const serie = await buscarPorNumSerie(leido);
-        if (serie.coincidencias > 1) {
-          // La serie no es unica: elegir una en silencio marcaria otro equipo.
-          tono(false);
-          setFlash("alerta");
-          setAviso(
-            `Esa serie la tienen ${serie.coincidencias} equipos; escanea la etiqueta de Patrimonio o búscalo a mano.`
-          );
-          enfocarEscaneo();
-          return;
-        }
-        equipo = serie.equipo;
-        encontradoPorSerie = equipo !== null;
+      const { clasificado, equipo, encontradoPorSerie } = resultado;
+      if (resultado.coincidencias > 1) {
+        // La serie no es unica: elegir una en silencio marcaria otro equipo.
+        tono(false);
+        setFlash("alerta");
+        setAviso(
+          `Esa serie la tienen ${resultado.coincidencias} equipos; escanea la etiqueta de Patrimonio o búscalo a mano.`
+        );
+        enfocarEscaneo();
+        return;
       }
 
       if (!equipo) {
@@ -1246,6 +1243,24 @@ export function TomaFisicaPanel({
           autoComplete="off"
           disabled={desconocido !== null || editando}
         />
+        <div className="toma-estado-captura">
+          <label htmlFor="modo-escaneo">Buscar código por</label>
+          <select
+            id="modo-escaneo"
+            value={modoEscaneo}
+            disabled={desconocido !== null || ocupado || editando}
+            aria-describedby="modo-escaneo-ayuda"
+            onChange={(e) => {
+              setModoEscaneo(e.target.value as ModoEscaneo);
+              enfocarEscaneo();
+            }}
+          >
+            <option value="auto">Automático</option>
+            <option value="serie">Serie</option>
+            <option value="patrimonial">ID de Patrimonio</option>
+          </select>
+          <small id="modo-escaneo-ayuda">Serie e ID buscan solo en el campo elegido.</small>
+        </div>
         <div className="toma-estado-captura">
           <label htmlFor="estado-captura">Estado al capturar</label>
           <select

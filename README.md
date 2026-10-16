@@ -149,7 +149,7 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 - ✅ Importación del **directorio de profesores** desde un Excel (Código + Nombre completo), con plan previo y respaldo automático
 - ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, captura de **estado del equipo**, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
 - ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
-- ✅ En la toma física se escanea la etiqueta de **Patrimonio** o el **número de serie** del fabricante: la app encuentra el equipo con cualquiera de los dos
+- ✅ En la toma física se escanea la etiqueta de **Patrimonio** o el **número de serie** del fabricante: la app encuentra el equipo con cualquiera de los dos, y antes de empezar puedes fijar si buscas solo por serie o solo por ID
 - ✅ **Lugares con subniveles** usando `/` (`SITE 2 / Anaquel 1 / Nivel 3`): contar o filtrar `SITE 2` incluye todo lo que hay dentro
 - ✅ **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
 - ✅ Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
@@ -317,7 +317,8 @@ La app resuelve eso **por velocidad**: la pistola escribe el código entero en m
 1. Elige el **área** a contar (usa las ubicaciones recientes o escribe una nueva).
 2. Si es la primera vez o estás entrenando a alguien, activa **"Modo prueba · no guarda nada"** (ver abajo).
 3. **"Iniciar campaña nueva"** → reinicia todo el área a *pendiente* (pide doble confirmación).
-4. Antes de escanear, en **"Estado al capturar"** deja **"Conservar estado actual"** o elige la condición que observas. Están los estados fijos y los personalizados que tenga la escuela.
+4. Antes de escanear, elige en **"Buscar código por"** cómo quieres buscar: **"Serie"** (solo número de serie), **"ID de Patrimonio"** (solo la etiqueta de Patrimonio) o **"Automático"** (prueba los dos, como siempre). Puedes cambiarlo cuando quieras durante el recorrido.
+   En **"Estado al capturar"** deja **"Conservar estado actual"** o elige la condición que observas. Están los estados fijos y los personalizados que tenga la escuela.
 5. **Escanea** equipo por equipo. Cada disparo da feedback inmediato con sonido y tarjeta:
    - 🟢 **Nuevo aquí** — estaba pendiente, ya está contado
    - 🔵 **Movido** — existe pero su ubicación registrada era otra

@@ -38,6 +38,40 @@ export const normalizarNumSerie = (texto: string): string | null => {
 };
 
 export type CodigoEscaneado = { tipo: "patrimonial" | "serie"; valor: string };
+export type ModoEscaneo = "auto" | CodigoEscaneado["tipo"];
+
+/** Resuelve únicamente el campo elegido; el modo automático conserva el fallback. */
+export const resolverCodigoEscaneado = async <T>(
+  texto: string,
+  modo: ModoEscaneo,
+  consultas: {
+    porId: (valor: string) => Promise<T | null>;
+    porSerie: (valor: string) => Promise<{ equipo: T | null; coincidencias: number }>;
+  }
+) => {
+  const automatico = clasificarCodigoEscaneado(texto);
+  const serie = normalizarNumSerie(texto);
+  const clasificado: CodigoEscaneado | null = modo === "serie"
+    ? (serie ? { tipo: "serie", valor: serie } : null)
+    : modo === "patrimonial"
+      ? (automatico?.tipo === "patrimonial" ? automatico : null)
+      : automatico;
+  if (!clasificado) return null;
+
+  const equipo = clasificado.tipo === "patrimonial"
+    ? await consultas.porId(clasificado.valor)
+    : null;
+  if (equipo || modo === "patrimonial") {
+    return { clasificado, equipo, coincidencias: equipo ? 1 : 0, encontradoPorSerie: false };
+  }
+  const resultado = await consultas.porSerie(serie!);
+  return {
+    clasificado,
+    equipo: resultado.coincidencias === 1 ? resultado.equipo : null,
+    coincidencias: resultado.coincidencias,
+    encontradoPorSerie: resultado.coincidencias === 1 && resultado.equipo !== null,
+  };
+};
 
 /**
  * Decide si lo que leyó la pistola es un ID de Patrimonio o un número de serie.

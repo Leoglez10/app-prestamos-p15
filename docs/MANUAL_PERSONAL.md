@@ -661,7 +661,8 @@ tecleando a mano, sigue esperando tu `Enter`.
    no guarda nada"**.
 3. **"Iniciar campaña nueva"** - esto **reinicia toda el área a pendiente** y
    pide doble confirmación. Hazlo en un momento tranquilo.
-4. Antes de escanear, en **"Estado al capturar"** deja **"Conservar estado actual"** o elige la condición que observas. Ahí aparecen los estados fijos y los personalizados de la escuela.
+4. Antes del primer escaneo, elige **"Buscar código por"**: **"Serie"** busca solo por número de serie y **"ID de Patrimonio"** solo por ID, sin intentar el otro campo. **"Automático"**, seleccionado al abrir el panel, conserva la búsqueda descrita abajo. Puedes cambiarlo durante el recorrido; al elegir, el foco vuelve al campo de escaneo. Los códigos desconocidos conservan el tipo elegido para ligarlos o darlos de alta.
+   En **"Estado al capturar"** deja **"Conservar estado actual"** o elige la condición que observas. Ahí aparecen los estados fijos y los personalizados de la escuela.
 5. **Escanea equipo por equipo.** Cada disparo da sonido y tarjeta de color:
 
    | Color | Significa |
@@ -671,7 +672,7 @@ tecleando a mano, sigue esperando tu `Enter`.
    | Amarillo - **Repetido** | Ya lo escaneaste en esta campaña |
 
    Puedes escanear (o teclear y dar `Enter`) **la etiqueta de Patrimonio o el
-   número de serie** del fabricante. La app busca así:
+   número de serie** del fabricante. En modo **"Automático"**, la app busca así:
 
    | Si el código... | La app lo busca como |
    |---|---|

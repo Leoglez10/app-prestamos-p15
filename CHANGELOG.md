@@ -8,6 +8,20 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.16.0] — 2026-10-16
+
+### Añadido
+
+- Elegir la ubicación por niveles en la toma física: entra a un lugar para ver sus
+  subniveles y pulsa «Escanear aquí» cuando estés en el nivel correcto
+- Buscar el lugar dentro del nivel actual, con el conteo de resultados
+- Agregar un subnivel escribiendo solo su nombre, sin diagonales
+- Reorganizar un lugar existente desde su menú: cambiar de padre, renombrar o
+  eliminarlo trasladando sus equipos y subniveles al lugar que elijas, con vista
+  previa de los equipos afectados antes de confirmar
+
+---
+
 ## [0.15.3] — 2026-10-16
 
 ### Añadido

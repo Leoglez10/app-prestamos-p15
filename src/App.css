@@ -1973,6 +1973,172 @@ button.ghost {
   box-shadow: none;
 }
 
+/* Selector por niveles: la ruta orienta; solo el botón azul abre el recorrido. */
+.ubicacion-selector {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.ubicacion-ruta ol,
+.ubicacion-hijos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ubicacion-ruta ol,
+.ubicacion-ruta li,
+.ubicacion-alta-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ubicacion-ruta button {
+  width: auto;
+  padding: 0.65rem;
+  color: var(--text-secondary);
+  background: var(--surface-default);
+  border: 1px solid var(--border-subtle);
+}
+
+.ubicacion-ruta [aria-current] {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  font-weight: 700;
+}
+
+.ubicacion-nivel h3 {
+  margin: 0.3rem 0;
+  font-size: 1.6rem;
+}
+
+.ubicacion-hijos {
+  display: grid;
+  gap: 0.3rem;
+  max-height: 19rem;
+  overflow-y: auto;
+  padding: 0.3rem;
+  border-block: 1px solid var(--border-subtle);
+  overscroll-behavior: contain;
+}
+
+.ubicacion-hijos li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.ubicacion-hijos li > button:first-child { flex: 1; min-width: 0; }
+.ubicacion-busqueda { display: grid; gap: 0.3rem; }
+.ubicacion-menu { flex-shrink: 0; }
+.ubicacion-menu summary {
+  display: grid;
+  place-items: center;
+  list-style: none;
+  cursor: pointer;
+  width: 44px;
+  min-height: 44px;
+  font-size: 1.4rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-primary);
+  background: var(--surface-default);
+}
+.ubicacion-menu summary::-webkit-details-marker { display: none; }
+.ubicacion-menu[open] { width: min(14rem, 50%); }
+.ubicacion-menu[open] summary { margin-left: auto; }
+.ubicacion-menu > div { display: grid; gap: 0.3rem; padding-top: 0.3rem; }
+
+@media (max-width: 540px) {
+  .ubicacion-hijos li { flex-wrap: wrap; }
+  .ubicacion-hijos .ubicacion-menu[open] { width: 100%; }
+}
+
+.ubicacion-hijos button {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 44px;
+  text-align: left;
+  padding: 0.5rem 0.7rem;
+  background: var(--surface-default);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--brand-primary);
+  border-radius: 10px;
+}
+
+.ubicacion-selector .ubicacion-menu button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.85rem;
+  text-align: left;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-default);
+}
+
+.ubicacion-selector button,
+.ubicacion-selector h3,
+.ubicacion-selector small {
+  overflow-wrap: anywhere;
+}
+
+.ubicacion-selector :focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
+.ubicacion-selector .ubicacion-vacio {
+  padding: 1rem;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 10px;
+}
+
+.ubicacion-agregar { justify-self: start; width: auto; }
+
+.ubicacion-alta,
+.ubicacion-escanear {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ubicacion-alta-acciones button { width: auto; }
+.ubicacion-selector .ubicacion-error { color: var(--danger-base); }
+.ubicacion-selector small { color: var(--text-secondary); line-height: 1.5; }
+
+.reubicar-dialog { width: min(700px, calc(100vw - 2rem)); }
+.reubicar-contenido { display: grid; gap: 0.8rem; padding: 1.4rem; }
+.reubicar-contenido h2,
+.reubicar-contenido h3,
+.reubicar-contenido p { margin: 0; }
+.reubicar-contenido p,
+.reubicar-preview li { overflow-wrap: anywhere; }
+.reubicar-preview { display: grid; gap: 0.7rem; }
+.reubicar-preview ul {
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+.reubicar-preview li { display: grid; gap: 0.3rem; padding: 0.65rem; }
+.reubicar-preview li + li { border-top: 1px solid var(--border-subtle); }
+.reubicar-preview li span { font-size: 0.88rem; color: var(--text-secondary); }
+.reubicar-acciones { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.reubicar-acciones button { width: auto; min-height: 44px; }
+.reubicar-dialog :focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 2px; }
+
 .toma-lateral {
   border: 1px solid var(--border-subtle);
   border-radius: 16px;

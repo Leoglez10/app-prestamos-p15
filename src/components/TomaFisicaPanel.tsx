@@ -21,7 +21,14 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { EscaneoRapido } from "./EscaneoRapido";
+import { UbicacionSelector } from "./UbicacionSelector";
+import { ReubicarUbicacionDialog } from "./ReubicarUbicacionDialog";
+import { remapearBorradores, remapearUbicacion, seleccionTrasCambio } from "../utils/ubicaciones";
+import type { AccionUbicacion, PlanReubicacion } from "../utils/reubicarUbicacion";
 import {
+  aplicarReubicacion,
+  previsualizarReubicacion,
+  previsualizarCambioUbicacion,
   buscarPorIdPatrimonial,
   buscarPorNumSerie,
   createCategoria,
@@ -187,8 +194,15 @@ export function TomaFisicaPanel({
   const [estadosExtra, setEstadosExtra] = useState<Estado[]>([]);
   const [inicioCampana, setInicioCampana] = useState<string | null>(null);
   const [recientes, setRecientes] = useState<string[]>([]);
+  // Sin catálogo ni escrituras: sobreviven a cerrar el recorrido, no al salir del panel.
+  const [borradores, setBorradores] = useState<string[]>([]);
+  const ubicacionesDisponibles = useMemo(
+    () => [...recientes, ...equipos.map((equipo) => equipo.ubicacion), ...borradores],
+    [recientes, equipos, borradores]
+  );
 
   const [ubicacion, setUbicacion] = useState("");
+  const [reubicando, setReubicando] = useState<{ origen: string; accion: AccionUbicacion } | null>(null);
   const [ubicacionFijada, setUbicacionFijada] = useState(false);
   const [codigo, setCodigo] = useState("");
   const [modoEscaneo, setModoEscaneo] = useState<ModoEscaneo>("auto");
@@ -258,6 +272,23 @@ export function TomaFisicaPanel({
     setCategorias(cats);
     setEstadosExtra(extras);
   }, []);
+
+  const guardarReubicacion = async (plan: PlanReubicacion) => {
+    if (prueba) throw new Error("Modo prueba: no se pueden reorganizar ubicaciones.");
+    await aplicarReubicacion(plan, { confirmado: true, prueba });
+    const remap = (path: string) => remapearUbicacion(path, plan.origen, plan.destino);
+    const removed = plan.operacion?.tipo === "eliminar";
+    setBorradores((paths) => remapearBorradores(paths, plan.origen, plan.destino, removed));
+    setUbicacion((path) => seleccionTrasCambio(path, plan.origen, plan.destino, removed));
+    // Reflejar el cambio confirmado aun si la recarga posterior falla. No dejar
+    // una vista previa reintentable de una operación que ya se guardó.
+    setEquipos((rows) => rows.map((row) => ({ ...row, ubicacion: row.ubicacion === null ? null : remap(row.ubicacion) })));
+    setRecientes((paths) => paths.map(remap));
+    setAviso(`Cambio guardado: ${plan.origen} → ${plan.destino}.`);
+    setError("");
+    try { await recargar(); }
+    catch { setError("El cambio se guardó, pero no se pudo recargar la lista. Sal y vuelve a entrar al panel para actualizarla."); }
+  };
 
   useEffect(() => {
     let vivo = true;
@@ -910,54 +941,30 @@ export function TomaFisicaPanel({
               <p>Se le pone esta ubicación a todo lo que escanees, hasta que la cambies.</p>
             </div>
 
-            {recientes.length > 0 && (
-              <div className="toma-chips-bloque">
-                <span className="toma-etiqueta">Donde estuviste</span>
-                <div className="toma-chips">
-                  {recientes.map((area) => (
-                    <button
-                      key={area}
-                      type="button"
-                      className={`toma-chip${area === ubicacion ? " is-activo" : ""}`}
-                      onClick={() => setUbicacion(area)}
-                    >
-                      {area === ubicacion && <Icon name="check" />}
-                      {area}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <UbicacionSelector
+              locations={ubicacionesDisponibles}
+              value={ubicacion}
+              onNavigate={setUbicacion}
+              onAdd={(path) => setBorradores((actuales) => [...actuales, path])}
+              onSelect={abrirRecorrido}
+              onManage={(origen, accion) => setReubicando({ origen, accion })}
+              persistedLocations={equipos.map((equipo) => equipo.ubicacion)}
+              practice={prueba}
+            />
+            {reubicando && (
+              <ReubicarUbicacionDialog
+                key={`${reubicando.accion}:${reubicando.origen}`}
+                origen={reubicando.origen}
+                accion={reubicando.accion}
+                locations={equipos.map((equipo) => equipo.ubicacion)}
+                practice={prueba}
+                onPreview={previsualizarReubicacion}
+                onPreviewCambio={previsualizarCambioUbicacion}
+                onApply={guardarReubicacion}
+                onClose={() => setReubicando(null)}
+              />
             )}
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                abrirRecorrido(ubicacion);
-              }}
-              className="stack"
-              style={{ gap: "0.9rem" }}
-            >
-              <div>
-                <label htmlFor="ubicacion">
-                  {recientes.length > 0 ? "O escribe una nueva" : "Ubicación"}
-                </label>
-                <input
-                  id="ubicacion"
-                  value={ubicacion}
-                  onChange={(e) => setUbicacion(e.target.value)}
-                  placeholder="Ej. Aula 12, Laboratorio de cómputo, Auditorio"
-                  autoFocus
-                />
-                <small>Usa / para subniveles: SITE 2 / Anaquel 1</small>
-              </div>
-              <button type="submit" disabled={!ubicacion.trim()} className="toma-cta">
-                <Icon name="barcode" size="1.4rem" />
-                {prueba
-                  ? "Probar la pistola sin guardar nada"
-                  : ubicacion.trim()
-                    ? `Empezar a escanear en ${ubicacion.trim()}`
-                    : "Empezar a escanear"}
-              </button>
+            <div className="stack" style={{ gap: "0.9rem" }}>
               <button
                 type="button"
                 className={`toma-chip${prueba ? " is-activo" : ""}`}
@@ -974,7 +981,7 @@ export function TomaFisicaPanel({
                   ni liga etiquetas. Para ensayar el recorrido.
                 </small>
               )}
-            </form>
+            </div>
           </div>
 
           <aside className="toma-lateral">

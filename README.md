@@ -20,6 +20,8 @@
 
 </div>
 
+> 🇬🇧 **In English:** Desktop app (Tauri + React + SQLite) for inventory, equipment lending and PDF reports at Preparatoria 15 (Universidad de Guadalajara), used by 100+ teachers. Docs below are in Spanish, the language of its users.
+
 ---
 
 > **Este README está escrito para CUALQUIER persona**: profesor, administrador, becario o alguien que nunca programó. Si eres programador, salta a la sección [Para programadores](#-para-programadores-configurar-y-compilar).

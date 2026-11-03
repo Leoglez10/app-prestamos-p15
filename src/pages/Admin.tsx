@@ -40,6 +40,7 @@ import {
   deletePrestamo,
   updateSetting
 } from "../hooks/useInventory";
+import { buildInventoryPdfTable } from "../utils/inventoryPdf";
 import { esPrestableEfectivo } from "../utils/equipoFicha";
 import "../App.css";
 import { BACKUP_INTERVAL_OPTIONS, parseIntervalHours } from "../utils/backupSchedule";
@@ -690,48 +691,7 @@ function InventarioPanel() {
       ? `<div class="notes">${html(inventarioPdf.notes)}</div>`
       : "";
 
-    const visibleEquipos = rowLimit ? filteredEquipos.slice(0, rowLimit) : filteredEquipos;
-
-    const rows = visibleEquipos
-      .map((eq) => {
-        const columns = [
-          // Mismo criterio que la tabla: con cientos de equipos llamados igual,
-          // el identificador solo no distingue nada.
-          `<td>${html(eq.nombre_equipo)}${
-            inventarioPdf.includeIdentifier
-              ? `<br /><span class="muted">${html(
-                  [eq.marca, eq.modelo, eq.identificador, eq.id_patrimonial].filter(Boolean).join(" · ") || "S/N"
-                )}</span>`
-              : ""
-          }</td>`,
-          inventarioPdf.includeCategory ? `<td>${html(eq.categoria_nombre)}</td>` : "",
-          inventarioPdf.includeLoanType ? `<td>${html(esPrestableEfectivo(eq) ? "Prestable" : "Solo inventario")}</td>` : "",
-          `<td>${html(eq.estado)}</td>`,
-          inventarioPdf.includeResponsible ? `<td>${html(eq.prestamo_activo_profe || "-")}</td>` : "",
-          inventarioPdf.includeStock ? `<td>${html(eq.es_granel === 1 ? `${eq.stock_disponible}/${eq.stock_total}` : "1")}</td>` : "",
-        ]
-          .filter(Boolean)
-          .join("");
-
-        return `<tr>${columns}</tr>`;
-      })
-      .join("");
-
-    const headerColumns = [
-      "<th>Equipo</th>",
-      inventarioPdf.includeCategory ? "<th>Categoría</th>" : "",
-      inventarioPdf.includeLoanType ? "<th>Préstamo</th>" : "",
-      "<th>Estado</th>",
-      inventarioPdf.includeResponsible ? "<th>Responsable actual</th>" : "",
-      inventarioPdf.includeStock ? "<th>Stock</th>" : "",
-    ]
-      .filter(Boolean)
-      .join("");
-
-    const truncatedNotice =
-      rowLimit && filteredEquipos.length > rowLimit
-        ? `<tr><td colspan="${headerColumns.split("<th>").length - 1}" class="muted">Vista previa: mostrando ${rowLimit} de ${filteredEquipos.length} equipos. El PDF incluye todos.</td></tr>`
-        : "";
+    const inventoryTable = buildInventoryPdfTable(filteredEquipos, inventarioPdf, rowLimit);
 
     return `
         <div class="header">
@@ -750,10 +710,7 @@ function InventarioPanel() {
         ${summaryCards}
         ${filtersLine}
         ${notesBlock}
-        <table>
-          <thead><tr>${headerColumns}</tr></thead>
-          <tbody>${rows}${truncatedNotice}</tbody>
-        </table>
+        ${inventoryTable}
       `;
   };
 

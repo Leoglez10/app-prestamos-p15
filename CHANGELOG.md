@@ -8,6 +8,15 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [Sin publicar]
+
+### Corregido
+
+- **Mejora en reportes:** el PDF de inventario ahora incluye la ubicación asignada
+  a cada equipo, tanto en la vista previa como en el documento generado.
+
+---
+
 ## [0.16.0] — 2026-10-16
 
 ### Añadido

@@ -587,7 +587,9 @@ En el reporte verás observaciones de entrega y devolución, y una insignia
    PDF**.
 
 El PDF incluye todos los resultados filtrados aunque la vista previa en pantalla
-muestre solo las primeras filas.
+muestre solo las primeras filas. La columna **Ubicación** muestra el lugar asignado
+a cada equipo (por ejemplo, **SITE 2 / Anaquel 1**). Si no tiene ubicación asignada,
+aparece **-**.
 
 ---
 

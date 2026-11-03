@@ -8,7 +8,12 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
-## [Sin publicar]
+## [0.16.1] — 2026-11-03
+
+### Añadido
+
+- Un saludo especial opcional después de actualizar, con animación breve, botón
+  de cierre y respeto por la preferencia de reducir movimiento.
 
 ### Corregido
 

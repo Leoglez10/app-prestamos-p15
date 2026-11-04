@@ -51,6 +51,7 @@
 >
 > - **Historial de versiones y cambios** → [CHANGELOG.md](CHANGELOG.md)
 > - **Instalador de Windows ya compilado** → [Releases](https://github.com/Leoglez10/app-prestamos-p15/releases)
+> - **Guía del personal en línea** (el manual por capítulos, con buscador; también desde el botón **Guía** de la app) → [leoglez10.github.io/app-prestamos-p15](https://leoglez10.github.io/app-prestamos-p15/)
 > - **Manual completo para el personal** → [docs/MANUAL_PERSONAL.md](docs/MANUAL_PERSONAL.md) (cada Release incluye también el PDF)
 > - **Guías técnicas por tema** (importación, respaldos, toma física, roadmap) → [Documentación relacionada](#-documentación-relacionada)
 > - **Todo el código fuente en un solo archivo de texto** → [gitingest.com/Leoglez10/app-prestamos-p15](https://gitingest.com/Leoglez10/app-prestamos-p15)
@@ -828,6 +829,7 @@ app-prestamos-p15/                ← Carpeta del repo (todo vive aquí, sin sub
 ├── 📄 CONTRIBUTING.md            ← Cómo reportar issues y contribuir código
 ├── 📄 LICENSE                    ← Uso interno educativo
 ├── 📄 README_INSTALACION.md      ← Guía corta de instalación y actualización
+├── 📁 guia/                      ← Sitio web de la guía del personal (se genera del manual)
 │
 ├── 📄 package.json            ← Dependencias JS y scripts
 ├── 📄 vite.config.ts         ← Configuración Vite

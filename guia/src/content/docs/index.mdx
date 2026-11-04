@@ -1,0 +1,40 @@
+---
+title: Guía del personal
+description: Cómo usar la App Préstamos P15 en el día a día.
+template: splash
+editUrl: false
+hero:
+  tagline: Todo lo que necesitas para prestar, recibir y cuidar el equipo de la Preparatoria 15 con la App Préstamos P15.
+  image:
+    file: ../../assets/logo-p15.png
+  actions:
+    - text: Empezar aquí
+      link: manual/antes-de-empezar/
+      icon: right-arrow
+    - text: Tengo un problema
+      link: manual/que-hago-si/
+      icon: warning
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+## Lo de todos los días
+
+<CardGrid>
+  <LinkCard title="Prestar y devolver" description="Kiosko para profesores, Préstamo Rápido para alumnos, eventos." href="manual/tareas-del-dia-a-dia/" />
+  <LinkCard title="Las tres puertas de entrada" description="Kiosko, Préstamo Rápido y Admin: quién usa cada una." href="manual/las-tres-puertas-de-entrada/" />
+  <LinkCard title="Toma de inventario físico" description="Recorrer los lugares con la pistola y sacar el reporte para Patrimonio." href="manual/toma-de-inventario-fisico/" />
+  <LinkCard title="Respaldos" description="Que no se pierda nada: automáticos, Google Drive y restaurar." href="manual/respaldos/" />
+</CardGrid>
+
+## Si algo sale mal
+
+<Card title="Qué hago si…" icon="warning">
+  El capítulo de emergencias: códigos que no funcionan, equipos que no aparecen,
+  la pistola que no lee, la app que no abre. [Ir a Qué hago si…](manual/que-hago-si/)
+</Card>
+
+<Card title="Preguntas rápidas" icon="information">
+  Respuestas cortas a lo que más se pregunta. [Ver preguntas](manual/preguntas-rapidas/)
+</Card>

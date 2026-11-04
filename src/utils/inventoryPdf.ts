@@ -16,11 +16,13 @@ export const buildInventoryPdfTable = (
   inventarioPdf: InventoryPdfColumns,
   rowLimit?: number,
 ): string => {
-  const visibleEquipos = rowLimit ? filteredEquipos.slice(0, rowLimit) : filteredEquipos;
+  const sortedEquipos = [...filteredEquipos].sort((a, b) => a.id - b.id);
+  const visibleEquipos = rowLimit ? sortedEquipos.slice(0, rowLimit) : sortedEquipos;
 
   const rows = visibleEquipos
     .map((eq) => {
       const columns = [
+        `<td>${html(String(eq.id))}</td>`,
         // Mismo criterio que la tabla: con cientos de equipos llamados igual,
         // el identificador solo no distingue nada.
         `<td>${html(eq.nombre_equipo)}${
@@ -45,6 +47,7 @@ export const buildInventoryPdfTable = (
     .join("");
 
   const headerColumns = [
+    "<th>ID</th>",
     "<th>Equipo</th>",
     inventarioPdf.includeCategory ? "<th>Categoría</th>" : "",
     inventarioPdf.includeLoanType ? "<th>Préstamo</th>" : "",

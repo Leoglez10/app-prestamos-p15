@@ -251,7 +251,7 @@ Los datos del expositor solo se guardan si escribes su nombre; si no, la app avi
 1. En la pantalla de inicio, clic en **"Administrador"**.
 2. Escribe tu **código** y tu **PIN**.
 3. Tienes pestañas:
-   - **Inventario** → dar de alta, editar, ver detalle; menú de fila (⋮): forzar devolución, marcar perdido, eliminar; diseñar/imprimir PDF del inventario; panel de importación del Excel de Patrimonio
+   - **Inventario** → dar de alta, editar, ver detalle; menú de fila (⋮): forzar devolución, marcar perdido, eliminar; diseñar/imprimir PDF del inventario (columna ID del equipo y orden numérico de menor a mayor, tanto en la vista previa como en el PDF); panel de importación del Excel de Patrimonio
      - 🔎 **Tres filtros** arriba de la lista, y se combinan entre sí: *Todas las categorías*, *Todos los estados* y ***Todos los lugares*** (este último se arma solo con las ubicaciones que ya existen en tu inventario). El buscador también entiende el lugar. Si dejaste un filtro puesto se marca en color, y hay un botón para limpiarlos todos de una vez.
      - La ficha de detalle abre con lo que más se busca arriba: **placa, estado y ubicación**, y se completa entera desde esa misma pantalla.
      - 🔫 **Escaneo global**: con la pestaña abierta, apunta la pistola a cualquier etiqueta y se abre la ficha de ese equipo. No necesitas hacer clic en el buscador primero. Si sí tienes un campo enfocado, el código se escribe ahí (el buscador reemplaza el código anterior en vez de concatenarlo).

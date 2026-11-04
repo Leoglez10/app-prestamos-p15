@@ -9,7 +9,8 @@ const options = {
   includeResponsible: true,
   includeStock: true,
 };
-const equipment = (ubicacion: string | null) => ({
+const equipment = (ubicacion: string | null, id = 1) => ({
+  id,
   nombre_equipo: "Laptop",
   marca: "Dell",
   modelo: "Latitude",
@@ -55,10 +56,10 @@ test("missing locations use a dash and location text is escaped", () => {
 
 test("existing report columns and optional-column behavior remain intact", () => {
   const markup = render([equipment("Aula 12")]);
-  assert.deepEqual(cells(markup, "th").filter((value) => value !== "Ubicación"), [
+  assert.deepEqual(cells(markup, "th").filter((value) => !["Ubicación", "ID"].includes(value)), [
     "Equipo", "Categoría", "Préstamo", "Estado", "Responsable actual", "Stock",
   ]);
-  assert.deepEqual(cells(markup, "td").filter((value) => value !== "Aula 12"), [
+  assert.deepEqual(cells(markup, "td").filter((_, index) => !["Ubicación", "ID"].includes(cells(markup, "th")[index])), [
     'Laptop<br /><span class="muted">Dell · Latitude · 001 · 00042</span>',
     "Cómputo", "Prestable", "disponible", "-", "1",
   ]);
@@ -67,7 +68,7 @@ test("existing report columns and optional-column behavior remain intact", () =>
     includeResponsible: false, includeStock: false,
   });
   assert.ok(!minimal.includes("Dell"));
-  assert.deepEqual(cells(minimal, "th").filter((value) => value !== "Ubicación"), ["Equipo", "Estado"]);
+  assert.deepEqual(cells(minimal, "th").filter((value) => !["Ubicación", "ID"].includes(value)), ["Equipo", "Estado"]);
   assert.equal(cells(minimal, "td").length, cells(minimal, "th").length);
 });
 
@@ -81,4 +82,30 @@ test("preview limits rows with aligned notice while printing includes every loca
   const full = render(items);
   assert.ok(full.includes("<td>Aula 26</td>"));
   assert.ok(!full.includes("Vista previa:"));
+});
+
+
+test("inventory report always includes each equipment ID in its own column", () => {
+  for (const config of [options, {
+    includeIdentifier: false, includeCategory: false, includeLoanType: false,
+    includeResponsible: false, includeStock: false,
+  }]) {
+    const markup = render([equipment("Aula 12", 42)], config);
+    assert.equal(cells(markup, "th")[0], "ID");
+    assert.equal(cells(markup, "td")[0], "42");
+    assert.equal(cells(markup, "td").length, cells(markup, "th").length);
+  }
+});
+
+test("inventory report sorts numerically by ID before limiting the preview without mutating input", () => {
+  const items = [equipment("Aula 10", 10), equipment("Aula 2", 2), equipment("Aula 1", 1)];
+  const ids = (markup: string) => [...markup.matchAll(/<tr><td>(\d+)<\/td>/g)].map((match) => Number(match[1]));
+  assert.deepEqual(ids(render(items)), [1, 2, 10]);
+  const preview = render(items, options, 2);
+  assert.deepEqual(ids(preview), [1, 2]);
+  assert.ok(preview.includes("<td>Aula 1</td>"));
+  assert.ok(preview.includes("<td>Aula 2</td>"));
+  assert.ok(!preview.includes("<td>Aula 10</td>"));
+  assert.ok(preview.includes(`colspan="${cells(preview, "th").length}"`));
+  assert.deepEqual(items.map((item) => item.id), [10, 2, 1]);
 });

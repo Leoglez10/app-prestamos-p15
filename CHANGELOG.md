@@ -8,6 +8,18 @@ disparó la CI y publicó su instalador en [Releases](https://github.com/Leoglez
 
 ---
 
+## [0.16.2] — 2026-11-04
+
+### Añadido
+
+- Add Guía button that opens the staff guide
+
+### Corregido
+
+- Include IDs in ascending report order
+
+---
+
 ## [0.16.1] — 2026-11-03
 
 ### Añadido

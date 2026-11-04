@@ -1558,13 +1558,13 @@ button.ghost {
 }
 
 .home-admin-link {
-  display: inline-flex; align-items: center; gap: 0.5rem;
+  display: inline-flex; width: auto; cursor: pointer; align-items: center; gap: 0.5rem;
   padding: 0.6rem 1rem; min-height: 44px; border-radius: 12px;
   border: 1.5px solid var(--border-subtle); background: var(--surface-default);
   color: var(--text-secondary); font-weight: 700; font-size: 0.92rem; text-decoration: none;
   transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
-.home-admin-link:hover { border-color: var(--brand-primary); color: var(--brand-primary); transform: translateY(-1px); }
+.home-admin-link:hover { filter: none; border-color: var(--brand-primary); color: var(--brand-primary); transform: translateY(-1px); }
 .home-admin-icon { display: inline-flex; width: 18px; height: 18px; }
 .home-admin-icon svg { width: 100%; height: 100%; }
 

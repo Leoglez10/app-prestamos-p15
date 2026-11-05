@@ -38,6 +38,7 @@ export const buildInventoryPdfTable = (
         `<td>${html(eq.estado)}</td>`,
         inventarioPdf.includeResponsible ? `<td>${html(eq.prestamo_activo_profe || "-")}</td>` : "",
         inventarioPdf.includeStock ? `<td>${html(eq.es_granel === 1 ? `${eq.stock_disponible}/${eq.stock_total}` : "1")}</td>` : "",
+        `<td>${html(eq.observaciones || "-")}</td>`,
       ]
         .filter(Boolean)
         .join("");
@@ -55,6 +56,7 @@ export const buildInventoryPdfTable = (
     "<th>Estado</th>",
     inventarioPdf.includeResponsible ? "<th>Responsable actual</th>" : "",
     inventarioPdf.includeStock ? "<th>Stock</th>" : "",
+    "<th>Observaciones</th>",
   ]
     .filter(Boolean)
     .join("");

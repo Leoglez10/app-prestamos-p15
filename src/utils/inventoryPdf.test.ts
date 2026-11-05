@@ -25,6 +25,7 @@ const equipment = (ubicacion: string | null, id = 1) => ({
   stock_disponible: 1,
   stock_total: 1,
   ubicacion,
+  observaciones: null as string | null,
 });
 
 // The renderer only reads these fields; no database or Tauri runtime is involved.
@@ -56,10 +57,10 @@ test("missing locations use a dash and location text is escaped", () => {
 
 test("existing report columns and optional-column behavior remain intact", () => {
   const markup = render([equipment("Aula 12")]);
-  assert.deepEqual(cells(markup, "th").filter((value) => !["Ubicación", "ID"].includes(value)), [
+  assert.deepEqual(cells(markup, "th").filter((value) => !["Ubicación", "ID", "Observaciones"].includes(value)), [
     "Equipo", "Categoría", "Préstamo", "Estado", "Responsable actual", "Stock",
   ]);
-  assert.deepEqual(cells(markup, "td").filter((_, index) => !["Ubicación", "ID"].includes(cells(markup, "th")[index])), [
+  assert.deepEqual(cells(markup, "td").filter((_, index) => !["Ubicación", "ID", "Observaciones"].includes(cells(markup, "th")[index])), [
     'Laptop<br /><span class="muted">Dell · Latitude · 001 · 00042</span>',
     "Cómputo", "Prestable", "disponible", "-", "1",
   ]);
@@ -68,7 +69,7 @@ test("existing report columns and optional-column behavior remain intact", () =>
     includeResponsible: false, includeStock: false,
   });
   assert.ok(!minimal.includes("Dell"));
-  assert.deepEqual(cells(minimal, "th").filter((value) => !["Ubicación", "ID"].includes(value)), ["Equipo", "Estado"]);
+  assert.deepEqual(cells(minimal, "th").filter((value) => !["Ubicación", "ID", "Observaciones"].includes(value)), ["Equipo", "Estado"]);
   assert.equal(cells(minimal, "td").length, cells(minimal, "th").length);
 });
 
@@ -108,4 +109,25 @@ test("inventory report sorts numerically by ID before limiting the preview witho
   assert.ok(!preview.includes("<td>Aula 10</td>"));
   assert.ok(preview.includes(`colspan="${cells(preview, "th").length}"`));
   assert.deepEqual(items.map((item) => item.id), [10, 2, 1]);
+});
+
+test("inventory report includes escaped observations in preview and full output", () => {
+  const items = [
+    { ...equipment("Aula 1", 1), observaciones: 'Pantalla <rota> & "revisar"' },
+    { ...equipment("Aula 2", 2), observaciones: null },
+    { ...equipment("Aula 3", 3), observaciones: "" },
+  ];
+  for (const limit of [undefined, 2]) {
+    const markup = render(items, options, limit);
+    const headers = cells(markup, "th");
+    assert.equal(headers.at(-1), "Observaciones");
+    const rows = [...markup.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].slice(1);
+    const expected = ["Pantalla &lt;rota&gt; &amp; &quot;revisar&quot;", "-", "-"];
+    for (const [index, row] of rows.slice(0, limit ?? items.length).entries()) {
+      assert.equal(cells(row[1], "td").length, headers.length);
+      assert.equal(cells(row[1], "td").at(-1), expected[index]);
+    }
+    assert.ok(!markup.includes("<rota>"));
+    if (limit) assert.ok(markup.includes(`colspan="${headers.length}"`));
+  }
 });

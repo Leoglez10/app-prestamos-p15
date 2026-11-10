@@ -141,27 +141,27 @@ Y mantiene un historial completo: si el equipo está disponible, prestado, perdi
 
 ### Funciones principales
 
-- ✅ Catálogo de equipos organizado por categorías
-- ✅ Préstamo a profesor (kiosko) y a alumno (préstamo rápido)
-- ✅ Manejo de **equipos únicos** (1 laptop = 1 registro) y **a granel** (10 adaptadores en 1 fila)
-- ✅ Estados: `disponible`, `prestado`, `extraviado`, `mantenimiento`
-- ✅ Sugerencia automática de **HDMI** al prestar una laptop
-- ✅ Lectura de **códigos de barras** en kiosko, inventario y toma física — **la pistola dispara sola**, sin depender de que la etiqueta mande `Enter`
-- ✅ **Escaneo global** en Inventario: apuntas a una etiqueta y se abre la ficha, sin hacer clic en ningún campo primero
-- ✅ Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
-- ✅ Importación del **directorio de profesores** desde un Excel (Código + Nombre completo), con plan previo y respaldo automático
-- ✅ **Toma de inventario físico** por áreas, con campaña de escaneo, captura de **estado del equipo**, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
-- ✅ **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
-- ✅ En la toma física se escanea la etiqueta de **Patrimonio** o el **número de serie** del fabricante: la app encuentra el equipo con cualquiera de los dos, y antes de empezar puedes fijar si buscas solo por serie o solo por ID
-- ✅ **Lugares con subniveles** usando `/` (`SITE 2 / Anaquel 1 / Nivel 3`): contar o filtrar `SITE 2` incluye todo lo que hay dentro
-- ✅ **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
-- ✅ Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
-- ✅ Reportes imprimibles en PDF (vía "imprimir" del navegador interno)
-- ✅ **Se actualiza sola**: la app avisa cuando hay versión nueva y la instala con un clic, sin bajar nada a mano
-- ✅ **Reportar un problema desde la app**, sin cuenta de GitHub ni saber programar
-- ✅ Respaldo y restauración de la base de datos **desde dentro de la app**
-- ✅ Sesión de admin con expiración de 8 horas
-- ✅ Trabaja **sin internet** (todo es local)
+- Catálogo de equipos organizado por categorías
+- Préstamo a profesor (kiosko) y a alumno (préstamo rápido)
+- Manejo de **equipos únicos** (1 laptop = 1 registro) y **a granel** (10 adaptadores en 1 fila)
+- Estados: `disponible`, `prestado`, `extraviado`, `mantenimiento`
+- Sugerencia automática de **HDMI** al prestar una laptop
+- Lectura de **códigos de barras** en kiosko, inventario y toma física — **la pistola dispara sola**, sin depender de que la etiqueta mande `Enter`
+- **Escaneo global** en Inventario: apuntas a una etiqueta y se abre la ficha, sin hacer clic en ningún campo primero
+- Importación del Excel oficial de **Patrimonio** con plan previo y respaldo automático antes de aplicar
+- Importación del **directorio de profesores** desde un Excel (Código + Nombre completo), con plan previo y respaldo automático
+- **Toma de inventario físico** por áreas, con campaña de escaneo, captura de **estado del equipo**, **modo prueba** para entrenar sin tocar la base, y **reporte en Excel** listo para entregar a Patrimonio
+- **Alta al vuelo**: un código que nadie reclama se da de alta sin salir de la toma física
+- En la toma física se escanea la etiqueta de **Patrimonio** o el **número de serie** del fabricante: la app encuentra el equipo con cualquiera de los dos, y antes de empezar puedes fijar si buscas solo por serie o solo por ID
+- **Lugares con subniveles** usando `/` (`SITE 2 / Anaquel 1 / Nivel 3`): contar o filtrar `SITE 2` incluye todo lo que hay dentro
+- **Respaldo automático cada 12 horas** (configurable; conserva los últimos 20) y subida automática a **Google Drive** si conectas la carpeta
+- Control de qué es **prestable** y qué es *solo inventario*, por categoría o por equipo
+- Reportes imprimibles en PDF (vía "imprimir" del navegador interno)
+- **Se actualiza sola**: la app avisa cuando hay versión nueva y la instala con un clic, sin bajar nada a mano
+- **Reportar un problema desde la app**, sin cuenta de GitHub ni saber programar
+- Respaldo y restauración de la base de datos **desde dentro de la app**
+- Sesión de admin con expiración de 8 horas
+- Trabaja **sin internet** (todo es local)
 
 ---
 
